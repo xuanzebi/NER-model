@@ -1,4 +1,5 @@
 import os
+from util.util import *
 
 train_file = 'D:/dataset/MalwareTextDB-2.0/data/train/tokenized'
 dev_file = 'D:/dataset/MalwareTextDB-2.0/data/dev/tokenized'
@@ -33,7 +34,8 @@ def get_data(*filess):
                     data_lins = fr.readlines()
                     for k, linee in enumerate(data_lins):
                         line = linee.strip()
-                        if len(line) == 0 and k != len(data_lins) - 1:  # 处理最后一行是一个空行还是两个空行。 最后一个空行的话，该行不算单独一行，只是上一行+'\n'
+                        if len(line) == 0 and k != len(
+                                data_lins) - 1:  # 处理最后一行是一个空行还是两个空行。 最后一个空行的话，该行不算单独一行，只是上一行+'\n'
                             if len(curr_words) > 0:
                                 assert len(curr_words) == len(curr_tags)
                                 word_sequences.append(curr_words)
@@ -75,67 +77,6 @@ def get_data(*filess):
         compute_num_entity(word_sequences, tag_sequences)
         compute_O(word_sequences, tag_sequences)
     # print(tag_set)
-
-
-# BIO2BIEOS
-def to_bioes(original_tags):
-    def _change_prefix(original_tag, new_prefix):
-        assert original_tag.find("-") > 0 and len(new_prefix) == 1
-        chars = list(original_tag)
-        chars[0] = new_prefix
-        return "".join(chars)
-
-    def _pop_replace_append(stack, bioes_sequence, new_prefix):
-        tag = stack.pop()
-        new_tag = _change_prefix(tag, new_prefix)
-        bioes_sequence.append(new_tag)
-
-    def _process_stack(stack, bioes_sequence):
-        if len(stack) == 1:
-            _pop_replace_append(stack, bioes_sequence, "S")
-            # _pop_replace_append(stack, bioes_sequence, "U")
-        else:
-            recoded_stack = []
-            _pop_replace_append(stack, recoded_stack, "E")
-            # _pop_replace_append(stack, recoded_stack, "L")
-            while len(stack) >= 2:
-                _pop_replace_append(stack, recoded_stack, "I")
-            _pop_replace_append(stack, recoded_stack, "B")
-            recoded_stack.reverse()
-            bioes_sequence.extend(recoded_stack)
-
-    bioes_sequence = []
-    stack = []
-
-    for tag in original_tags:
-        if tag == "O":
-            if len(stack) == 0:
-                bioes_sequence.append(tag)
-            else:
-                _process_stack(stack, bioes_sequence)
-                bioes_sequence.append(tag)
-        elif tag[0] == "I":
-            if len(stack) == 0:
-                stack.append(tag)
-            else:
-                this_type = tag[2:]
-                prev_type = stack[-1][2:]
-                if this_type == prev_type:
-                    stack.append(tag)
-                else:
-                    _process_stack(stack, bioes_sequence)
-                    stack.append(tag)
-        elif tag[0] == "B":
-            if len(stack) > 0:
-                _process_stack(stack, bioes_sequence)
-            stack.append(tag)
-        else:
-            raise ValueError("Invalid tag:", tag)
-
-    if len(stack) > 0:
-        _process_stack(stack, bioes_sequence)
-
-    return bioes_sequence
 
 
 def compute_num_entity(data, label):
@@ -180,5 +121,3 @@ def compute_O(data, label):
 
 if __name__ == '__main__':
     get_data(train_file, dev_file, test1_file, test2_file, test3_file)
-
-
