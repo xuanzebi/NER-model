@@ -2,6 +2,8 @@ import json
 import codecs
 from collections import defaultdict
 from util.util import *
+import numpy as np
+
 
 # 从data  token格式转换为json格式
 def get_data(file):
@@ -12,7 +14,7 @@ def get_data(file):
 
     token_num = 0
     entity_token = 0
-    entity_phrase = 0
+
     tag_set = set()
     curr_words = list()
     curr_tags = list()
@@ -61,7 +63,7 @@ def get_data(file):
     return word_sequences, tag_sequences
 
 
-def save_data(data, label, save_name):
+def save_data(data, label, save_name, To_bieos=True):
     with codecs.open(save_name, 'w', encoding='utf-8') as fw:
         data_label = []
         for i in range(len(data)):
@@ -69,48 +71,51 @@ def save_data(data, label, save_name):
             # BI to BIEOS
             # print(i, label[i])
 
-            # label_bieos = to_bioes(label[i])
-            # label_str = ' '.join(label_bieos)
-
-            label_str = ' '.join(label[i])
+            if To_bieos == True:
+                label_bieos = to_bioes(label[i])
+                label_str = ' '.join(label_bieos)
+            else:
+                label_str = ' '.join(label[i])
 
             # print(data_str, len(data_str))
             # print(data[i], len(data[i]))
             # print(label_bieos, len(label_bieos))
             assert len(data[i]) == len(label[i])
             # data_label[data_str] = label_str
-            data_label.append([data_str, label_str])
+            if len(data[i]) > 1:
+                data_label.append([data_str, label_str])
 
         print(len(data_label))
         json.dump(data_label, fw, indent=4, ensure_ascii=False)
 
 
 def toke_to_json():
-    train_file = 'D:/dataset/ChineseNERdataset/ResumeNER/train.char.bmes'
-    test_file = 'D:/dataset/ChineseNERdataset/ResumeNER/test.char.bmes'
-    dev_file = 'D:/dataset/ChineseNERdataset/ResumeNER/dev.char.bmes'
+    # train_file = 'D:/dataset/ChineseNERdataset/ResumeNER/train.char.bmes'
+    # test_file = 'D:/dataset/ChineseNERdataset/ResumeNER/test.char.bmes'
+    # dev_file = 'D:/dataset/ChineseNERdataset/ResumeNER/dev.char.bmes'
 
-    # train_file = 'D:/dataset/ChineseNERdataset/贵州大学安全NER/Data/train.txt'
-    # dev_file = 'D:/dataset/ChineseNERdataset/贵州大学安全NER/Data/dev.txt'
-    # test_file = 'D:/dataset/ChineseNERdataset/贵州大学安全NER/Data/test.txt'
+    train_file = 'D:/dataset/ChineseNERdataset/贵州大学安全NER/Data/train.txt'
+    dev_file = 'D:/dataset/ChineseNERdataset/贵州大学安全NER/Data/dev.txt'
+    test_file = 'D:/dataset/ChineseNERdataset/贵州大学安全NER/Data/test.txt'
 
     train_data, train_label = get_data(train_file)
-    save_data(train_data, train_label, 'D:/dataset/ChineseNERdataset/ResumeNER/json_data/train_data.json')
+    save_data(train_data, train_label, 'D:/dataset/ChineseNERdataset/贵州大学安全NER/json_data/train_data.json')
 
     dev_data, dev_label = get_data(dev_file)
-    save_data(dev_data, dev_label, 'D:/dataset/ChineseNERdataset/ResumeNER/json_data/dev_data.json')
+    save_data(dev_data, dev_label, 'D:/dataset/ChineseNERdataset/贵州大学安全NER/json_data/dev_data.json')
 
     test_data, test_label = get_data(test_file)
-    save_data(test_data, test_label, 'D:/dataset/ChineseNERdataset/ResumeNER/json_data/test_data.json')
+    save_data(test_data, test_label, 'D:/dataset/ChineseNERdataset/贵州大学安全NER/json_data/test_data.json')
 
     print(len(train_data), len(dev_data), len(test_data))
 
 
+# Resume data
 # train_file = 'D:/dataset/ChineseNERdataset/ResumeNER/json_data/train_data.json'
 # test_file = 'D:/dataset/ChineseNERdataset/ResumeNER/json_data/test_data.json'
 # dev_file = 'D:/dataset/ChineseNERdataset/ResumeNER/json_data/dev_data.json'
 
-
+# 中文安全数据
 train_file = 'D:/dataset/ChineseNERdataset/贵州大学安全NER/json_data/train_data.json'
 dev_file = 'D:/dataset/ChineseNERdataset/贵州大学安全NER/json_data/dev_data.json'
 test_file = 'D:/dataset/ChineseNERdataset/贵州大学安全NER/json_data/test_data.json'
@@ -146,8 +151,35 @@ def analyse_data(*files):
         print(label_dict, entities_num)
 
         # 分析句子中不包含实体的数量
+        entity_sentences = 0
+        for lab in labels:
+            lab = lab.split(' ')
+            for la in lab:
+                if la != 'O':
+                    entity_sentences += 1
+                    break
+        print('在{}个句子中，有{}个句子中没有一个实体'.format(len(data), len(data) - entity_sentences))
 
         # 分析句子长度/平均长度/涵盖97%的长度
+        len_sentence = [len(i.split(' ')) for i in labels]
+        a, b = 0, 0
+        for i, j in enumerate(len_sentence):
+            if j > 200:
+                a += 1
+            if j == 1:
+                b += 1
+        len_sentence = np.array(len_sentence)
+        print('句子平均长度为{}， 句子最小长度为{}， 句子最大长度为{}，句子占比98%的长度为{}'.format(np.mean(len_sentence), np.min(len_sentence),
+                                                                     np.max(len_sentence),
+                                                                     np.percentile(len_sentence, 98)))
+        print(a, b)
+
+        # 计算token数量
+        token_data = 0
+        for lab in labels:
+            lab = lab.split(' ')
+            token_data += len(lab)
+        print('token数量为{}'.format(token_data))
 
 
 analyse_data(train_file, test_file, dev_file)
