@@ -18,4 +18,20 @@
 | max      | 5569  | 3246 | 1380 |
 | 98%      | 198   | 194  | 201  |
 
-在计算P、R、F1时，验证集测试集不截断、截断两种。（实体级别的F1） （token级别的F1）
+##### Problem,Todo
+
+- 在计算P、R、F1时，验证集测试集不截断、截断两种。（实体级别的F1） （token级别的F1）。
+- 分batch，使用每一个batch的最大长度
+- 字信息、词信息、字词信息混合 
+- 使用pytorch的pad_packed_sequence和pack_padded_sequence进行实验对比。
+- torchtext、allennlp、fast.ai
+
+
+
+##### Motivation
+
+1、如何获取更加高效的词、字信息表示。 不使用BERT的情况下。
+
+2、设计能提出安全特征的网络结构。
+
+3、
