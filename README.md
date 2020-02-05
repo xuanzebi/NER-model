@@ -25,6 +25,7 @@
 - 字信息、词信息、字词信息混合 
 - 使用pytorch的pad_packed_sequence和pack_padded_sequence进行实验对比。
 - torchtext、allennlp、fast.ai
+- 不同的词向量的对比效果，是否冻结词向量
 
 
 
@@ -34,4 +35,53 @@
 
 2、设计能提出安全特征的网络结构。
 
-3、
+##### 实验
+
+1、BiLSTM-CRF 基于字符
+
+2、BERT
+
+3、lattice lstm
+
+4、双指针 重要
+
+
+
+#### 记录
+
+1、Tencent词向量  “中文，《”  替换成英文的
+
+```
+词表大小 4660
+unk words 数量为9,unk 的word（set）数量为9
+Embedding:
+     pretrain word:8824330, vocab: 4660, prefect match:4625, case_match:26, oov:9, oov%:0.0019313304721030042
+['</PAD>', '</UNK>', '，', '《', 'I-SW', 'I-PER', '\ufeff海', 'I-RT', '\u202c']
+Found embeddings for 99.85% of vocab
+Found embeddings for 26 of case match
+Found embeddings for 0 of title match
+Found embeddings for  96.33% of all text
+[('\ufeff海', 1), ('\u202c', 1), ('I-RT', 2), ('I-PER', 3), ('I-SW', 10), ('《', 1472), ('，', 96230)]
+```
+
+2、 cc.zh.300.vec
+
+```
+unk words 数量为210,unk 的word（set）数量为210
+Embedding:
+     pretrain word:2000000, vocab: 4660, prefect match:4450, case_match:0, oov:210, oov%:0.045064377682403435
+
+Found embeddings for 95.53% of vocab
+Found embeddings for 0 of case match
+Found embeddings for 0 of title match
+Found embeddings for  99.98% of all text
+```
+
+3、Baidu Encyclopedia 百度百科 Word + Character + Ngram
+
+https://github.com/Embedding/Chinese-Word-Vectors
+
+```
+
+```
+
