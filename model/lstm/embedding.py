@@ -1,6 +1,6 @@
 import numpy as np
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler
-
+import pickle
 
 def get_coefs(word, *arr):
     return word, np.asarray(arr, dtype='float32')
@@ -8,10 +8,14 @@ def get_coefs(word, *arr):
 
 def load_embeddings(path):
     with open(path) as f:
+        next(f)
         return dict(get_coefs(*line.strip().split(' ')) for line in f)
 
 
-def build_pretrain_embedding(embedding_path, word_index,word_dim):
+def build_pretrain_embedding(args, word_index):
+    word_dim = args.word_emb_dim
+    # word_dim = 200
+    # load = False
     embedding_matrix = np.zeros((len(word_index), word_dim))
     alphabet_size = len(word_index)
     scale = np.sqrt(3 / word_dim)
@@ -23,39 +27,48 @@ def build_pretrain_embedding(embedding_path, word_index,word_dim):
     case_match = 0
     not_match = 0
 
-    if embedding_path == None or embedding_path == '':
+    if args.pred_embed_path == None or args.pred_embed_path == '':
         print('================不加载词向量================')
         return embedding_matrix, 0
     else:
-        print('===============GLOVE===================')
-        #embedding_index = load_embeddings(embedding_path)
-        embedding_index,word_dim = load_pretrain_emb(embedding_path)
-        unknown_words = []
-        for word, i in word_index.items():
-            if word in embedding_index:
-                embedding_matrix[i] = embedding_index[word]
-                perfect_match += 1
-            elif word.lower in embedding_index:
-                embedding_matrix[i] = embedding_index[word.lower()]
-                case_match += 1
-            elif word.title() in embedding_index:
-                embedding_matrix[i] = embedding_index[word.title()]
-                case_match += 1
-            else:
-                unknown_words.append(word)
-                notmatch += 1
+        
+        if not args.load:
+            print('===============加载预训练词向量===================')
+            embedding_index = load_embeddings(args.pred_embed_path)
+            # embedding_index,word_dim = load_pretrain_emb(embedding_path)
+            unknown_words = []
+            for word, i in word_index.items():
+                if word in embedding_index:
+                    embedding_matrix[i] = embedding_index[word]
+                    perfect_match += 1
+                elif word.lower() in embedding_index:
+                    embedding_matrix[i] = embedding_index[word.lower()]
+                    case_match += 1
+                elif word.title() in embedding_index:
+                    embedding_matrix[i] = embedding_index[word.title()]
+                    case_match += 1
+                else:
+                    unknown_words.append(word)
+                    not_match += 1
 
-        unkword_set = set(unknown_words)
-        pretrained_size = len(embedding_index)
-        print("unk words 数量为{},unk 的word（set）数量为{}".format(len(unknown_words),len(unknown_words)))
-        print("Embedding:\n     pretrain word:%s, prefect match:%s, case_match:%s, oov:%s, oov%%:%s"%(pretrained_size, perfect_match, case_match, not_match, (not_match+0.)/alphabet_size))
-        return embedding_matrix, unknown_words
+            unkword_set = set(unknown_words)
+            pretrained_size = len(embedding_index)
+            print("unk words 数量为{},unk 的word（set）数量为{}".format(len(unknown_words),len(unknown_words)))
+            print("Embedding:\n     pretrain word:%s, vocab: %s, prefect match:%s, case_match:%s, oov:%s, oov%%:%s"%(pretrained_size,alphabet_size ,perfect_match, case_match, not_match, (not_match+0.)/alphabet_size))
+            
+            pickle.dump(embedding_matrix, open('/opt/hyp/NER/NER-model/data/Tencent_AILab_ChineseEmbedding.p', 'wb')) # cc.zh.300.vec
+        else : 
+            print('===============加载事先保存好的预训练词向量===================')
+            embedding_matrix = pickle.load(open('/opt/hyp/NER/NER-model/data/Tencent_AILab_ChineseEmbedding.p', 'rb')) # cc.zh.300.vec
+
+        return embedding_matrix
 
 
 def load_pretrain_emb(embedding_path):
     embedd_dim = -1
     embedd_dict = dict()
     with open(embedding_path, 'r',encoding='utf-8') as file:
+        next(file)
         for line in file:
             line = line.strip()
             if len(line) == 0:
@@ -111,7 +124,7 @@ def check_coverage(vocab,embeddings_index):
     print('Found embeddings for %d of title match'%title_match)
     # 所有文本的覆盖度
     print('Found embeddings for  {:.2%} of all text'.format(k / (k + i)))
-    sorted_x = sorted(oov.items(), key=operator.itemgetter(1))[::-1]
+    sorted_x = sorted(oov.items(), key=operator.itemgetter(1))#[::-1]
 
     return sorted_x   # 可以查看哪些词没有被覆盖到。
 

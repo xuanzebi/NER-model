@@ -343,3 +343,37 @@ def compute_f1(gold_corpus, pred_corpus):
     metrics['macro-f1'] = macro_f1 / len(all_labels)
 
     return metrics
+
+
+def compute_instance_f1(y_true, y_pred):
+    metrics = {}
+    TP, FP, FN = defaultdict(int), defaultdict(int), defaultdict(int)
+    for i in range(len(y_true)):
+        for j in range(len(y_true[i])):
+            if y_true[i][j] not in ['[SEP]', '[CLS]','[PAD]','O']:
+                if y_true[i][j] == y_pred[i][j]:
+                    TP[y_true[i][j][2:]] += 1
+                else:
+                    FN[y_true[i][j][2:]] += 1
+        for k in range(len(y_pred[i])):
+            if y_pred[i][k] not in ['[SEP]', '[CLS]','[PAD]','O']:
+                if y_pred[i][k] != y_true[i][k]:
+                    FP[y_pred[i][k][2:]] += 1
+
+    all_labels = set(TP.keys()) | set(FP.keys()) | set(FN.keys())
+
+    macro_f1 = 0
+    for label in all_labels:
+        precision, recall, f1 = _compute_f1(TP[label], FP[label], FN[label])
+        metrics["precision-%s" % label] = precision
+        metrics["recall-%s" % label] = recall
+        metrics["f1-measure-%s" % label] = f1
+        macro_f1 += f1
+    precision, recall, f1 = _compute_f1(sum(TP.values()), sum(FP.values()), sum(FN.values()))
+    metrics["precision-overall"] = precision
+    metrics["recall-overall"] = recall
+    metrics["f1-measure-overall"] = f1
+    metrics['micro-f1'] = f1
+    metrics['macro-f1'] = macro_f1 / len(all_labels)
+
+    return metrics
