@@ -1,7 +1,7 @@
 export CUDA_VISIBLE_DEVICES=1
 python ../main.py --use_scheduler=True \
-                     --model_save_dir='/opt/hyp/NER/NER-model/saved_models/test_msra_stay/' \
-                     --tensorboard_dir='/opt/hyp/NER/NER-model/saved_models/test_msra_stay/runs/' \
+                     --model_save_dir='/opt/hyp/NER/NER-model/saved_models/test_msra_cut/' \
+                     --tensorboard_dir='/opt/hyp/NER/NER-model/saved_models/test_msra_cut/runs/' \
                      --batch_size=128 \
                      --optimizer='Adam' \
                      --momentum=0.9 \
@@ -14,7 +14,7 @@ python ../main.py --use_scheduler=True \
                      --do_train=True \
                      --word_emb_dim=300 \
                      --max_seq_length=156 \
-                     --deal_long_short_data='stay' \
+                     --deal_long_short_data='cut' \
 
 
 

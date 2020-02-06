@@ -95,7 +95,7 @@ def evaluate(data, model, label_map, tag, args, train_logger,device,dev_test_dat
                     if input_mask[i][j] != 0:
                         temp_1.append(label_map[m])
                         temp_2.append(label_map[logits[i][j]])
-                        if j == args.max_seq_length -1:
+                        if j == label.size -1:  # len(label),args.max_seq_len
                             assert (len(temp_1) == len(temp_2))
                             y_true.append(temp_1)
                             y_pred.append(temp_2)
@@ -278,7 +278,7 @@ if __name__ == "__main__":
                          help="预训练词向量路径,'cc.zh.300.vec','sgns.baidubaike.bigram-char','Tencent_AILab_ChineseEmbedding.txt'")
     parser.add_argument('--tensorboard_dir',default='/opt/hyp/NER/NER-model/saved_models/test_msra/runs/', type=str)
     parser.add_argument('--optimizer', default='Adam', choices=['Adam','SGD'], type=str)
-    parser.add_argument('--deal_long_short_data', default='stay', choices=['cut','pad','stay'], type=str,help='对长文本或者短文本在验证测试的时候如何处理')
+    parser.add_argument('--deal_long_short_data', default='cut', choices=['cut','pad','stay'], type=str,help='对长文本或者短文本在验证测试的时候如何处理')
     parser.add_argument('--save_embed_path', default='/opt/hyp/NER/NER-model/data/embedding/sgns.baidubaike.bigram-char_msra.p', type=str, help='词向量存储路径')
 
     #parser.add_argument('--data_type', default='conll', help='数据类型 -conll - cyber')
