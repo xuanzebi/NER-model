@@ -55,11 +55,11 @@ def build_pretrain_embedding(args, word_index):
             pretrained_size = len(embedding_index)
             print("unk words 数量为{},unk 的word（set）数量为{}".format(len(unknown_words),len(unknown_words)))
             print("Embedding:\n     pretrain word:%s, vocab: %s, prefect match:%s, case_match:%s, oov:%s, oov%%:%s"%(pretrained_size,alphabet_size ,perfect_match, case_match, not_match, (not_match+0.)/alphabet_size))
-            
-            pickle.dump(embedding_matrix, open('/opt/hyp/NER/NER-model/data/Tencent_AILab_ChineseEmbedding.p', 'wb')) # cc.zh.300.vec
+            if args.dump_embedding:
+                pickle.dump(embedding_matrix, open(args.save_embed_path, 'wb')) # cc.zh.300.vec
         else : 
             print('===============加载事先保存好的预训练词向量===================')
-            embedding_matrix = pickle.load(open('/opt/hyp/NER/NER-model/data/Tencent_AILab_ChineseEmbedding.p', 'rb')) # cc.zh.300.vec
+            embedding_matrix = pickle.load(open(args.save_embed_path, 'rb')) # cc.zh.300.vec
 
         return embedding_matrix
 

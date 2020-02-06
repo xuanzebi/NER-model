@@ -41,7 +41,7 @@ def get_data(file):
                 continue
 
             if len(line) != 0:
-                strings = line.split(' ')
+                strings = line.split('\t')
                 if len(strings) == 1:  # 有一处 NN 无标签
                     # print(strings)
                     strings.append('O')
@@ -97,22 +97,22 @@ def save_data(data, label, save_name, To_bieos=True):
 
 
 def toke_to_json():
-    # train_file = 'D:/dataset/ChineseNERdataset/ResumeNER/train.char.bmes'
-    # test_file = 'D:/dataset/ChineseNERdataset/ResumeNER/test.char.bmes'
-    # dev_file = 'D:/dataset/ChineseNERdataset/ResumeNER/dev.char.bmes'
+    train_file = '/opt/hyp/NER/NER-model/data/other_data/MSRA/msra_train_bio.txt'
+    test_file = '/opt/hyp/NER/NER-model/data/other_data/MSRA/msra_test_bio.txt'
+    dev_file = '/opt/hyp/NER/NER-model/data/other_data/MSRA/msra_test_bio.txt'
 
-    train_file = '/opt/hyp/NER/NER-model/data/train.txt'
-    dev_file = '/opt/hyp/NER/NER-model/data/dev.txt'
-    test_file = '/opt/hyp/NER/NER-model/data/test.txt'
+    # train_file = '/opt/hyp/NER/NER-model/data/train.txt'
+    # dev_file = '/opt/hyp/NER/NER-model/data/dev.txt'
+    # test_file = '/opt/hyp/NER/NER-model/data/test.txt'
 
     train_data, train_label = get_data(train_file)
-    save_data(train_data, train_label, '/opt/hyp/NER/NER-model/data/json_data/train_data.json')
+    save_data(train_data, train_label, '/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data/train_data.json')
 
     dev_data, dev_label = get_data(dev_file)
-    save_data(dev_data, dev_label, '/opt/hyp/NER/NER-model/data/json_data/dev_data.json')
+    save_data(dev_data, dev_label, '/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data/dev_data.json')
 
     test_data, test_label = get_data(test_file)
-    save_data(test_data, test_label, '/opt/hyp/NER/NER-model/data/json_data/test_data.json')
+    save_data(test_data, test_label, '/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data/test_data.json')
 
     print(len(train_data), len(dev_data), len(test_data))
 
@@ -123,9 +123,9 @@ toke_to_json()
 # dev_file = 'D:/dataset/ChineseNERdataset/ResumeNER/json_data/dev_data.json'
 
 # 中文安全数据
-train_file = '/opt/hyp/NER/NER-model/data/json_data/train_data.json'
-dev_file = '/opt/hyp/NER/NER-model/data/json_data/dev_data.json'
-test_file = '/opt/hyp/NER/NER-model/data/json_data/test_data.json'
+train_file = '/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data/train_data.json'
+dev_file = '/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data/dev_data.json'
+test_file = '/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data/test_data.json'
 
 
 def analyse_data(*files):

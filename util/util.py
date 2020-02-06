@@ -174,9 +174,7 @@ def normalize_word(word):
             new_word += char
     return new_word
 
-# 针对 输出的  BIEOS 不规则的标签不召回
-
-
+# 针对 输出的  BIEOS/BMEOS 不规则的标签不召回
 def compute_spans_bieos(tags):
     spans = []
     i = 0
@@ -204,8 +202,6 @@ def compute_spans_bieos(tags):
     return spans_text
 
 # 针对 输出的  BIO 不规则的标签不召回
-
-
 def compute_spans_bio(tags):
     spans = []
     i = 0
