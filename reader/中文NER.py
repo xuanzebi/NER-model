@@ -63,6 +63,9 @@ def get_data(file):
     return word_sequences, tag_sequences
 
 
+def get_msra_data(file):
+    pass
+
 def save_data(data, label, save_name, To_bieos=True):
     with codecs.open(save_name, 'w', encoding='utf-8') as fw:
         data_label = []
