@@ -34,6 +34,7 @@
 - 将预测结果保存
 - 不同的dropout rate, 0.3 0.5的往往效果比较好
 - BERT  微调和不微调两种
+- CNN 相关模型
 
 
 
@@ -52,6 +53,10 @@
 3、lattice lstm
 
 4、双指针 重要
+
+5、CNN 作为encoder提取 位置局部信息，来融合到RNN或者BERT中   
+
+6、RNN之后接一层CNN
 
 
 
