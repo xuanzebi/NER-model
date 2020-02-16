@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from lstm.crf import CRF
+from model.lstm.crf import CRF
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 
