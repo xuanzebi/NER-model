@@ -72,7 +72,8 @@ def evaluate(data, model, label_map, tag, args, train_logger, device, dev_test_d
         input_ids, input_mask, label_ids = _test_batch
 
         # loss, logits = model.module.calculate_loss(input_ids, input_mask, label_ids) # if DataParallel model.module
-        loss, logits = model(input_ids, input_mask, label_ids)
+        with torch.no_grad():
+            loss, logits = model(input_ids, input_mask, label_ids)
 
         if args.use_dataParallel:
             loss = torch.sum(loss)  # if DataParallel model.module
