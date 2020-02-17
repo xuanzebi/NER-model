@@ -14,7 +14,7 @@ python ../main.py --use_scheduler=True \
                      --do_train=True \
                      --word_emb_dim=300 \
                      --max_seq_length=156 \
-                     --deal_long_short_data='stay' \
+                     --deal_long_short_data='cut' \
 
 
 

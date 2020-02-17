@@ -223,8 +223,9 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
             best_epoch = epoch
             print('实体级别的F1的best model epoch is: %d' % epoch)
             train_logger.info('实体级别的F1的best model epoch is: %d' % epoch)
-            model_name = args.model_save_dir + "entity_best.pt"
-            torch.save(model.state_dict(), model_name)
+            model_name = args.model_save_dir + "pytorch_model.bin"
+            model_to_save = (model.module if hasattr(model, "module") else model)
+            torch.save(model_to_save.state_dict(), model_name)
 
         # releax-f1 token-level f1
         if metric_instance['micro-f1'] > bestscore_instance:
@@ -248,7 +249,9 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
 
 def load_predict(model, data, model_save_dir, logger, label_map, tag, args, device, test_data, pad_token_label_id):
     start_time = time.time()
-    model.load_state_dict(torch.load(model_save_dir))
+    # model.load_state_dict(torch.load(model_save_dir))
+    # for param in model.parameters():
+    #     param.requires_grad = False
     metric, metric_instance, y_pred = evaluate(data, model, label_map, tag, args, logger, device, test_data, 'test',
                                                pad_token_label_id)
     end_time = time.time()
@@ -308,12 +311,12 @@ if __name__ == "__main__":
     start_time = time.time()
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--do_train", default=True, type=str2bool, help="Whether to run training.")
+    parser.add_argument("--do_train", default=False, type=str2bool, help="Whether to run training.")
     parser.add_argument("--do_test", default=True, type=str2bool, help="Whether to run test on the test set.")
     parser.add_argument('--save_best_model', type=str2bool, default=True, help='Whether to save best model.')
-    parser.add_argument('--model_save_dir', type=str, default='', help='Root dir for saving models.')
-    parser.add_argument('--tensorboard_dir', default='D:/Paper_Shiyan/NER-model/save_models/test/runs/', type=str)
-    parser.add_argument('--data_path', default='D:/Paper_Shiyan/NER-model/data/ResumeNER/json_data', type=str,
+    parser.add_argument('--model_save_dir', type=str, default='/opt/hyp/NER/NER-model/saved_models/test', help='Root dir for saving models.')
+    parser.add_argument('--tensorboard_dir', default='/opt/hyp/NER/NER-model/saved_models/test/runs/', type=str)
+    parser.add_argument('--data_path', default='/opt/hyp/NER/NER-model/data/json_data', type=str,
                         help='数据路径')
     parser.add_argument('--pred_embed_path', default='', type=str,
                         help="预训练词向量路径,'cc.zh.300.vec','sgns.baidubaike.bigram-char','Tencent_AILab_ChineseEmbedding.txt'")
@@ -322,7 +325,7 @@ if __name__ == "__main__":
                         help='对长文本或者短文本在验证测试的时候如何处理')
     parser.add_argument('--save_embed_path', default='', type=str,help='词向量存储路径')
     parser.add_argument("--model_type", default='bert', type=str, help="Model type selected in the list")
-    parser.add_argument("--model_name_or_path", default='', type=str,
+    parser.add_argument("--model_name_or_path", default='/opt/hyp/NER/embedding/bert/chinese_L-12_H-768_A-12_pytorch', type=str,
                         help="Path to pre-trained model or shortcut name selected in the list: ")
 
     # parser.add_argument('--data_type', default='conll', help='数据类型 -conll - cyber')
@@ -459,7 +462,7 @@ if __name__ == "__main__":
 
         opt = vars(args)  # dict
         # save config
-        opt["time's"] = time.time() - start_time
+        opt["time'min"] = (time.time() - start_time ) /60
         save_config(opt, args.model_save_dir + '/args_config.json', verbose=True)
         train_logger.info("Train Time cost{}min".format((time.time() - start_time) / 60))
 
@@ -467,15 +470,17 @@ if __name__ == "__main__":
         print('=========================测试集==========================')
         print(args)
 
+        entity_model_save_dir = args.model_save_dir + '/pytorch_model.bin'
+
         tokenizer = BertTokenizer.from_pretrained(args.model_name_or_path, do_lower_case=args.do_lower_case)
         config = BertConfig.from_pretrained(args.model_name_or_path, num_labels=len(labels))
-        test_model = BertForTokenClassification.from_pretrained(args.model_name_or_path, config=config)
-        # model = nn.DataParallel(model.cuda())
+        test_model = BertForTokenClassification.from_pretrained(entity_model_save_dir, config=config)
+
+        if args.use_dataParallel:
+            test_model = nn.DataParallel(test_model.cuda())
         test_model = test_model.to(device)
 
         # token_model_save_dir = args.model_save_dir + 'token_best.pt'
-        entity_model_save_dir = args.model_save_dir + 'entity_best.pt'
-
         # token_metric,token_metric_instance,y_pred_token = load_predict(test_model,test_dataloader,token_model_save_dir,train_logger,index2label,tag,args,device)
         entity_metric, entity_metric_instance, y_pred_entity = load_predict(test_model, test_dataloader,
                                                                             entity_model_save_dir,
