@@ -273,7 +273,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--do_train", default=True, type=str2bool, help="Whether to run training.")
     parser.add_argument("--do_test", default=True, type=str2bool, help="Whether to run test on the test set.")
-    parser.add_argument('--save_best_model', type=str2bool, default=False, help='Whether to save best model.')
+    parser.add_argument('--save_best_model', type=str2bool, default=True, help='Whether to save best model.')
     parser.add_argument('--model_save_dir', type=str, default='/opt/hyp/NER/NER-model/saved_models/test_msra/',
                         help='Root dir for saving models.')
     parser.add_argument('--data_path', default='/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data', type=str,
@@ -434,7 +434,7 @@ if __name__ == "__main__":
 
         # token_metric,token_metric_instance,y_pred_token = load_predict(test_model,test_dataloader,token_model_save_dir,train_logger,index2label,tag,args,device)
         entity_metric, entity_metric_instance, y_pred_entity = load_predict(test_model, test_dataloader,
-                                                                            entity_model_save_dir, \
+                                                                            entity_model_save_dir,
                                                                             train_logger, index2label, tag, args,
                                                                             device, test_data_raw)
 

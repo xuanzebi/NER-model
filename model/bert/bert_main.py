@@ -39,7 +39,7 @@ from transformers import (
 
 import sys
 
-package_dir_b = "D:/Paper_Shiyan/NER-model"
+package_dir_b = "/opt/hyp/NER/NER-model"
 sys.path.insert(0, package_dir_b)
 
 import warnings
@@ -97,21 +97,20 @@ def evaluate(data, model, label_map, tag, args, train_logger, device, dev_test_d
             _batch = tuple(t.to(device) for t in test_batch)
             input_ids, input_mask, segment_ids, label_ids = _batch
             loss, logits = model(input_ids, input_mask, segment_ids, labels=label_ids)
-        test_loss += loss.item()
         nb_eval_steps += 1
-
         if args.use_dataParallel:
             loss = torch.sum(loss)  # if DataParallel model.module
+        test_loss += loss.item()
+
         if args.use_crf == False:
             logits = torch.argmax(F.log_softmax(logits, dim=-1), dim=-1)
 
-        label_ids = label_ids.to('cpu').numpy()
         if preds is None:
             preds = logits.detach().cpu().numpy()
-            out_label_ids = label_ids.detach().cpu().numpy()
+            out_label_ids = label_ids.cpu().numpy()
         else:
             preds = np.append(preds, logits.detach().cpu().numpy(), axis=0)
-            out_label_ids = np.append(out_label_ids, label_ids.detach().cpu().numpy(), axis=0)
+            out_label_ids = np.append(out_label_ids, label_ids.cpu().numpy(), axis=0)
 
         test_iterator.set_postfix(test_loss=loss.item())
 
@@ -191,7 +190,7 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
                 global_step += 1
 
             if args.logging_steps > 0 and global_step % args.logging_steps == 0:
-                print(scheduler.get_lr()[0])
+                print('当前epoch {}, step{} 的学习率为{}'.format(epoch,step,scheduler.get_lr()[0]))
                 tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
                 tb_writer.add_scalar('train_loss', (tr_loss - logging_loss) / args.logging_steps, global_step)
                 lr[epoch].append(scheduler.get_lr()[0])
@@ -312,8 +311,7 @@ if __name__ == "__main__":
     parser.add_argument("--do_train", default=True, type=str2bool, help="Whether to run training.")
     parser.add_argument("--do_test", default=True, type=str2bool, help="Whether to run test on the test set.")
     parser.add_argument('--save_best_model', type=str2bool, default=True, help='Whether to save best model.')
-    parser.add_argument('--model_save_dir', type=str, default='D:/Paper_Shiyan/NER-model/save_models/test',
-                        help='Root dir for saving models.')
+    parser.add_argument('--model_save_dir', type=str, default='', help='Root dir for saving models.')
     parser.add_argument('--tensorboard_dir', default='D:/Paper_Shiyan/NER-model/save_models/test/runs/', type=str)
     parser.add_argument('--data_path', default='D:/Paper_Shiyan/NER-model/data/ResumeNER/json_data', type=str,
                         help='数据路径')
@@ -322,13 +320,9 @@ if __name__ == "__main__":
     parser.add_argument('--optimizer', default='Adam', choices=['Adam', 'SGD'], type=str)
     parser.add_argument('--deal_long_short_data', default='cut', choices=['cut', 'pad', 'stay'], type=str,
                         help='对长文本或者短文本在验证测试的时候如何处理')
-    parser.add_argument('--save_embed_path',
-                        default='', type=str,
-                        help='词向量存储路径')
-    parser.add_argument("--model_type", default='bert', type=str,
-                        help="Model type selected in the list: " + ", ".join(MODEL_CLASSES.keys()),
-                        )
-    parser.add_argument("--model_name_or_path", default='D:/projects/nlp/bert/chinese_12_768_pytorch', type=str,
+    parser.add_argument('--save_embed_path', default='', type=str,help='词向量存储路径')
+    parser.add_argument("--model_type", default='bert', type=str, help="Model type selected in the list")
+    parser.add_argument("--model_name_or_path", default='', type=str,
                         help="Path to pre-trained model or shortcut name selected in the list: ")
 
     # parser.add_argument('--data_type', default='conll', help='数据类型 -conll - cyber')
@@ -362,9 +356,9 @@ if __name__ == "__main__":
     parser.add_argument('--lr_decay', default=0.05, type=float)
     parser.add_argument('--momentum', default=0, type=float, help="0 or 0.9")
     parser.add_argument('--min_count', default=1, type=int)
-    parser.add_argument('--dropout', default=0.25, type=float, help='词向量后的dropout')
-    parser.add_argument('--dropoutlstm', default=0.25, type=float, help='lstm后的dropout')
-    parser.add_argument("--warmup_proportion", default=0.1, type=int, help="Linear warmup over warmup_steps.")
+    parser.add_argument('--dropout', default=0.5, type=float, help='词向量后的dropout')
+    parser.add_argument('--dropoutlstm', default=0.5, type=float, help='lstm后的dropout')
+    parser.add_argument("--warmup_proportion", default=0.2, type=int, help="Linear warmup over warmup_steps.")
     parser.add_argument("--weight_decay", default=0.01, type=float, help="Weight decay if we apply some. 0/0.01")
     parser.add_argument("--max_grad_norm", default=1.0, type=float, help="Max gradient norm.")
     parser.add_argument("--gradient_accumulation_steps", type=int, default=1,
@@ -424,7 +418,8 @@ if __name__ == "__main__":
     tokenizer = BertTokenizer.from_pretrained(args.model_name_or_path, do_lower_case=args.do_lower_case)
     config = BertConfig.from_pretrained(args.model_name_or_path, num_labels=len(labels))
     model = BertForTokenClassification.from_pretrained(args.model_name_or_path, config=config)
-    # model = nn.DataParallel(model.cuda())
+    if args.use_dataParallel:
+        model = nn.DataParallel(model.cuda())
     model = model.to(device)
     param_optimizer = list(model.named_parameters())
 

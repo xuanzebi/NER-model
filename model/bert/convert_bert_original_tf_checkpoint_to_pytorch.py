@@ -23,8 +23,8 @@ def convert_tf_checkpoint_to_pytorch(tf_checkpoint_path, bert_config_file, pytor
     torch.save(model.state_dict(), pytorch_dump_path)
 
 
-tf_checkpoint_file_path = 'D:/projects/nlp/bert/chinese_L-12_H-768_A-12'
-pytorch_path = 'D:/projects/nlp/bert/chinese_12_768_pytorch'
+tf_checkpoint_file_path = '/opt/hyp/NER/embedding/bert/chinese_L-12_H-768_A-12'
+pytorch_path = '/opt/hyp/NER/embedding/bert/chinese_L-12_H-768_A-12_pytorch'
 
 if not os.path.exists(pytorch_path):
     os.makedirs(pytorch_path)

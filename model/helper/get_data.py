@@ -2,7 +2,7 @@ import json
 from model.helper.embedding import build_pretrain_embedding, check_coverage
 
 
-# TODO 腾讯词向量 没有中文的， 《, 考虑将其换成中文的
+# TODO 腾讯词向量 没有中文的， 《, 考虑将其换成中文的, 英文大写转小写
 def build_vocab(data, min_count):
     """
         Return: vocab 词表各词出现的次数
