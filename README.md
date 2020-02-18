@@ -35,6 +35,7 @@
 - 不同的dropout rate, 0.3 0.5的往往效果比较好
 - BERT  微调和不微调两种
 - CNN 相关模型
+- BERT feature-extraction 直接用来分类/ +bilstm  或者与word2vec 拼接，BERT作为特征提取的话，向量一般取最后一层的向量。
 
 
 

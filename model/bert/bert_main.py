@@ -39,7 +39,7 @@ from transformers import (
 
 import sys
 
-package_dir_b = "/opt/hyp/NER/NER-model"
+package_dir_b = "D:/Paper_Shiyan//NER-model"
 sys.path.insert(0, package_dir_b)
 
 import warnings
@@ -90,7 +90,7 @@ def evaluate(data, model, label_map, tag, args, train_logger, device, dev_test_d
     nb_eval_steps = 0
 
     for step, test_batch in enumerate(test_iterator):
-        print(len(test_batch))
+        # print(len(test_batch))
         model.eval()
         _test_batch = tuple(t.to(device) for t in test_batch)
         with torch.no_grad():
@@ -190,7 +190,7 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
                 global_step += 1
 
             if args.logging_steps > 0 and global_step % args.logging_steps == 0:
-                print('当前epoch {}, step{} 的学习率为{}'.format(epoch,step,scheduler.get_lr()[0]))
+                print('当前epoch {}, step{} 的学习率为{}'.format(epoch, step, scheduler.get_lr()[0]))
                 tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
                 tb_writer.add_scalar('train_loss', (tr_loss - logging_loss) / args.logging_steps, global_step)
                 lr[epoch].append(scheduler.get_lr()[0])
@@ -208,11 +208,6 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
         metric_instance['epoch'] = epoch
         metric['epoch'] = epoch
 
-        print('epoch:{} P:{}, R:{}, F1:{}'.format(epoch, metric['precision-overall'], metric['recall-overall'],
-                                                  metric['f1-measure-overall']))
-        train_logger.info(
-            'epoch:{} P:{}, R:{}, F1:{}'.format(epoch, metric['precision-overall'], metric['recall-overall'],
-                                                metric['f1-measure-overall']))
         # print(metric['test_loss'], epoch)
         # train_logger.info("epoch{},test_loss{}".format(metric['test_loss'], epoch))
 
@@ -236,22 +231,26 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
             # model_name = args.model_save_dir + "token_best.pt"
             # torch.save(model.state_dict(), model_name)
 
+        print('epoch:{} P:{}, R:{}, F1:{} ,best F1{}!'.format(epoch, metric['precision-overall'],
+                                                              metric['recall-overall'],
+                                                              metric['f1-measure-overall'], bestscore))
+        train_logger.info(
+            'epoch:{} P:{}, R:{}, F1:{},best F1{}!'.format(epoch, metric['precision-overall'], metric['recall-overall'],
+                                                           metric['f1-measure-overall'], bestscore))
+
         test_result.append(metric)
         test_result_instance.append(metric_instance)
 
-    test_result.append({'best_test_f1': bestscore,
-                        'best_test_epoch': best_epoch})
-    test_result_instance.append({'best_test_f1': bestscore_instance,
-                                 'best_test_epoch': best_epoch_instance})
+    test_result.append({'best_dev_f1': bestscore,
+                        'best_dev_epoch': best_epoch})
+    test_result_instance.append({'best_dev_f1': bestscore_instance,
+                                 'best_dev_epoch': best_epoch_instance})
     tb_writer.close()
     return test_result, test_result_instance, lr
 
 
-def load_predict(model, data, model_save_dir, logger, label_map, tag, args, device, test_data, pad_token_label_id):
+def load_predict(model, data, logger, label_map, tag, args, device, test_data, pad_token_label_id):
     start_time = time.time()
-    # model.load_state_dict(torch.load(model_save_dir))
-    # for param in model.parameters():
-    #     param.requires_grad = False
     metric, metric_instance, y_pred = evaluate(data, model, label_map, tag, args, logger, device, test_data, 'test',
                                                pad_token_label_id)
     end_time = time.time()
@@ -314,18 +313,19 @@ if __name__ == "__main__":
     parser.add_argument("--do_train", default=False, type=str2bool, help="Whether to run training.")
     parser.add_argument("--do_test", default=True, type=str2bool, help="Whether to run test on the test set.")
     parser.add_argument('--save_best_model', type=str2bool, default=True, help='Whether to save best model.')
-    parser.add_argument('--model_save_dir', type=str, default='/opt/hyp/NER/NER-model/saved_models/test', help='Root dir for saving models.')
-    parser.add_argument('--tensorboard_dir', default='/opt/hyp/NER/NER-model/saved_models/test/runs/', type=str)
-    parser.add_argument('--data_path', default='/opt/hyp/NER/NER-model/data/json_data', type=str,
+    parser.add_argument('--model_save_dir', type=str, default='D:/Paper_Shiyan/NER-model/save_models/test',
+                        help='Root dir for saving models.')
+    parser.add_argument('--tensorboard_dir', default='D:/Paper_Shiyan/NER-model/save_models/test/runs/', type=str)
+    parser.add_argument('--data_path', default='D:/Paper_Shiyan/NER-model/dataset/ResumeNER/json_data', type=str,
                         help='数据路径')
     parser.add_argument('--pred_embed_path', default='', type=str,
                         help="预训练词向量路径,'cc.zh.300.vec','sgns.baidubaike.bigram-char','Tencent_AILab_ChineseEmbedding.txt'")
     parser.add_argument('--optimizer', default='Adam', choices=['Adam', 'SGD'], type=str)
     parser.add_argument('--deal_long_short_data', default='cut', choices=['cut', 'pad', 'stay'], type=str,
                         help='对长文本或者短文本在验证测试的时候如何处理')
-    parser.add_argument('--save_embed_path', default='', type=str,help='词向量存储路径')
+    parser.add_argument('--save_embed_path', default='', type=str, help='词向量存储路径')
     parser.add_argument("--model_type", default='bert', type=str, help="Model type selected in the list")
-    parser.add_argument("--model_name_or_path", default='/opt/hyp/NER/embedding/bert/chinese_L-12_H-768_A-12_pytorch', type=str,
+    parser.add_argument("--model_name_or_path", default='D:/projects/nlp/bert/chinese_12_768_pytorch', type=str,
                         help="Path to pre-trained model or shortcut name selected in the list: ")
 
     # parser.add_argument('--data_type', default='conll', help='数据类型 -conll - cyber')
@@ -333,7 +333,7 @@ if __name__ == "__main__":
     parser.add_argument('--token_level_f1', default=False, type=str2bool, help='Sequence max_length.')
     parser.add_argument('--do_lower_case', default=False, type=str2bool, help='False 不计算token-level f1，true 计算')
     parser.add_argument('--freeze', default=True, type=str2bool, help='是否冻结词向量')
-    parser.add_argument('--use_crf', default=True, type=str2bool, help='是否使用crf')
+    parser.add_argument('--use_crf', default=False, type=str2bool, help='是否使用crf')
     parser.add_argument('--rnn_type', default='LSTM', type=str, help='LSTM/GRU')
     parser.add_argument('--gpu', default=torch.cuda.is_available(), type=str2bool)
     parser.add_argument('--use_number_norm', default=False, type=str2bool)
@@ -349,7 +349,7 @@ if __name__ == "__main__":
     parser.add_argument("--num_train_epochs", default=1, type=int, help="Total number of training epochs to perform.")
     parser.add_argument('--batch_size', type=int, default=16, help='Training batch size.')
     parser.add_argument("--adam_epsilon", default=1e-8, type=float, help="Epsilon for Adam optimizer.")
-    parser.add_argument('--seed', type=int, default=1234)
+    parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--max_seq_length', default=200, type=int, help='Sequence max_length.')
     parser.add_argument('--logging_steps', default=50, type=int)
     parser.add_argument('--word_emb_dim', default=300, type=int, help='预训练词向量的维度')
@@ -462,7 +462,7 @@ if __name__ == "__main__":
 
         opt = vars(args)  # dict
         # save config
-        opt["time'min"] = (time.time() - start_time ) /60
+        opt["time'min"] = (time.time() - start_time) / 60
         save_config(opt, args.model_save_dir + '/args_config.json', verbose=True)
         train_logger.info("Train Time cost{}min".format((time.time() - start_time) / 60))
 
@@ -474,7 +474,12 @@ if __name__ == "__main__":
 
         tokenizer = BertTokenizer.from_pretrained(args.model_name_or_path, do_lower_case=args.do_lower_case)
         config = BertConfig.from_pretrained(args.model_name_or_path, num_labels=len(labels))
-        test_model = BertForTokenClassification.from_pretrained(entity_model_save_dir, config=config)
+        test_model = BertForTokenClassification.from_pretrained(args.model_name_or_path, config=config)
+
+        # 如果命名不是pytorch_model.bin的话，需要load_state_dict
+        # test_model.load_state_dict(torch.load(entity_model_save_dir))
+        # for param in test_model.parameters():
+        #     param.requires_grad = False
 
         if args.use_dataParallel:
             test_model = nn.DataParallel(test_model.cuda())
@@ -483,7 +488,6 @@ if __name__ == "__main__":
         # token_model_save_dir = args.model_save_dir + 'token_best.pt'
         # token_metric,token_metric_instance,y_pred_token = load_predict(test_model,test_dataloader,token_model_save_dir,train_logger,index2label,tag,args,device)
         entity_metric, entity_metric_instance, y_pred_entity = load_predict(test_model, test_dataloader,
-                                                                            entity_model_save_dir,
                                                                             train_logger, index2label, tag, args,
                                                                             device, test_data_raw, pad_token_label_id)
 
