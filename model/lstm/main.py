@@ -64,9 +64,11 @@ def evaluate(data, model, label_map, tag, args, train_logger, device, dev_test_d
     y_pred = []
     y_true = []
     test_loss = 0.
+    test_step = 0
 
     for step, test_batch in enumerate(test_iterator):
         print(len(test_batch))
+        test_step += 1
         model.eval()
         _test_batch = tuple(t.to(device) for t in test_batch)
         input_ids, input_mask, label_ids = _test_batch
@@ -128,7 +130,7 @@ def evaluate(data, model, label_map, tag, args, train_logger, device, dev_test_d
 
     metric_instance = evaluate_instance(y_true, y_pred)
     metric = evaluate_crf(y_true, y_pred, tag)
-    metric['test_loss'] = test_loss / len(data)
+    metric['test_loss'] = test_loss / test_step
     if mode == 'test':
         return metric, metric_instance, y_pred
     else:
@@ -138,6 +140,9 @@ def evaluate(data, model, label_map, tag, args, train_logger, device, dev_test_d
 def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, label_map, tag, train_logger,
           dev_test_data):
     # param_lrs = [{'params': param, 'lr': lr} for param in model.parameters()]
+    train_loss_step = {}
+    train_loss_epoch = {}
+
     if args.optimizer == 'Adam':
         optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
     elif args.optimizer == 'SGD':
@@ -184,14 +189,14 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
 
             if args.logging_steps > 0 and global_step % args.logging_steps == 0:
                 if args.use_scheduler:
-                    # a = scheduler.get_lr()
-                    print(scheduler.get_lr()[0])
+                    print('当前epoch {}, step{} 的学习率为{}'.format(epoch, step, scheduler.get_lr()[0]))
                     tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
                     lr[epoch].append(scheduler.get_lr()[0])
                 else:
                     for param_group in optimizer.param_groups:
                         lr[epoch].append(param_group['lr'])
                 tb_writer.add_scalar('train_loss', (tr_loss - logging_loss) / args.logging_steps, global_step)
+                train_loss_step[global_step] = (tr_loss - logging_loss) / args.logging_steps
                 logging_loss = tr_loss
 
             epoch_iterator.set_postfix(train_loss=loss.item())
@@ -201,19 +206,15 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
 
         tq.set_postfix(avg_loss=avg_loss)
 
-        print('%d epoch，global_step: %d ,train_loss: %.2f' % (epoch, global_step, tr_loss / global_step))
-        train_logger.info('%d epoch，global_step: %d ,train_loss: %.2f' % (epoch, global_step, tr_loss / global_step))
+        train_loss_epoch[epoch] = avg_loss
+        print('epoch {} , global_step {}, train_loss {}, 当前epoch的avgloss{}!'.format(epoch, global_step, tr_loss / global_step,avg_loss))
+        train_logger.info('epoch {} , global_step {}, train_loss {}, 当前epoch的avgloss{}!'.format(epoch, global_step, tr_loss / global_step,avg_loss))
 
         metric, metric_instance = evaluate(dev_dataloader, model, label_map, tag, args, train_logger, device,
                                            dev_test_data, 'dev')
         metric_instance['epoch'] = epoch
         metric['epoch'] = epoch
 
-        print('epoch:{} P:{}, R:{}, F1:{}'.format(epoch, metric['precision-overall'], metric['recall-overall'],
-                                                  metric['f1-measure-overall']))
-        train_logger.info(
-            'epoch:{} P:{}, R:{}, F1:{}'.format(epoch, metric['precision-overall'], metric['recall-overall'],
-                                                metric['f1-measure-overall']))
         # print(metric['test_loss'], epoch)
         # train_logger.info("epoch{},test_loss{}".format(metric['test_loss'], epoch))
 
@@ -236,15 +237,22 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
             # model_name = args.model_save_dir + "token_best.pt"
             # torch.save(model.state_dict(), model_name)
 
+        print('epoch:{} P:{}, R:{}, F1:{} ,best F1{}!'.format(epoch, metric['precision-overall'],
+                                                              metric['recall-overall'],
+                                                              metric['f1-measure-overall'], bestscore))
+        train_logger.info(
+            'epoch:{} P:{}, R:{}, F1:{},best F1{}!'.format(epoch, metric['precision-overall'], metric['recall-overall'],
+                                                           metric['f1-measure-overall'], bestscore))
+
         test_result.append(metric)
         test_result_instance.append(metric_instance)
 
-    test_result.append({'best_test_f1': bestscore,
-                        'best_test_epoch': best_epoch})
-    test_result_instance.append({'best_test_f1': bestscore_instance,
-                                 'best_test_epoch': best_epoch_instance})
+    test_result.append({'best_dev_f1': bestscore,
+                        'best_dev_epoch': best_epoch})
+    test_result_instance.append({'best_dev_f1': bestscore_instance,
+                                 'best_dev_epoch': best_epoch_instance})
     tb_writer.close()
-    return test_result, test_result_instance, lr
+    return test_result, test_result_instance, lr, train_loss_step, train_loss_epoch
 
 
 def load_predict(model, data, model_save_dir, logger, label_map, tag, args, device, test_data):
@@ -367,35 +375,8 @@ if __name__ == "__main__":
 
     pretrain_word_embedding, vocab, word2idx, idx2word, label2index, index2label = get_cyber_data(new_data, args)
 
+    args.label = label2index
     args.vocab_size = len(vocab)
-
-    train_data_id, train_mask_id, train_label_id = pregress(train_data_raw, word2idx, label2index,
-                                                            max_seq_lenth=args.max_seq_length)
-    train_data = torch.tensor([f for f in train_data_id], dtype=torch.long)
-    train_mask = torch.tensor([f for f in train_mask_id], dtype=torch.long)
-    train_label = torch.tensor([f for f in train_label_id], dtype=torch.long)
-    train_dataset = TensorDataset(train_data, train_mask, train_label)
-
-    dev_data, dev_mask, dev_label = pregress(dev_data_raw, word2idx, label2index, max_seq_lenth=args.max_seq_length)
-    dev_data = torch.tensor([f for f in dev_data], dtype=torch.long)
-    dev_mask = torch.tensor([f for f in dev_mask], dtype=torch.long)
-    dev_label = torch.tensor([f for f in dev_label], dtype=torch.long)
-    dev_dataset = TensorDataset(dev_data, dev_mask, dev_label)
-
-    test_data, test_mask, test_label = pregress(test_data_raw, word2idx, label2index, max_seq_lenth=args.max_seq_length)
-    test_data = torch.tensor([f for f in test_data], dtype=torch.long)
-    test_mask = torch.tensor([f for f in test_mask], dtype=torch.long)
-    test_label = torch.tensor([f for f in test_label], dtype=torch.long)
-    test_dataset = TensorDataset(test_data, test_mask, test_label)
-
-    train_sampler = RandomSampler(train_dataset)
-    train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size)
-    dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size)
-    test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size)
-
-    model = Bilstmcrf(args, pretrain_word_embedding, len(label2index))
-    # model = nn.DataParallel(model.cuda())
-    model = model.to(device)
 
     print("Let's use", torch.cuda.device_count(), "GPUs!")
     train_logger.info("Let's use{}GPUS".format(torch.cuda.device_count()))
@@ -403,10 +384,31 @@ if __name__ == "__main__":
     tb_writer = SummaryWriter(args.tensorboard_dir)
 
     if args.do_train:
+        # Dataset
+        train_data_id, train_mask_id, train_label_id = pregress(train_data_raw, word2idx, label2index,
+                                                            max_seq_lenth=args.max_seq_length)
+        train_data = torch.tensor([f for f in train_data_id], dtype=torch.long)
+        train_mask = torch.tensor([f for f in train_mask_id], dtype=torch.long)
+        train_label = torch.tensor([f for f in train_label_id], dtype=torch.long)
+        train_dataset = TensorDataset(train_data, train_mask, train_label)
+
+        dev_data, dev_mask, dev_label = pregress(dev_data_raw, word2idx, label2index, max_seq_lenth=args.max_seq_length)
+        dev_data = torch.tensor([f for f in dev_data], dtype=torch.long)
+        dev_mask = torch.tensor([f for f in dev_mask], dtype=torch.long)
+        dev_label = torch.tensor([f for f in dev_label], dtype=torch.long)
+        dev_dataset = TensorDataset(dev_data, dev_mask, dev_label)
+
+        # Model
+        model = Bilstmcrf(args, pretrain_word_embedding, len(label2index))
+        if args.use_dataParallel:
+            model = nn.DataParallel(model.cuda())
+        model = model.to(device)
+
         print('===============================开始训练================================')
-        dev_result, dev_result_instance, lr = train(model, train_dataloader, dev_dataloader, args, device, tb_writer, \
+        dev_result, dev_result_instance, lr, train_loss_step, train_loss_epoch = train(model, train_dataloader, dev_dataloader, args, device, tb_writer, \
                                                     index2label, tag, train_logger, dev_data_raw)
 
+        # Save and Result
         with codecs.open(result_dir + '/dev_result.txt', 'w', encoding='utf-8') as f:
             json.dump(dev_result, f, indent=4, ensure_ascii=False)
 
@@ -415,6 +417,10 @@ if __name__ == "__main__":
 
         with codecs.open(args.model_save_dir + '/learning_rate.txt', 'w', encoding='utf-8') as f:
             json.dump(lr, f, indent=4, ensure_ascii=False)
+        with codecs.open(args.model_save_dir + '/train_loss_step.txt', 'w', encoding='utf-8') as f:
+            json.dump(train_loss_step, f, indent=4, ensure_ascii=False)
+        with codecs.open(args.model_save_dir + '/train_loss_epoch.txt', 'w', encoding='utf-8') as f:
+            json.dump(train_loss_epoch, f, indent=4, ensure_ascii=False)
 
         print(time.time() - start_time)
 
@@ -426,9 +432,26 @@ if __name__ == "__main__":
 
     if args.do_test:
         print('=========================测试集==========================')
+        # Dataset
+        test_data, test_mask, test_label = pregress(test_data_raw, word2idx, label2index, max_seq_lenth=args.max_seq_length)
+        test_data = torch.tensor([f for f in test_data], dtype=torch.long)
+        test_mask = torch.tensor([f for f in test_mask], dtype=torch.long)
+        test_label = torch.tensor([f for f in test_label], dtype=torch.long)
+        test_dataset = TensorDataset(test_data, test_mask, test_label)
+
+        train_sampler = RandomSampler(train_dataset)
+        train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size)
+        dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size)
+        test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size)
         print(args)
+
+        # Model
         test_model = Bilstmcrf(args, pretrain_word_embedding, len(label2index))
+        if args.use_dataParallel:
+            test_model = nn.DataParallel(test_model.cuda())
         test_model = test_model.to(device)
+
+        # Save and Result
         # token_model_save_dir = args.model_save_dir + 'token_best.pt'
         entity_model_save_dir = args.model_save_dir + 'entity_best.pt'
 

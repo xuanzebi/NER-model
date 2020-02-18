@@ -39,14 +39,14 @@ from transformers import (
 
 import sys
 
-package_dir_b = "D:/Paper_Shiyan//NER-model"
+package_dir_b = "/opt/hyp/NER/NER-model"
 sys.path.insert(0, package_dir_b)
 
 import warnings
 
 warnings.filterwarnings("ignore")
-# import os
-# os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "2,1"
 
 from util.util import get_logger, compute_f1, compute_spans_bio, compute_spans_bieos, compute_instance_f1
 from model.lstm.lstmcrf import Bilstmcrf
@@ -136,6 +136,9 @@ def evaluate(data, model, label_map, tag, args, train_logger, device, dev_test_d
 def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, label_map, tag, train_logger,
           dev_test_data, pad_token_label_id):
     # param_lrs = [{'params': param, 'lr': lr} for param in model.parameters()]
+    train_loss_step = {}
+    train_loss_epoch = {}
+
     no_decay = ["bias", "LayerNorm.weight"]
     optimizer_grouped_parameters = [
         {
@@ -193,6 +196,7 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
                 print('当前epoch {}, step{} 的学习率为{}'.format(epoch, step, scheduler.get_lr()[0]))
                 tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
                 tb_writer.add_scalar('train_loss', (tr_loss - logging_loss) / args.logging_steps, global_step)
+                train_loss_step[global_step] = (tr_loss - logging_loss) / args.logging_steps
                 lr[epoch].append(scheduler.get_lr()[0])
                 logging_loss = tr_loss
 
@@ -200,8 +204,10 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
 
         tq.set_postfix(avg_loss=avg_loss)
 
-        print('%d epoch，global_step: %d ,train_loss: %.2f' % (epoch, global_step, tr_loss / global_step))
-        train_logger.info('%d epoch，global_step: %d ,train_loss: %.2f' % (epoch, global_step, tr_loss / global_step))
+        train_loss_epoch[epoch] = avg_loss
+
+        print('epoch {} , global_step {}, train_loss {}, 当前epoch的avgloss{}!'.format(epoch, global_step, tr_loss / global_step,avg_loss))
+        train_logger.info('epoch {} , global_step {}, train_loss {}, 当前epoch的avgloss{}!'.format(epoch, global_step, tr_loss / global_step,avg_loss))
 
         metric, metric_instance = evaluate(dev_dataloader, model, label_map, tag, args, train_logger, device,
                                            dev_test_data, 'dev', pad_token_label_id)
@@ -221,6 +227,8 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
             model_name = args.model_save_dir + "pytorch_model.bin"
             model_to_save = (model.module if hasattr(model, "module") else model)
             torch.save(model_to_save.state_dict(), model_name)
+            # model_to_save.save_pretrained(args.model_save_dir)
+            # tokenizer.save_pretrained(args.model_save_dir)
 
         # releax-f1 token-level f1
         if metric_instance['micro-f1'] > bestscore_instance:
@@ -246,18 +254,8 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
     test_result_instance.append({'best_dev_f1': bestscore_instance,
                                  'best_dev_epoch': best_epoch_instance})
     tb_writer.close()
-    return test_result, test_result_instance, lr
+    return test_result, test_result_instance, lr, train_loss_step, train_loss_epoch
 
-
-def load_predict(model, data, logger, label_map, tag, args, device, test_data, pad_token_label_id):
-    start_time = time.time()
-    metric, metric_instance, y_pred = evaluate(data, model, label_map, tag, args, logger, device, test_data, 'test',
-                                               pad_token_label_id)
-    end_time = time.time()
-    print('预测Time Cost{}s'.format(end_time - start_time))
-    logger.info('预测Time Cost{}s'.format(end_time - start_time))
-
-    return metric, metric_instance, y_pred
 
 
 def save_config(config, path, verbose=True):
@@ -268,12 +266,12 @@ def save_config(config, path, verbose=True):
     return config
 
 
-def load_and_cache_examples(data, args, tokenizer, labels, pad_token_label_id, mode, logger):
+def load_and_cache_examples(data, args, tokenizer, label2index, pad_token_label_id, mode, logger):
     logger.info("Creating features from dataset file at %s", args.data_path)
     examples = read_examples_from_file(data, mode)
     features = convert_examples_to_features(
         examples,
-        labels,
+        label2index,
         args.max_seq_length,
         tokenizer,
         cls_token_at_end=False,
@@ -310,13 +308,13 @@ if __name__ == "__main__":
     start_time = time.time()
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--do_train", default=False, type=str2bool, help="Whether to run training.")
+    parser.add_argument("--do_train", default=True, type=str2bool, help="Whether to run training.")
     parser.add_argument("--do_test", default=True, type=str2bool, help="Whether to run test on the test set.")
     parser.add_argument('--save_best_model', type=str2bool, default=True, help='Whether to save best model.')
-    parser.add_argument('--model_save_dir', type=str, default='D:/Paper_Shiyan/NER-model/save_models/test',
+    parser.add_argument('--model_save_dir', type=str, default='/opt/hyp/NER/NER-model/saved_models/cyber_bert/',
                         help='Root dir for saving models.')
-    parser.add_argument('--tensorboard_dir', default='D:/Paper_Shiyan/NER-model/save_models/test/runs/', type=str)
-    parser.add_argument('--data_path', default='D:/Paper_Shiyan/NER-model/dataset/ResumeNER/json_data', type=str,
+    parser.add_argument('--tensorboard_dir', default='/opt/hyp/NER/NER-model/saved_models/cyber_bert/runs/', type=str)
+    parser.add_argument('--data_path', default='/opt/hyp/NER/NER-model/data/other_data/ResumeNER/json_data', type=str,
                         help='数据路径')
     parser.add_argument('--pred_embed_path', default='', type=str,
                         help="预训练词向量路径,'cc.zh.300.vec','sgns.baidubaike.bigram-char','Tencent_AILab_ChineseEmbedding.txt'")
@@ -325,7 +323,7 @@ if __name__ == "__main__":
                         help='对长文本或者短文本在验证测试的时候如何处理')
     parser.add_argument('--save_embed_path', default='', type=str, help='词向量存储路径')
     parser.add_argument("--model_type", default='bert', type=str, help="Model type selected in the list")
-    parser.add_argument("--model_name_or_path", default='D:/projects/nlp/bert/chinese_12_768_pytorch', type=str,
+    parser.add_argument("--model_name_or_path", default='/opt/hyp/NER/embedding/bert/chinese_L-12_H-768_A-12_pytorch', type=str,
                         help="Path to pre-trained model or shortcut name selected in the list: ")
 
     # parser.add_argument('--data_type', default='conll', help='数据类型 -conll - cyber')
@@ -410,34 +408,20 @@ if __name__ == "__main__":
     new_data.extend(test_data_raw)
     new_data.extend(dev_data_raw)
 
-    labels = get_labels(new_data)
-    index2label = {i: label for i, label in enumerate(labels)}
-    label2index = {j: i for i, j in index2label.items()}
+    # label 确保每次顺序一样
+    label2index = get_labels(new_data)
+    print('该数据集的label为:',label2index)
+    index2label = {j: i for i, j in label2index.items()}
+    args.label = label2index
+
     pad_token_label_id = CrossEntropyLoss().ignore_index
 
     # MODEL
     # args.model_type = args.model_type.lower()
     # config_class, model_class, tokenizer_class = MODEL_CLASSES[args.model_type]
+
     tokenizer = BertTokenizer.from_pretrained(args.model_name_or_path, do_lower_case=args.do_lower_case)
-    config = BertConfig.from_pretrained(args.model_name_or_path, num_labels=len(labels))
-    model = BertForTokenClassification.from_pretrained(args.model_name_or_path, config=config)
-    if args.use_dataParallel:
-        model = nn.DataParallel(model.cuda())
-    model = model.to(device)
-    param_optimizer = list(model.named_parameters())
-
-    # DATASET
-    train_dataset = load_and_cache_examples(train_data_raw, args, tokenizer, labels, pad_token_label_id, 'train',
-                                            train_logger)
-    test_dataset = load_and_cache_examples(test_data_raw, args, tokenizer, labels, pad_token_label_id, 'test',
-                                           train_logger)
-    dev_dataset = load_and_cache_examples(dev_data_raw, args, tokenizer, labels, pad_token_label_id, 'dev',
-                                          train_logger)
-
-    train_sampler = RandomSampler(train_dataset)
-    train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size)
-    dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size)
-    test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size)
+    config = BertConfig.from_pretrained(args.model_name_or_path, num_labels=len(label2index))
 
     print("Let's use", torch.cuda.device_count(), "GPUs!")
     train_logger.info("Let's use{}GPUS".format(torch.cuda.device_count()))
@@ -446,9 +430,26 @@ if __name__ == "__main__":
 
     if args.do_train:
         print('===============================开始训练================================')
-        dev_result, dev_result_instance, lr = train(model, train_dataloader, dev_dataloader, args, device, tb_writer, \
+        # Model 
+        model = BertForTokenClassification.from_pretrained(args.model_name_or_path, config=config)
+        if args.use_dataParallel:
+            model = nn.DataParallel(model.cuda())
+        model = model.to(device)
+        param_optimizer = list(model.named_parameters())
+
+        # DATASET
+        train_dataset = load_and_cache_examples(train_data_raw, args, tokenizer, label2index, pad_token_label_id, 'train', train_logger)
+        dev_dataset = load_and_cache_examples(dev_data_raw, args, tokenizer, label2index, pad_token_label_id, 'dev',
+                                          train_logger)
+        
+        train_sampler = RandomSampler(train_dataset)
+        train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size)
+        dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size)
+
+        dev_result, dev_result_instance, lr, train_loss_step, train_loss_epoch = train(model, train_dataloader, dev_dataloader, args, device, tb_writer, \
                                                     index2label, tag, train_logger, dev_data_raw, pad_token_label_id)
 
+        # Result and save
         with codecs.open(result_dir + '/dev_result.txt', 'w', encoding='utf-8') as f:
             json.dump(dev_result, f, indent=4, ensure_ascii=False)
 
@@ -458,38 +459,50 @@ if __name__ == "__main__":
         with codecs.open(args.model_save_dir + '/learning_rate.txt', 'w', encoding='utf-8') as f:
             json.dump(lr, f, indent=4, ensure_ascii=False)
 
-        print(time.time() - start_time)
+        with codecs.open(args.model_save_dir + '/train_loss_step.txt', 'w', encoding='utf-8') as f:
+            json.dump(train_loss_step, f, indent=4, ensure_ascii=False)
 
+        with codecs.open(args.model_save_dir + '/train_loss_epoch.txt', 'w', encoding='utf-8') as f:
+            json.dump(train_loss_epoch, f, indent=4, ensure_ascii=False)
+
+        print(time.time() - start_time)
         opt = vars(args)  # dict
         # save config
         opt["time'min"] = (time.time() - start_time) / 60
         save_config(opt, args.model_save_dir + '/args_config.json', verbose=True)
         train_logger.info("Train Time cost{}min".format((time.time() - start_time) / 60))
 
+        del(model)
+
     if args.do_test:
         print('=========================测试集==========================')
         print(args)
+        start_time = time.time()
 
-        entity_model_save_dir = args.model_save_dir + '/pytorch_model.bin'
+        # TestData
+        test_dataset = load_and_cache_examples(test_data_raw, args, tokenizer, label2index, pad_token_label_id, 'test',train_logger)
+        test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size)
 
-        tokenizer = BertTokenizer.from_pretrained(args.model_name_or_path, do_lower_case=args.do_lower_case)
-        config = BertConfig.from_pretrained(args.model_name_or_path, num_labels=len(labels))
-        test_model = BertForTokenClassification.from_pretrained(args.model_name_or_path, config=config)
-
+        # Model
+        entity_model_save_dir = args.model_save_dir + 'pytorch_model.bin'
+        model = BertForTokenClassification.from_pretrained(entity_model_save_dir,config=config)
+        model = model.to(device)
         # 如果命名不是pytorch_model.bin的话，需要load_state_dict
-        # test_model.load_state_dict(torch.load(entity_model_save_dir))
-        # for param in test_model.parameters():
-        #     param.requires_grad = False
-
+        model.load_state_dict(torch.load(entity_model_save_dir))
+        for param in model.parameters():
+            param.requires_grad = False
         if args.use_dataParallel:
-            test_model = nn.DataParallel(test_model.cuda())
-        test_model = test_model.to(device)
+            model = nn.DataParallel(model.cuda())
+
+        # Result and save
+        entity_metric, entity_metric_instance, y_pred_entity = evaluate(test_dataloader, model, index2label, tag, args, train_logger, device, test_data_raw, 'test',
+                                                pad_token_label_id)
+        end_time = time.time()
+        print('预测Time Cost{}s'.format(end_time - start_time))
+        train_logger.info('预测Time Cost{}s'.format(end_time - start_time))
 
         # token_model_save_dir = args.model_save_dir + 'token_best.pt'
         # token_metric,token_metric_instance,y_pred_token = load_predict(test_model,test_dataloader,token_model_save_dir,train_logger,index2label,tag,args,device)
-        entity_metric, entity_metric_instance, y_pred_entity = load_predict(test_model, test_dataloader,
-                                                                            train_logger, index2label, tag, args,
-                                                                            device, test_data_raw, pad_token_label_id)
 
         # with codecs.open(result_dir + '/test_result_tokenmodel.txt', 'w', encoding='utf-8') as f:
         #     json.dump(token_metric, f, indent=4, ensure_ascii=False)

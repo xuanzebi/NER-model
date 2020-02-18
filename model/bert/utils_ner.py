@@ -60,7 +60,7 @@ def read_examples_from_file(data, mode):
 
 def convert_examples_to_features(
         examples,
-        label_list,
+        label_map,
         max_seq_length,
         tokenizer,
         cls_token_at_end=False,
@@ -81,8 +81,6 @@ def convert_examples_to_features(
             - True (XLNet/GPT pattern): A + [SEP] + B + [SEP] + [CLS]
         `cls_token_segment_id` define the segment id associated to the CLS token (0 for BERT, 2 for XLNet)
     """
-
-    label_map = {label: i for i, label in enumerate(label_list)}
 
     features = []
     for (ex_index, example) in enumerate(examples):
@@ -179,10 +177,13 @@ def convert_examples_to_features(
 
 
 def get_labels(data):
-    label = set()
-    label.add('O')
+    label2index = {}
+    index = 0
+    label2index['O'] = index
     labels = [la for _, la in data]
     for lab in labels:
         for la in lab.split(' '):
-            label.add(la)
-    return label
+            if la not in label2index:
+                index += 1
+                label2index[la] = index
+    return label2index
