@@ -207,8 +207,8 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
         tq.set_postfix(avg_loss=avg_loss)
 
         train_loss_epoch[epoch] = avg_loss
-        print('epoch {} , global_step {}, train_loss {}, 当前epoch的avgloss{}!'.format(epoch, global_step, tr_loss / global_step,avg_loss))
-        train_logger.info('epoch {} , global_step {}, train_loss {}, 当前epoch的avgloss{}!'.format(epoch, global_step, tr_loss / global_step,avg_loss))
+        print('epoch {} , global_step {}, train_loss {}, 当前epoch的avgloss:{}!'.format(epoch, global_step, tr_loss / global_step,avg_loss))
+        train_logger.info('epoch {} , global_step {}, train_loss {}, 当前epoch的avgloss:{}!'.format(epoch, global_step, tr_loss / global_step,avg_loss))
 
         metric, metric_instance = evaluate(dev_dataloader, model, label_map, tag, args, train_logger, device,
                                            dev_test_data, 'dev')
@@ -237,11 +237,11 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
             # model_name = args.model_save_dir + "token_best.pt"
             # torch.save(model.state_dict(), model_name)
 
-        print('epoch:{} P:{}, R:{}, F1:{} ,best F1{}!'.format(epoch, metric['precision-overall'],
+        print('epoch:{} P:{}, R:{}, F1:{} ,best F1:{}!'.format(epoch, metric['precision-overall'],
                                                               metric['recall-overall'],
                                                               metric['f1-measure-overall'], bestscore))
         train_logger.info(
-            'epoch:{} P:{}, R:{}, F1:{},best F1{}!'.format(epoch, metric['precision-overall'], metric['recall-overall'],
+            'epoch:{} P:{}, R:{}, F1:{},best F1:{}!'.format(epoch, metric['precision-overall'], metric['recall-overall'],
                                                            metric['f1-measure-overall'], bestscore))
 
         test_result.append(metric)
@@ -398,6 +398,10 @@ if __name__ == "__main__":
         dev_label = torch.tensor([f for f in dev_label], dtype=torch.long)
         dev_dataset = TensorDataset(dev_data, dev_mask, dev_label)
 
+        train_sampler = RandomSampler(train_dataset)
+        train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size)
+        dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size)
+
         # Model
         model = Bilstmcrf(args, pretrain_word_embedding, len(label2index))
         if args.use_dataParallel:
@@ -439,9 +443,6 @@ if __name__ == "__main__":
         test_label = torch.tensor([f for f in test_label], dtype=torch.long)
         test_dataset = TensorDataset(test_data, test_mask, test_label)
 
-        train_sampler = RandomSampler(train_dataset)
-        train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size)
-        dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size)
         test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size)
         print(args)
 

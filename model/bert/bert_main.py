@@ -45,8 +45,8 @@ sys.path.insert(0, package_dir_b)
 import warnings
 
 warnings.filterwarnings("ignore")
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "2,1"
+# import os
+# os.environ["CUDA_VISIBLE_DEVICES"] = "2,1"
 
 from util.util import get_logger, compute_f1, compute_spans_bio, compute_spans_bieos, compute_instance_f1
 from model.lstm.lstmcrf import Bilstmcrf
@@ -193,7 +193,7 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
                 global_step += 1
 
             if args.logging_steps > 0 and global_step % args.logging_steps == 0:
-                print('当前epoch {}, step{} 的学习率为{}'.format(epoch, step, scheduler.get_lr()[0]))
+                print('当前epoch:{}, step:{} 的学习率为:{}!'.format(epoch, step, scheduler.get_lr()[0]))
                 tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
                 tb_writer.add_scalar('train_loss', (tr_loss - logging_loss) / args.logging_steps, global_step)
                 train_loss_step[global_step] = (tr_loss - logging_loss) / args.logging_steps
@@ -206,8 +206,8 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
 
         train_loss_epoch[epoch] = avg_loss
 
-        print('epoch {} , global_step {}, train_loss {}, 当前epoch的avgloss{}!'.format(epoch, global_step, tr_loss / global_step,avg_loss))
-        train_logger.info('epoch {} , global_step {}, train_loss {}, 当前epoch的avgloss{}!'.format(epoch, global_step, tr_loss / global_step,avg_loss))
+        print('epoch:{} , global_step:{}, train_loss:{}, 当前epoch的avgloss:{}!'.format(epoch, global_step, tr_loss / global_step,avg_loss))
+        train_logger.info('epoch:{}, global_step:{}, train_loss:{}, 当前epoch的avgloss:{}!'.format(epoch, global_step, tr_loss / global_step,avg_loss))
 
         metric, metric_instance = evaluate(dev_dataloader, model, label_map, tag, args, train_logger, device,
                                            dev_test_data, 'dev', pad_token_label_id)
@@ -239,11 +239,11 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
             # model_name = args.model_save_dir + "token_best.pt"
             # torch.save(model.state_dict(), model_name)
 
-        print('epoch:{} P:{}, R:{}, F1:{} ,best F1{}!'.format(epoch, metric['precision-overall'],
+        print('epoch:{} P:{}, R:{}, F1:{} ,best F1:{}!'.format(epoch, metric['precision-overall'],
                                                               metric['recall-overall'],
                                                               metric['f1-measure-overall'], bestscore))
         train_logger.info(
-            'epoch:{} P:{}, R:{}, F1:{},best F1{}!'.format(epoch, metric['precision-overall'], metric['recall-overall'],
+            'epoch:{} P:{}, R:{}, F1:{},best F1:{}!'.format(epoch, metric['precision-overall'], metric['recall-overall'],
                                                            metric['f1-measure-overall'], bestscore))
 
         test_result.append(metric)
