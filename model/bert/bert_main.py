@@ -138,7 +138,8 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
     # param_lrs = [{'params': param, 'lr': lr} for param in model.parameters()]
     train_loss_step = {}
     train_loss_epoch = {}
-
+    dev_loss_epoch = {}
+    
     no_decay = ["bias", "LayerNorm.weight"]
     optimizer_grouped_parameters = [
         {
@@ -213,7 +214,7 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
                                            dev_test_data, 'dev', pad_token_label_id)
         metric_instance['epoch'] = epoch
         metric['epoch'] = epoch
-
+        dev_loss_epoch[epoch] = metric['test_loss']
         # print(metric['test_loss'], epoch)
         # train_logger.info("epoch{},test_loss{}".format(metric['test_loss'], epoch))
 
@@ -254,7 +255,7 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
     test_result_instance.append({'best_dev_f1': bestscore_instance,
                                  'best_dev_epoch': best_epoch_instance})
     tb_writer.close()
-    return test_result, test_result_instance, lr, train_loss_step, train_loss_epoch
+    return test_result, test_result_instance, lr, train_loss_step, train_loss_epoch,dev_loss_epoch
 
 
 
@@ -446,7 +447,7 @@ if __name__ == "__main__":
         train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size)
         dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size)
 
-        dev_result, dev_result_instance, lr, train_loss_step, train_loss_epoch = train(model, train_dataloader, dev_dataloader, args, device, tb_writer, \
+        dev_result, dev_result_instance, lr, train_loss_step, train_loss_epoch,dev_loss_epoch = train(model, train_dataloader, dev_dataloader, args, device, tb_writer, \
                                                     index2label, tag, train_logger, dev_data_raw, pad_token_label_id)
 
         # Result and save
@@ -458,12 +459,12 @@ if __name__ == "__main__":
 
         with codecs.open(args.model_save_dir + '/learning_rate.txt', 'w', encoding='utf-8') as f:
             json.dump(lr, f, indent=4, ensure_ascii=False)
-
         with codecs.open(args.model_save_dir + '/train_loss_step.txt', 'w', encoding='utf-8') as f:
             json.dump(train_loss_step, f, indent=4, ensure_ascii=False)
-
         with codecs.open(args.model_save_dir + '/train_loss_epoch.txt', 'w', encoding='utf-8') as f:
             json.dump(train_loss_epoch, f, indent=4, ensure_ascii=False)
+        with codecs.open(args.model_save_dir + '/dev_loss_epoch.txt', 'w', encoding='utf-8') as f:
+            json.dump(dev_loss_epoch, f, indent=4, ensure_ascii=False)
 
         print(time.time() - start_time)
         opt = vars(args)  # dict

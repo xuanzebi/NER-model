@@ -23,12 +23,14 @@ sys.path.insert(0, package_dir_b)
 import warnings
 
 warnings.filterwarnings("ignore")
-# import os
-# os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 from util.util import get_logger, compute_f1, compute_spans_bio, compute_spans_bieos, compute_instance_f1
 from model.lstm.lstmcrf import Bilstmcrf
-from model.helper.get_data import get_cyber_data, pregress
+from model.lstm.model import Bilstm_CRF_MTL
+from model.helper.get_data import get_cyber_data, pregress,pregress_mtl
 
 
 def str2bool(v):
@@ -67,15 +69,18 @@ def evaluate(data, model, label_map, tag, args, train_logger, device, dev_test_d
     test_step = 0
 
     for step, test_batch in enumerate(test_iterator):
-        print(len(test_batch))
+        # print(len(test_batch))
         test_step += 1
         model.eval()
         _test_batch = tuple(t.to(device) for t in test_batch)
-        input_ids, input_mask, label_ids = _test_batch
 
-        # loss, logits = model.module.calculate_loss(input_ids, input_mask, label_ids) # if DataParallel model.module
         with torch.no_grad():
-            loss, logits = model(input_ids, input_mask, label_ids)
+            if args.model_classes == 'bilstm':
+                input_ids, input_mask, label_ids = _test_batch  
+                loss, logits = model(input_ids, input_mask, label_ids)
+            elif args.model_classes == 'bilstm_mtl':
+                input_ids, input_mask, label_ids,token_id = _test_batch  
+                loss, logits = model(input_ids, input_mask, label_ids,token_id)
 
         if args.use_dataParallel:
             loss = torch.sum(loss)  # if DataParallel model.module
@@ -142,6 +147,7 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
     # param_lrs = [{'params': param, 'lr': lr} for param in model.parameters()]
     train_loss_step = {}
     train_loss_epoch = {}
+    dev_loss_epoch = {}
 
     if args.optimizer == 'Adam':
         optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
@@ -172,11 +178,13 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
         for step, batch in enumerate(epoch_iterator):
             model.zero_grad()
             _batch = tuple(t.to(device) for t in batch)
-            input_ids, input_mask, label_ids = _batch
-
+            if args.model_classes == 'bilstm':
+                input_ids, input_mask, label_ids = _batch  
+                loss, _ = model(input_ids, input_mask, label_ids)
+            elif args.model_classes == 'bilstm_mtl':
+                input_ids, input_mask, label_ids,token_id = _batch  
+                loss, _ = model(input_ids, input_mask, label_ids,token_id)
             # loss, _ = model.module.calculate_loss(input_ids, input_mask, label_ids)
-            loss, _ = model(input_ids, input_mask, label_ids)
-
             if args.use_dataParallel:
                 loss = torch.sum(loss)  # if DataParallel
 
@@ -214,7 +222,7 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
                                            dev_test_data, 'dev')
         metric_instance['epoch'] = epoch
         metric['epoch'] = epoch
-
+        dev_loss_epoch[epoch] = metric['test_loss']
         # print(metric['test_loss'], epoch)
         # train_logger.info("epoch{},test_loss{}".format(metric['test_loss'], epoch))
 
@@ -252,7 +260,7 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
     test_result_instance.append({'best_dev_f1': bestscore_instance,
                                  'best_dev_epoch': best_epoch_instance})
     tb_writer.close()
-    return test_result, test_result_instance, lr, train_loss_step, train_loss_epoch
+    return test_result, test_result_instance, lr, train_loss_step, train_loss_epoch,dev_loss_epoch
 
 
 def load_predict(model, data, model_save_dir, logger, label_map, tag, args, device, test_data):
@@ -282,18 +290,18 @@ if __name__ == "__main__":
     parser.add_argument("--do_train", default=True, type=str2bool, help="Whether to run training.")
     parser.add_argument("--do_test", default=True, type=str2bool, help="Whether to run test on the test set.")
     parser.add_argument('--save_best_model', type=str2bool, default=True, help='Whether to save best model.')
-    parser.add_argument('--model_save_dir', type=str, default='/opt/hyp/NER/NER-model/saved_models/test_msra/',
+    parser.add_argument('--model_classes', type=str, default='bilstm_mtl',choices=['bilstm','bilstm_mtl'], help='Which model to choose.')
+    parser.add_argument('--model_save_dir', type=str, default='/opt/hyp/NER/NER-model/saved_models/test/',
                         help='Root dir for saving models.')
-    parser.add_argument('--data_path', default='/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data', type=str,
-                        help='数据路径')
+    parser.add_argument('--tensorboard_dir', default='/opt/hyp/NER/NER-model/saved_models/test_msra/runs/', type=str)
+    parser.add_argument('--data_path', default='/opt/hyp/NER/NER-model/data/other_data/ResumeNER/json_data', type=str,help='数据路径')
     parser.add_argument('--pred_embed_path', default='/opt/hyp/NER/embedding/sgns.baidubaike.bigram-char', type=str,
                         help="预训练词向量路径,'cc.zh.300.vec','sgns.baidubaike.bigram-char','Tencent_AILab_ChineseEmbedding.txt'")
-    parser.add_argument('--tensorboard_dir', default='/opt/hyp/NER/NER-model/saved_models/test_msra/runs/', type=str)
     parser.add_argument('--optimizer', default='Adam', choices=['Adam', 'SGD'], type=str)
     parser.add_argument('--deal_long_short_data', default='cut', choices=['cut', 'pad', 'stay'], type=str,
                         help='对长文本或者短文本在验证测试的时候如何处理')
     parser.add_argument('--save_embed_path',
-                        default='/opt/hyp/NER/NER-model/data/embedding/sgns.baidubaike.bigram-char_msra.p', type=str,
+                        default='/opt/hyp/NER/NER-model/data/embedding/Tencent_AILab_ChineseEmbedding_resume.p', type=str,
                         help='词向量存储路径')
 
     # parser.add_argument('--data_type', default='conll', help='数据类型 -conll - cyber')
@@ -301,7 +309,7 @@ if __name__ == "__main__":
     parser.add_argument('--token_level_f1', default=False, type=str2bool, help='Sequence max_length.')
     parser.add_argument('--do_lower_case', default=False, type=str2bool, help='False 不计算token-level f1，true 计算')
     parser.add_argument('--freeze', default=True, type=str2bool, help='是否冻结词向量')
-    parser.add_argument('--use_crf', default=True, type=str2bool, help='是否使用crf')
+    parser.add_argument('--use_crf', default=False, type=str2bool, help='是否使用crf')
     parser.add_argument('--rnn_type', default='LSTM', type=str, help='LSTM/GRU')
     parser.add_argument('--gpu', default=torch.cuda.is_available(), type=str2bool)
     parser.add_argument('--use_number_norm', default=False, type=str2bool)
@@ -314,13 +322,13 @@ if __name__ == "__main__":
     parser.add_argument('--dump_embedding', default=False, type=str2bool, help='是否保存词向量')
 
     parser.add_argument("--learning_rate", default=0.015, type=float, help="The initial learning rate for Adam.")
-    parser.add_argument("--num_train_epochs", default=1, type=int, help="Total number of training epochs to perform.")
-    parser.add_argument('--batch_size', type=int, default=512, help='Training batch size.')
+    parser.add_argument("--num_train_epochs", default=10, type=int, help="Total number of training epochs to perform.")
+    parser.add_argument('--batch_size', type=int, default=64, help='Training batch size.')
     parser.add_argument("--adam_epsilon", default=1e-8, type=float, help="Epsilon for Adam optimizer.")
     parser.add_argument('--seed', type=int, default=1234)
     parser.add_argument('--max_seq_length', default=200, type=int, help='Sequence max_length.')
     parser.add_argument('--logging_steps', default=50, type=int)
-    parser.add_argument('--word_emb_dim', default=300, type=int, help='预训练词向量的维度')
+    parser.add_argument('--word_emb_dim', default=200, type=int, help='预训练词向量的维度')
     parser.add_argument('--char_emb_dim', default=30, type=int)
     parser.add_argument('--rnn_hidden_dim', default=128, type=int, help='rnn的隐状态的大小')
     parser.add_argument('--num_layers', default=1, type=int, help='rnn中的层数')
@@ -385,31 +393,54 @@ if __name__ == "__main__":
 
     if args.do_train:
         # Dataset
-        train_data_id, train_mask_id, train_label_id = pregress(train_data_raw, word2idx, label2index,
-                                                            max_seq_lenth=args.max_seq_length)
-        train_data = torch.tensor([f for f in train_data_id], dtype=torch.long)
-        train_mask = torch.tensor([f for f in train_mask_id], dtype=torch.long)
-        train_label = torch.tensor([f for f in train_label_id], dtype=torch.long)
-        train_dataset = TensorDataset(train_data, train_mask, train_label)
+        if args.model_classes == 'bilstm':
+            train_data_id, train_mask_id, train_label_id = pregress(train_data_raw, word2idx, label2index,max_seq_lenth=args.max_seq_length)
+            train_data = torch.tensor([f for f in train_data_id], dtype=torch.long)
+            train_mask = torch.tensor([f for f in train_mask_id], dtype=torch.long)
+            train_label = torch.tensor([f for f in train_label_id], dtype=torch.long)
+            train_dataset = TensorDataset(train_data, train_mask, train_label)
 
-        dev_data, dev_mask, dev_label = pregress(dev_data_raw, word2idx, label2index, max_seq_lenth=args.max_seq_length)
-        dev_data = torch.tensor([f for f in dev_data], dtype=torch.long)
-        dev_mask = torch.tensor([f for f in dev_mask], dtype=torch.long)
-        dev_label = torch.tensor([f for f in dev_label], dtype=torch.long)
-        dev_dataset = TensorDataset(dev_data, dev_mask, dev_label)
+            dev_data, dev_mask, dev_label = pregress(dev_data_raw, word2idx, label2index, max_seq_lenth=args.max_seq_length)
+            dev_data = torch.tensor([f for f in dev_data], dtype=torch.long)
+            dev_mask = torch.tensor([f for f in dev_mask], dtype=torch.long)
+            dev_label = torch.tensor([f for f in dev_label], dtype=torch.long)
+            dev_dataset = TensorDataset(dev_data, dev_mask, dev_label)
 
-        train_sampler = RandomSampler(train_dataset)
-        train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size)
-        dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size)
+            train_sampler = RandomSampler(train_dataset)
+            train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size)
+            dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size)
+        elif args.model_classes == 'bilstm_mtl':
+            train_data_id, train_mask_id, train_label_id,train_token_id = pregress_mtl(train_data_raw, word2idx, label2index,max_seq_lenth=args.max_seq_length)
+            train_data = torch.tensor([f for f in train_data_id], dtype=torch.long)
+            train_mask = torch.tensor([f for f in train_mask_id], dtype=torch.long)
+            train_label = torch.tensor([f for f in train_label_id], dtype=torch.long)
+            train_token = torch.tensor([f for f in train_token_id], dtype=torch.long)
+            train_dataset = TensorDataset(train_data, train_mask, train_label,train_token)
+
+            dev_data, dev_mask, dev_label,dev_token_id = pregress_mtl(dev_data_raw, word2idx, label2index, max_seq_lenth=args.max_seq_length)
+            dev_data = torch.tensor([f for f in dev_data], dtype=torch.long)
+            dev_mask = torch.tensor([f for f in dev_mask], dtype=torch.long)
+            dev_label = torch.tensor([f for f in dev_label], dtype=torch.long)
+            dev_token = torch.tensor([f for f in dev_token_id], dtype=torch.long)
+            dev_dataset = TensorDataset(dev_data, dev_mask, dev_label,dev_token)
+
+            train_sampler = RandomSampler(train_dataset)
+            train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size)
+            dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size)
+
 
         # Model
-        model = Bilstmcrf(args, pretrain_word_embedding, len(label2index))
+        if args.model_classes == 'bilstm':
+            model = Bilstmcrf(args, pretrain_word_embedding, len(label2index))
+        elif args.model_classes == 'bilstm_mtl':
+            model = Bilstm_CRF_MTL(args,pretrain_word_embedding,len(label2index))
+
         if args.use_dataParallel:
             model = nn.DataParallel(model.cuda())
         model = model.to(device)
 
         print('===============================开始训练================================')
-        dev_result, dev_result_instance, lr, train_loss_step, train_loss_epoch = train(model, train_dataloader, dev_dataloader, args, device, tb_writer, \
+        dev_result, dev_result_instance, lr, train_loss_step, train_loss_epoch, dev_loss_epoch = train(model, train_dataloader, dev_dataloader, args, device, tb_writer, \
                                                     index2label, tag, train_logger, dev_data_raw)
 
         # Save and Result
@@ -425,6 +456,8 @@ if __name__ == "__main__":
             json.dump(train_loss_step, f, indent=4, ensure_ascii=False)
         with codecs.open(args.model_save_dir + '/train_loss_epoch.txt', 'w', encoding='utf-8') as f:
             json.dump(train_loss_epoch, f, indent=4, ensure_ascii=False)
+        with codecs.open(args.model_save_dir + '/dev_loss_epoch.txt', 'w', encoding='utf-8') as f:
+            json.dump(dev_loss_epoch, f, indent=4, ensure_ascii=False)
 
         print(time.time() - start_time)
 
@@ -437,13 +470,22 @@ if __name__ == "__main__":
     if args.do_test:
         print('=========================测试集==========================')
         # Dataset
-        test_data, test_mask, test_label = pregress(test_data_raw, word2idx, label2index, max_seq_lenth=args.max_seq_length)
-        test_data = torch.tensor([f for f in test_data], dtype=torch.long)
-        test_mask = torch.tensor([f for f in test_mask], dtype=torch.long)
-        test_label = torch.tensor([f for f in test_label], dtype=torch.long)
-        test_dataset = TensorDataset(test_data, test_mask, test_label)
+        if args.model_classes == 'bilstm':
+            test_data, test_mask, test_label = pregress(test_data_raw, word2idx, label2index, max_seq_lenth=args.max_seq_length)
+            test_data = torch.tensor([f for f in test_data], dtype=torch.long)
+            test_mask = torch.tensor([f for f in test_mask], dtype=torch.long)
+            test_label = torch.tensor([f for f in test_label], dtype=torch.long)
+            test_dataset = TensorDataset(test_data, test_mask, test_label)
+            test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size)
+        elif args.model_classes == 'bilstm_mtl':
+            test_data, test_mask, test_label,test_token_id = pregress_mtl(test_data_raw, word2idx, label2index, max_seq_lenth=args.max_seq_length)
+            test_data = torch.tensor([f for f in test_data], dtype=torch.long)
+            test_mask = torch.tensor([f for f in test_mask], dtype=torch.long)
+            test_label = torch.tensor([f for f in test_label], dtype=torch.long)
+            test_token = torch.tensor([f for f in test_token_id], dtype=torch.long)
+            test_dataset = TensorDataset(test_data, test_mask, test_label,test_token)
+            test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size)
 
-        test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size)
         print(args)
 
         # Model

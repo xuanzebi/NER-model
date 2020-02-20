@@ -122,3 +122,49 @@ def pregress(data, word2idx, label2idx, max_seq_lenth):
         INPUT_MASK.append(input_mask)
 
     return INPUT_ID, INPUT_MASK, LABEL_ID
+
+# 多任务学习，预测token是否为实体
+def pregress_mtl(data, word2idx, label2idx, max_seq_lenth):
+    INPUT_ID = []
+    INPUT_MASK = []
+    LABEL_ID = []
+    TOKEN_LABEL_ID = []
+    for text, label in data:
+        input_mask = []
+        input_id = []
+        label_id = []
+        token_id = []
+        text = text.split(' ')
+        label = label.split(' ')
+        for te, la in zip(text, label):
+            te = te.strip()
+            if te in word2idx:
+                input_id.append(word2idx[te])
+            else:
+                input_id.append(word2idx['</UNK>'])
+            if la[0] == 'O':
+                token_id.append(0)
+            else:
+                 token_id.append(1)
+            label_id.append(label2idx[la])
+            input_mask.append(1)
+
+        if len(input_id) > max_seq_lenth:
+            input_id = input_id[:max_seq_lenth]
+            label_id = label_id[:max_seq_lenth]
+            input_mask = input_mask[:max_seq_lenth]
+            token_id = token_id[:max_seq_lenth]
+
+        while len(input_id) < max_seq_lenth:
+            input_id.append(0)
+            label_id.append(0)
+            input_mask.append(0)
+            token_id.append(0)
+
+        assert len(input_id) == len(label_id) == len(input_mask) == len(token_id) == max_seq_lenth
+        INPUT_ID.append(input_id)
+        LABEL_ID.append(label_id)
+        INPUT_MASK.append(input_mask)
+        TOKEN_LABEL_ID.append(token_id)
+
+    return INPUT_ID, INPUT_MASK, LABEL_ID,TOKEN_LABEL_ID
