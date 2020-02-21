@@ -182,9 +182,9 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
             if args.model_classes == 'bilstm':
                 input_ids, input_mask, label_ids = _batch  
                 if args.use_packpad:
-                    loss, _ = model(input_ids, input_mask, label_ids)
-                else:
                     loss, _ = model.forward_pack(input_ids, input_mask, label_ids)
+                else:
+                    loss, _ = model(input_ids, input_mask, label_ids)
             elif args.model_classes == 'bilstm_mtl':
                 input_ids, input_mask, label_ids,token_id = _batch  
                 loss, _ = model(input_ids, input_mask, label_ids,token_id)
@@ -314,7 +314,7 @@ if __name__ == "__main__":
     parser.add_argument('--token_level_f1', default=False, type=str2bool, help='Sequence max_length.')
     parser.add_argument('--do_lower_case', default=False, type=str2bool, help='False 不计算token-level f1，true 计算')
     parser.add_argument('--freeze', default=True, type=str2bool, help='是否冻结词向量')
-    parser.add_argument('--use_crf', default=False, type=str2bool, help='是否使用crf')
+    parser.add_argument('--use_crf', default=True, type=str2bool, help='是否使用crf')
     parser.add_argument('--rnn_type', default='LSTM', type=str, help='LSTM/GRU')
     parser.add_argument('--gpu', default=torch.cuda.is_available(), type=str2bool)
     parser.add_argument('--use_number_norm', default=False, type=str2bool)
@@ -439,6 +439,7 @@ if __name__ == "__main__":
         if args.model_classes == 'bilstm':
             model = Bilstmcrf(args, pretrain_word_embedding, len(label2index))
         elif args.model_classes == 'bilstm_mtl':
+            print('===============================多任务================================')
             model = Bilstm_CRF_MTL(args,pretrain_word_embedding,len(label2index))
 
         if args.use_dataParallel:

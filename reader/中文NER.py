@@ -2,9 +2,9 @@ import json
 import codecs
 from collections import defaultdict
 
-# import sys
-# package_dir_b = "/opt/hyp/NER/NER-model"
-# sys.path.insert(0, package_dir_b)
+import sys
+package_dir_b = "/opt/hyp/NER/NER-model"
+sys.path.insert(0, package_dir_b)
 
 
 from util.util import *
@@ -130,9 +130,9 @@ def toke_to_json(type=None):
 # dev_file = 'D:/dataset/ChineseNERdataset/ResumeNER/json_data/dev_data.json'
 
 # 中文安全数据
-train_file = 'D:/Paper_Shiyan/NER-Model/data/ResumeNER/json_data/train_data.json'
-dev_file = 'D:/Paper_Shiyan/NER-Model/data/ResumeNER/json_data/dev_data.json'
-test_file = 'D:/Paper_Shiyan/NER-Model/data/ResumeNER/json_data/test_data.json'
+train_file = '/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data/train_data.json'
+dev_file = '/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data/dev_data.json'
+test_file = '/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data/test_data.json'
 
 
 def analyse_data(*files):
@@ -197,7 +197,7 @@ def analyse_data(*files):
 
 
 # toke_to_json()
-# analyse_data(train_file, test_file, dev_file)
+analyse_data(train_file, test_file, dev_file)
 
 
 def bmes_to_bies(*files):
@@ -254,6 +254,6 @@ def count_label():
     label_count(cyber_train_file, cyber_test_file, cyber_dev_file, type='Cyber')
 
 
-count_label()
+# count_label()
 
 # TODO: 将四个数据集的label的交集修改为一样label（在使用多任务学习时）

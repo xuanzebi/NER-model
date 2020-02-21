@@ -38,7 +38,7 @@ class WordRep(nn.Module):
 class Bilstm_CRF_MTL(nn.Module):
     """
     bilstm-crf模型 + 多任务学习(预测实体的token<尝试过CRF与不过>，以及使用多个数据来多任务学习共享参数)
-    # TODO 将 token_loss过 crf
+    # TODO 将 token_loss过 crf   loss设置不同权重
     """
 
     def __init__(self, args, pretrain_word_embedding, label_size):
@@ -63,11 +63,14 @@ class Bilstm_CRF_MTL(nn.Module):
         if self.use_crf:
             self.crf = CRF(self.label_size, self.gpu)
             self.label_size += 2
+            self.token_crf = CRF(2,self.gpu,-1)
+
         if self.use_highway:
             self.highway = Highway(args.rnn_hidden_dim * 2, 1)
 
         self.hidden2tag = nn.Linear(args.rnn_hidden_dim * 2, self.label_size)
-        self.hidden2token = nn.Linear(args.rnn_hidden_dim * 2,2)
+
+        self.hidden2token = nn.Linear(args.rnn_hidden_dim * 2,4)
 
     def forward(self, word_input, input_mask, labels,labels_token):
         # word_input input_mask   FloatTensor
@@ -88,17 +91,22 @@ class Bilstm_CRF_MTL(nn.Module):
         output2 = self.hidden2tag(output2)
 
         token_output = self.hidden2token(output)
-        loss_token = nn.CrossEntropyLoss(ignore_index=0)
-        active_loss = input_mask.view(-1) == 1
-        active_logits = token_output.view(-1, 2)[active_loss]
-        active_labels = labels_token.view(-1)[active_loss]
-        token_loss = loss_token(active_logits, active_labels)
+
+
+        # loss_token = nn.CrossEntropyLoss(ignore_index=0)
+        # active_loss = input_mask.view(-1) == 1
+
+        # active_logits = token_output.view(-1, 2)[active_loss]
+        # active_labels = labels_token.view(-1)[active_loss]
+        # token_loss = loss_token(active_logits, active_labels)
 
         maskk = input_mask.ge(1)
         if self.use_crf:
             total_loss = self.crf.neg_log_likelihood_loss(output2, maskk, labels)
             scores, tag_seq = self.crf._viterbi_decode(output2, input_mask)
-            ans_loss = total_loss / batch_size + token_loss
+            
+            token_loss = self.token_crf.neg_log_likelihood_loss(token_output,maskk,labels_token)
+            ans_loss = total_loss / batch_size + token_loss / batch_size
             return ans_loss, tag_seq
         else:
             loss_fct = nn.CrossEntropyLoss(ignore_index=0)

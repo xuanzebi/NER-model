@@ -10,7 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 START_TAG = -2
 STOP_TAG = -1
-
+PAD_TAG= 0
 
 # Compute log sum exp in a numerically stable way for the forward algorithm
 def log_sum_exp(vec, m_size):
@@ -28,10 +28,11 @@ def log_sum_exp(vec, m_size):
 
 class CRF(nn.Module):
 
-    def __init__(self, tagset_size, gpu):
+    def __init__(self, tagset_size, gpu,non_pad=None):
         super(CRF, self).__init__()
         print("build CRF...")
         self.gpu = gpu
+        self.non_pad = non_pad
         # Matrix of transition parameters.  Entry i,j is the score of transitioning from i to j.
         self.tagset_size = tagset_size
         # # We add 2 here, because of START_TAG and STOP_TAG
@@ -39,8 +40,11 @@ class CRF(nn.Module):
         init_transitions = torch.zeros(self.tagset_size+2, self.tagset_size+2)
         init_transitions[:,START_TAG] = -10000.0
         init_transitions[STOP_TAG,:] = -10000.0
-        init_transitions[:,0] = -10000.0
-        init_transitions[0,:] = -10000.0
+        # <PAD> 索引是0，所以下面两行需要
+        if not self.non_pad:
+            init_transitions[:,PAD_TAG] = -10000.0
+            init_transitions[PAD_TAG,:] = -10000.0
+        # print(init_transitions)
         if self.gpu:
             init_transitions = init_transitions.cuda()
         self.transitions = nn.Parameter(init_transitions)
