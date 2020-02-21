@@ -38,6 +38,7 @@ class WordRep(nn.Module):
 class Bilstm_CRF_MTL(nn.Module):
     """
     bilstm-crf模型 + 多任务学习(预测实体的token<尝试过CRF与不过>，以及使用多个数据来多任务学习共享参数)
+    # TODO 将 token_loss过 crf
     """
 
     def __init__(self, args, pretrain_word_embedding, label_size):

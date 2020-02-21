@@ -169,6 +169,7 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
     tq = tqdm(range(args.num_train_epochs), desc="Epoch")
 
     for epoch in tq:
+        epoch_start_time = time.time()
         avg_loss = 0.
         epoch_iterator = tqdm(train_dataloader, desc="Iteration")
         for step, batch in enumerate(epoch_iterator):
@@ -206,10 +207,6 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
         tq.set_postfix(avg_loss=avg_loss)
 
         train_loss_epoch[epoch] = avg_loss
-
-        print('epoch:{} , global_step:{}, train_loss:{}, 当前epoch的avgloss:{}!'.format(epoch, global_step, tr_loss / global_step,avg_loss))
-        train_logger.info('epoch:{}, global_step:{}, train_loss:{}, 当前epoch的avgloss:{}!'.format(epoch, global_step, tr_loss / global_step,avg_loss))
-
         metric, metric_instance = evaluate(dev_dataloader, model, label_map, tag, args, train_logger, device,
                                            dev_test_data, 'dev', pad_token_label_id)
         metric_instance['epoch'] = epoch
@@ -240,12 +237,15 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
             # model_name = args.model_save_dir + "token_best.pt"
             # torch.save(model.state_dict(), model_name)
 
-        print('epoch:{} P:{}, R:{}, F1:{} ,best F1:{}!'.format(epoch, metric['precision-overall'],
-                                                              metric['recall-overall'],
-                                                              metric['f1-measure-overall'], bestscore))
-        train_logger.info(
-            'epoch:{} P:{}, R:{}, F1:{},best F1:{}!'.format(epoch, metric['precision-overall'], metric['recall-overall'],
-                                                           metric['f1-measure-overall'], bestscore))
+        
+        print('epoch:{} , global_step:{}, train_loss:{}, train_avg_loss:{}, dev_avg_loss:{},epoch耗时:{}!'.format(epoch, global_step, 
+                                                    tr_loss / global_step,avg_loss, metric['test_loss'],time.time()-epoch_start_time))
+        train_logger.info('epoch:{}, global_step:{}, train_loss:{},train_avg_loss:{},dev_avg_loss:{},epoch耗时:{}!'.format(epoch, global_step, 
+                                                     tr_loss / global_step,avg_loss,metric['test_loss'],time.time()-epoch_start_time))
+        print('epoch:{} P:{}, R:{}, F1:{} ,best F1:{}!"\n"'.format(epoch, metric['precision-overall'],metric['recall-overall'],
+                                                                         metric['f1-measure-overall'], bestscore))
+        train_logger.info('epoch:{} P:{}, R:{}, F1:{},best F1:{}! "\n"'.format(epoch, metric['precision-overall'], metric['recall-overall'],
+                                                                     metric['f1-measure-overall'], bestscor,))
 
         test_result.append(metric)
         test_result_instance.append(metric_instance)
@@ -471,7 +471,7 @@ if __name__ == "__main__":
         # save config
         opt["time'min"] = (time.time() - start_time) / 60
         save_config(opt, args.model_save_dir + '/args_config.json', verbose=True)
-        train_logger.info("Train Time cost{}min".format((time.time() - start_time) / 60))
+        train_logger.info("Train Time cost:{}min".format((time.time() - start_time) / 60))
 
         del(model)
 
@@ -499,8 +499,8 @@ if __name__ == "__main__":
         entity_metric, entity_metric_instance, y_pred_entity = evaluate(test_dataloader, model, index2label, tag, args, train_logger, device, test_data_raw, 'test',
                                                 pad_token_label_id)
         end_time = time.time()
-        print('预测Time Cost{}s'.format(end_time - start_time))
-        train_logger.info('预测Time Cost{}s'.format(end_time - start_time))
+        print('预测Time Cost:{}s'.format(end_time - start_time))
+        train_logger.info('预测Time Cost:{}s'.format(end_time - start_time))
 
         # token_model_save_dir = args.model_save_dir + 'token_best.pt'
         # token_metric,token_metric_instance,y_pred_token = load_predict(test_model,test_dataloader,token_model_save_dir,train_logger,index2label,tag,args,device)

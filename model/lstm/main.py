@@ -24,8 +24,8 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+# import os
+# os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 from util.util import get_logger, compute_f1, compute_spans_bio, compute_spans_bieos, compute_instance_f1
 from model.lstm.lstmcrf import Bilstmcrf
@@ -170,6 +170,7 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
 
     for epoch in tq:
         avg_loss = 0.
+        epoch_start_time = time.time()
         model.train()
         model.zero_grad()
 
@@ -180,7 +181,10 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
             _batch = tuple(t.to(device) for t in batch)
             if args.model_classes == 'bilstm':
                 input_ids, input_mask, label_ids = _batch  
-                loss, _ = model(input_ids, input_mask, label_ids)
+                if args.use_packpad:
+                    loss, _ = model(input_ids, input_mask, label_ids)
+                else:
+                    loss, _ = model.forward_pack(input_ids, input_mask, label_ids)
             elif args.model_classes == 'bilstm_mtl':
                 input_ids, input_mask, label_ids,token_id = _batch  
                 loss, _ = model(input_ids, input_mask, label_ids,token_id)
@@ -213,11 +217,7 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
             scheduler.step()
 
         tq.set_postfix(avg_loss=avg_loss)
-
         train_loss_epoch[epoch] = avg_loss
-        print('epoch {} , global_step {}, train_loss {}, 当前epoch的avgloss:{}!'.format(epoch, global_step, tr_loss / global_step,avg_loss))
-        train_logger.info('epoch {} , global_step {}, train_loss {}, 当前epoch的avgloss:{}!'.format(epoch, global_step, tr_loss / global_step,avg_loss))
-
         metric, metric_instance = evaluate(dev_dataloader, model, label_map, tag, args, train_logger, device,
                                            dev_test_data, 'dev')
         metric_instance['epoch'] = epoch
@@ -245,11 +245,16 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
             # model_name = args.model_save_dir + "token_best.pt"
             # torch.save(model.state_dict(), model_name)
 
-        print('epoch:{} P:{}, R:{}, F1:{} ,best F1:{}!'.format(epoch, metric['precision-overall'],
+        print('epoch {} , global_step {}, train_loss {}, train_avg_loss:{}, dev_avg_loss:{}, 该epoch耗时:{}s!'.format(epoch, global_step, 
+                                                     tr_loss / global_step,avg_loss,metric['test_loss'],time.time()-epoch_start_time))
+        train_logger.info('epoch {} , global_step {}, train_loss {}, train_avg_loss:{}, dev_avg_loss:{},该epoch耗时:{}s!'.format(epoch, global_step, 
+                                                            tr_loss / global_step,avg_loss,metric['test_loss'],time.time()-epoch_start_time))
+
+        print('epoch:{} P:{}, R:{}, F1:{}, best F1:{}!"\n"'.format(epoch, metric['precision-overall'],
                                                               metric['recall-overall'],
                                                               metric['f1-measure-overall'], bestscore))
         train_logger.info(
-            'epoch:{} P:{}, R:{}, F1:{},best F1:{}!'.format(epoch, metric['precision-overall'], metric['recall-overall'],
+            'epoch:{} P:{}, R:{}, F1:{}, best F1:{}!"\n"'.format(epoch, metric['precision-overall'], metric['recall-overall'],
                                                            metric['f1-measure-overall'], bestscore))
 
         test_result.append(metric)
@@ -268,8 +273,8 @@ def load_predict(model, data, model_save_dir, logger, label_map, tag, args, devi
     model.load_state_dict(torch.load(model_save_dir))
     metric, metric_instance, y_pred = evaluate(data, model, label_map, tag, args, logger, device, test_data, 'test')
     end_time = time.time()
-    print('预测Time Cost{}s'.format(end_time - start_time))
-    logger.info('预测Time Cost{}s'.format(end_time - start_time))
+    print('预测Time Cost:{}s'.format(end_time - start_time))
+    logger.info('预测Time Cost:{}s'.format(end_time - start_time))
 
     return metric, metric_instance, y_pred
 
@@ -293,7 +298,7 @@ if __name__ == "__main__":
     parser.add_argument('--model_classes', type=str, default='bilstm_mtl',choices=['bilstm','bilstm_mtl'], help='Which model to choose.')
     parser.add_argument('--model_save_dir', type=str, default='/opt/hyp/NER/NER-model/saved_models/test/',
                         help='Root dir for saving models.')
-    parser.add_argument('--tensorboard_dir', default='/opt/hyp/NER/NER-model/saved_models/test_msra/runs/', type=str)
+    parser.add_argument('--tensorboard_dir', default='/opt/hyp/NER/NER-model/saved_models/test/runs/', type=str)
     parser.add_argument('--data_path', default='/opt/hyp/NER/NER-model/data/other_data/ResumeNER/json_data', type=str,help='数据路径')
     parser.add_argument('--pred_embed_path', default='/opt/hyp/NER/embedding/sgns.baidubaike.bigram-char', type=str,
                         help="预训练词向量路径,'cc.zh.300.vec','sgns.baidubaike.bigram-char','Tencent_AILab_ChineseEmbedding.txt'")
@@ -320,6 +325,7 @@ if __name__ == "__main__":
     parser.add_argument('--load', default=True, type=str2bool, help='是否加载事先保存好的词向量')
     parser.add_argument('--use_highway', default=False, type=str2bool)
     parser.add_argument('--dump_embedding', default=False, type=str2bool, help='是否保存词向量')
+    parser.add_argument('--use_packpad', default=False, type=str2bool, help='是否使用packed_pad')
 
     parser.add_argument("--learning_rate", default=0.015, type=float, help="The initial learning rate for Adam.")
     parser.add_argument("--num_train_epochs", default=10, type=int, help="Total number of training epochs to perform.")
@@ -463,9 +469,9 @@ if __name__ == "__main__":
 
         opt = vars(args)  # dict
         # save config
-        opt["time's"] = time.time() - start_time
+        opt["time'min"] = (time.time() - start_time) / 60
         save_config(opt, args.model_save_dir + '/args_config.json', verbose=True)
-        train_logger.info("Train Time cost{}min".format((time.time() - start_time) / 60))
+        train_logger.info("Train Time cost:{}min".format((time.time() - start_time) / 60))
 
     if args.do_test:
         print('=========================测试集==========================')
@@ -489,7 +495,10 @@ if __name__ == "__main__":
         print(args)
 
         # Model
-        test_model = Bilstmcrf(args, pretrain_word_embedding, len(label2index))
+        if args.model_classes == 'bilstm':
+            test_model = Bilstmcrf(args, pretrain_word_embedding, len(label2index))
+        elif args.model_classes == 'bilstm_mtl':
+            test_model = Bilstm_CRF_MTL(args,pretrain_word_embedding,len(label2index))
         if args.use_dataParallel:
             test_model = nn.DataParallel(test_model.cuda())
         test_model = test_model.to(device)
