@@ -1,24 +1,11 @@
-# coding=utf-8
-# Copyright 2018 The Google AI Language Team Authors and The HuggingFace Inc. team.
-# Copyright (c) 2018, NVIDIA CORPORATION.  All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-""" Named entity recognition fine-tuning: utilities to work with CoNLL-2003 task. """
-
 import logging
 import os
+from util.util import compute_spans_bieos
 
 logger = logging.getLogger(__name__)
+
+
+cys_label = {"0": "O", "1": "RT", "2": "LOC", "3": 'PER', "4": "ORG", "5": "SW", "6": "VUL_ID"}
 
 
 class InputExample(object):
@@ -38,27 +25,18 @@ class InputExample(object):
         self.labels = labels
 
 
-class InputFeatures(object):
-    """A single set of features of data."""
+class DoubleInputFeatures(object):
+    """双指针."""
 
-    def __init__(self, input_ids, input_mask, segment_ids, label_ids):
+    def __init__(self, input_ids, input_mask, segment_ids,start_ids,end_ids):
         self.input_ids = input_ids
         self.input_mask = input_mask
         self.segment_ids = segment_ids
-        self.label_ids = label_ids
+        self.start_ids = start_ids
+        self.end_ids = end_ids
 
 
-def read_examples_from_file(data, mode):
-    guid_index = 1
-    examples = []
-    for words, labels in data:
-        examples.append(
-            InputExample(guid="{}-{}".format(mode, guid_index), words=words.split(' '), labels=labels.split(' ')))
-        guid_index += 1
-    return examples
-
-
-def convert_examples_to_features(
+def Doubue_convert_examples_to_features(
         examples,
         label_map,
         max_seq_length,
@@ -75,67 +53,62 @@ def convert_examples_to_features(
         sequence_a_segment_id=0,
         mask_padding_with_zero=True,
 ):
-    """ Loads a data file into a list of `InputBatch`s
-        `cls_token_at_end` define the location of the CLS token:
-            - False (Default, BERT/XLM pattern): [CLS] + A + [SEP] + B + [SEP]
-            - True (XLNet/GPT pattern): A + [SEP] + B + [SEP] + [CLS]
-        `cls_token_segment_id` define the segment id associated to the CLS token (0 for BERT, 2 for XLNet)
-    """
-
+    label_map = {j: int(i) for i, j in label_map.items()}
     features = []
     for (ex_index, example) in enumerate(examples):
         if ex_index % 10000 == 0:
             logger.info("Writing example %d of %d", ex_index, len(examples))
 
         tokens = []
-        label_ids = []
+        label_tok = []
         for word, label in zip(example.words, example.labels):
             word_tokens = tokenizer.tokenize(word)
             if len(word_tokens) > 0:
                 tokens.append(word_tokens[0])
+                label_tok.append(label)
                 # Use the real label id for the first token of the word, and padding ids for the remaining tokens
-                # label_ids.append([label_map[label]] + [pad_token_label_id] * (len(word_tokens) - 1))
-                label_ids.append(label_map[label])
+
+        assert len(tokens) == len(label_tok)
+        start_id = [0] * len(tokens)
+        end_id = [0] * len(tokens)
+        candidate_span_label = compute_spans_bieos(label_tok)
+        if len(candidate_span_label) > 0:
+            candidate_span_label = candidate_span_label.split('|')
+        candidate_span_label = [(line.split(',')[0], line.split(',')[1].split(' ')[0], line.split(' ')[-1]) for line in
+                                candidate_span_label]
+
+        for start, end, label_content in candidate_span_label:
+            start_id[int(start)] = label_map[label_content]
+            end_id[int(end)] = label_map[label_content]
+
 
         # Account for [CLS] and [SEP] with "- 2" and with "- 3" for RoBERTa.
         special_tokens_count = 3 if sep_token_extra else 2
         if len(tokens) > max_seq_length - special_tokens_count:
             tokens = tokens[: (max_seq_length - special_tokens_count)]
-            label_ids = label_ids[: (max_seq_length - special_tokens_count)]
+            start_id = start_id[: (max_seq_length - special_tokens_count)]
+            end_id = end_id[: (max_seq_length - special_tokens_count)]
 
-        # The convention in BERT is:
-        # (a) For sequence pairs:
-        #  tokens:   [CLS] is this jack ##son ##ville ? [SEP] no it is not . [SEP]
-        #  type_ids:   0   0  0    0    0     0       0   0   1  1  1  1   1   1
-        # (b) For single sequences:
-        #  tokens:   [CLS] the dog is hairy . [SEP]
-        #  type_ids:   0   0   0   0  0     0   0
-        #
-        # Where "type_ids" are used to indicate whether this is the first
-        # sequence or the second sequence. The embedding vectors for `type=0` and
-        # `type=1` were learned during pre-training and are added to the wordpiece
-        # embedding vector (and position vector). This is not *strictly* necessary
-        # since the [SEP] token unambiguously separates the sequences, but it makes
-        # it easier for the model to learn the concept of sequences.
-        #
-        # For classification tasks, the first vector (corresponding to [CLS]) is
-        # used as as the "sentence vector". Note that this only makes sense because
-        # the entire model is fine-tuned.
         tokens += [sep_token]
-        label_ids += [pad_token_label_id]
+        start_id += [pad_token_label_id]
+        end_id += [pad_token_label_id]
         if sep_token_extra:
             # roberta uses an extra separator b/w pairs of sentences
             tokens += [sep_token]
-            label_ids += [pad_token_label_id]
+            start_id += [pad_token_label_id]
+            end_id += [pad_token_label_id]
+
         segment_ids = [sequence_a_segment_id] * len(tokens)
 
         if cls_token_at_end:
             tokens += [cls_token]
-            label_ids += [pad_token_label_id]
+            start_id += [pad_token_label_id]
+            end_id += [pad_token_label_id]
             segment_ids += [cls_token_segment_id]
         else:
             tokens = [cls_token] + tokens
-            label_ids = [pad_token_label_id] + label_ids
+            start_id = [pad_token_label_id] + start_id
+            end_id = [pad_token_label_id] + end_id
             segment_ids = [cls_token_segment_id] + segment_ids
 
         input_ids = tokenizer.convert_tokens_to_ids(tokens)
@@ -155,12 +128,14 @@ def convert_examples_to_features(
             input_ids += [pad_token] * padding_length
             input_mask += [0 if mask_padding_with_zero else 1] * padding_length
             segment_ids += [pad_token_segment_id] * padding_length
-            label_ids += [pad_token_label_id] * padding_length
+            start_id += [pad_token_label_id] * padding_length
+            end_id += [pad_token_label_id] * padding_length
 
         assert len(input_ids) == max_seq_length
         assert len(input_mask) == max_seq_length
         assert len(segment_ids) == max_seq_length
-        assert len(label_ids) == max_seq_length
+        assert len(start_id) == max_seq_length
+        assert len(end_id) == max_seq_length
 
         if ex_index < 5:
             logger.info("*** Example ***")
@@ -169,22 +144,46 @@ def convert_examples_to_features(
             logger.info("input_ids: %s", " ".join([str(x) for x in input_ids]))
             logger.info("input_mask: %s", " ".join([str(x) for x in input_mask]))
             logger.info("segment_ids: %s", " ".join([str(x) for x in segment_ids]))
-            logger.info("label_ids: %s", " ".join([str(x) for x in label_ids]))
+            logger.info("start_ids: %s", " ".join([str(x) for x in start_id]))
+            logger.info("end_ids: %s", " ".join([str(x) for x in end_id]))
 
         features.append(
-            InputFeatures(input_ids=input_ids, input_mask=input_mask, segment_ids=segment_ids, label_ids=label_ids)
+            DoubleInputFeatures(input_ids=input_ids, input_mask=input_mask, segment_ids=segment_ids, start_ids=start_id,end_ids=end_id)
         )
     return features
 
+    
 
-def get_labels(data):
-    label2index = {}
-    index = 0
-    label2index['O'] = index
-    labels = [la for _, la in data]
-    for lab in labels:
-        for la in lab.split(' '):
-            if la not in label2index:
-                index += 1
-                label2index[la] = index
-    return label2index
+class MRCInputFeatures(object):
+    """MRC query"""
+
+    def __init__(self,unique_id,tokens,input_ids,input_mask,segment_ids,ner_cate,start_position=None,end_position=None,is_impossible=None):
+        self.unique_id = unique_id
+        self.tokens = tokens
+        self.input_mask = input_mask
+        self.input_ids = input_ids
+        self.ner_cate = ner_cate
+        self.segment_ids = segment_ids
+        self.start_position = start_position
+        self.end_position = end_position
+        self.is_impossible = is_impossible
+
+def MRC_convert_examples_to_features(
+        examples,
+        label_map,
+        max_seq_length,
+        tokenizer,
+        cls_token_at_end=False,
+        cls_token="[CLS]",
+        cls_token_segment_id=0,
+        sep_token="[SEP]",
+        sep_token_extra=False,
+        pad_on_left=False,
+        pad_token=0,
+        pad_token_segment_id=0,
+        pad_token_label_id=-100,
+        sequence_a_segment_id=0,
+        mask_padding_with_zero=True,
+):
+    pass
+

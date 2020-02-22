@@ -1,7 +1,7 @@
-export CUDA_VISIBLE_DEVICES=2
+export CUDA_VISIBLE_DEVICES=0
 python ../model/lstm/main.py --use_scheduler=True \
-                     --model_save_dir='/opt/hyp/NER/NER-model/saved_models/cyber/mtlcrf/' \
-                     --tensorboard_dir='/opt/hyp/NER/NER-model/saved_models/cyber/mtlcrf/runs/' \
+                     --model_save_dir='/opt/hyp/NER/NER-model/saved_models/cyber/mtl0.3/' \
+                     --tensorboard_dir='/opt/hyp/NER/NER-model/saved_models/cyber/mtl0.3/runs/' \
                      --batch_size=128 \
                      --optimizer='Adam' \
                      --momentum=0.9 \

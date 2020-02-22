@@ -24,14 +24,15 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-# import os
-# os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 from util.util import get_logger, compute_f1, compute_spans_bio, compute_spans_bieos, compute_instance_f1
 from model.lstm.lstmcrf import Bilstmcrf
-from model.lstm.model import Bilstm_CRF_MTL
+from model.lstm.model import Bilstm_CRF_MTL,Bilstm_ST_END
 from model.helper.get_data import get_cyber_data, pregress,pregress_mtl
-
+from model.helper.convert_data import gen_token_ner_lstm, cys_label
+from model.helper.evaluate import evaluate_crf,evaluate_instance,evaluate_st_end
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -42,22 +43,6 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
-
-
-def evaluate_instance(y_true, y_pred):
-    metric = compute_instance_f1(y_true, y_pred)
-    return metric
-
-
-def evaluate_crf(y_true, y_pred, tag):
-    if tag == 'BIO':
-        gold_sentences = [compute_spans_bio(i) for i in y_true]
-        pred_sentences = [compute_spans_bio(i) for i in y_pred]
-    elif tag == 'BIEOS':
-        gold_sentences = [compute_spans_bieos(i) for i in y_true]
-        pred_sentences = [compute_spans_bieos(i) for i in y_pred]
-    metric = compute_f1(gold_sentences, pred_sentences)
-    return metric
 
 
 def evaluate(data, model, label_map, tag, args, train_logger, device, dev_test_data, mode):
@@ -188,6 +173,10 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
             elif args.model_classes == 'bilstm_mtl':
                 input_ids, input_mask, label_ids,token_id = _batch  
                 loss, _ = model(input_ids, input_mask, label_ids,token_id)
+            elif args.model_classes == 'bilstm_start_end':
+                input_ids, input_mask, start_id,end_id = _batch  
+                loss, _, _ = model(input_ids,input_mask,start_id,end_id)
+
             # loss, _ = model.module.calculate_loss(input_ids, input_mask, label_ids)
             if args.use_dataParallel:
                 loss = torch.sum(loss)  # if DataParallel
@@ -218,8 +207,12 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
 
         tq.set_postfix(avg_loss=avg_loss)
         train_loss_epoch[epoch] = avg_loss
-        metric, metric_instance = evaluate(dev_dataloader, model, label_map, tag, args, train_logger, device,
-                                           dev_test_data, 'dev')
+
+        if args.model_classes == 'bilstm_start_end':
+            metric, metric_instance = evaluate_st_end(dev_dataloader, model, args.label_entity, tag, args, train_logger, device,dev_test_data, 'dev','lstm')
+        else:
+            metric, metric_instance = evaluate(dev_dataloader, model, label_map, tag, args, train_logger, device,dev_test_data, 'dev')
+
         metric_instance['epoch'] = epoch
         metric['epoch'] = epoch
         dev_loss_epoch[epoch] = metric['test_loss']
@@ -293,20 +286,20 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--do_train", default=True, type=str2bool, help="Whether to run training.")
-    parser.add_argument("--do_test", default=True, type=str2bool, help="Whether to run test on the test set.")
+    parser.add_argument("--do_test", default=False, type=str2bool, help="Whether to run test on the test set.")
     parser.add_argument('--save_best_model', type=str2bool, default=True, help='Whether to save best model.')
-    parser.add_argument('--model_classes', type=str, default='bilstm_mtl',choices=['bilstm','bilstm_mtl'], help='Which model to choose.')
+    parser.add_argument('--model_classes', type=str, default='bilstm_start_end',choices=['bilstm','bilstm_mtl','bilstm_start_end'], help='Which model to choose.')
     parser.add_argument('--model_save_dir', type=str, default='/opt/hyp/NER/NER-model/saved_models/test/',
                         help='Root dir for saving models.')
     parser.add_argument('--tensorboard_dir', default='/opt/hyp/NER/NER-model/saved_models/test/runs/', type=str)
-    parser.add_argument('--data_path', default='/opt/hyp/NER/NER-model/data/other_data/ResumeNER/json_data', type=str,help='数据路径')
+    parser.add_argument('--data_path', default='/opt/hyp/NER/NER-model/data/json_data', type=str,help='数据路径')
     parser.add_argument('--pred_embed_path', default='/opt/hyp/NER/embedding/sgns.baidubaike.bigram-char', type=str,
                         help="预训练词向量路径,'cc.zh.300.vec','sgns.baidubaike.bigram-char','Tencent_AILab_ChineseEmbedding.txt'")
     parser.add_argument('--optimizer', default='Adam', choices=['Adam', 'SGD'], type=str)
     parser.add_argument('--deal_long_short_data', default='cut', choices=['cut', 'pad', 'stay'], type=str,
                         help='对长文本或者短文本在验证测试的时候如何处理')
     parser.add_argument('--save_embed_path',
-                        default='/opt/hyp/NER/NER-model/data/embedding/Tencent_AILab_ChineseEmbedding_resume.p', type=str,
+                        default='/opt/hyp/NER/NER-model/data/embedding/Tencent_AILab_ChineseEmbedding_cyber.p', type=str,
                         help='词向量存储路径')
 
     # parser.add_argument('--data_type', default='conll', help='数据类型 -conll - cyber')
@@ -314,7 +307,7 @@ if __name__ == "__main__":
     parser.add_argument('--token_level_f1', default=False, type=str2bool, help='Sequence max_length.')
     parser.add_argument('--do_lower_case', default=False, type=str2bool, help='False 不计算token-level f1，true 计算')
     parser.add_argument('--freeze', default=True, type=str2bool, help='是否冻结词向量')
-    parser.add_argument('--use_crf', default=True, type=str2bool, help='是否使用crf')
+    parser.add_argument('--use_crf', default=False, type=str2bool, help='是否使用crf')
     parser.add_argument('--rnn_type', default='LSTM', type=str, help='LSTM/GRU')
     parser.add_argument('--gpu', default=torch.cuda.is_available(), type=str2bool)
     parser.add_argument('--use_number_norm', default=False, type=str2bool)
@@ -328,8 +321,8 @@ if __name__ == "__main__":
     parser.add_argument('--use_packpad', default=False, type=str2bool, help='是否使用packed_pad')
 
     parser.add_argument("--learning_rate", default=0.015, type=float, help="The initial learning rate for Adam.")
-    parser.add_argument("--num_train_epochs", default=10, type=int, help="Total number of training epochs to perform.")
-    parser.add_argument('--batch_size', type=int, default=64, help='Training batch size.')
+    parser.add_argument("--num_train_epochs", default=100, type=int, help="Total number of training epochs to perform.")
+    parser.add_argument('--batch_size', type=int, default=128, help='Training batch size.')
     parser.add_argument("--adam_epsilon", default=1e-8, type=float, help="Epsilon for Adam optimizer.")
     parser.add_argument('--seed', type=int, default=1234)
     parser.add_argument('--max_seq_length', default=200, type=int, help='Sequence max_length.')
@@ -392,6 +385,8 @@ if __name__ == "__main__":
     args.label = label2index
     args.vocab_size = len(vocab)
 
+    args.label_entity = cys_label
+
     print("Let's use", torch.cuda.device_count(), "GPUs!")
     train_logger.info("Let's use{}GPUS".format(torch.cuda.device_count()))
 
@@ -433,6 +428,24 @@ if __name__ == "__main__":
             train_sampler = RandomSampler(train_dataset)
             train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size)
             dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size)
+        elif args.model_classes == "bilstm_start_end":
+            train_data_id, train_mask_id, start_id, end_id= gen_token_ner_lstm(train_data_raw, args.max_seq_length, word2idx, cys_label)
+            train_data = torch.tensor([f for f in train_data_id], dtype=torch.long)
+            train_mask = torch.tensor([f for f in train_mask_id], dtype=torch.long)
+            train_start = torch.tensor([f for f in start_id], dtype=torch.long)
+            train_end = torch.tensor([f for f in end_id], dtype=torch.long)
+            train_dataset = TensorDataset(train_data, train_mask, train_start,train_end)
+
+            dev_data, dev_mask, dev_start_id,dev_end_id = gen_token_ner_lstm(dev_data_raw, args.max_seq_length, word2idx, cys_label)
+            dev_data = torch.tensor([f for f in dev_data], dtype=torch.long)
+            dev_mask = torch.tensor([f for f in dev_mask], dtype=torch.long)
+            dev_start = torch.tensor([f for f in dev_start_id], dtype=torch.long)
+            dev_end = torch.tensor([f for f in dev_end_id], dtype=torch.long)
+            dev_dataset = TensorDataset(dev_data, dev_mask, dev_start,dev_end)
+
+            train_sampler = RandomSampler(train_dataset)
+            train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size)
+            dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size)
 
 
         # Model
@@ -441,6 +454,9 @@ if __name__ == "__main__":
         elif args.model_classes == 'bilstm_mtl':
             print('===============================多任务================================')
             model = Bilstm_CRF_MTL(args,pretrain_word_embedding,len(label2index))
+        elif args.model_classes == "bilstm_start_end":
+            print("=====================双指针======================")
+            model = Bilstm_ST_END(args,pretrain_word_embedding,len(cys_label))
 
         if args.use_dataParallel:
             model = nn.DataParallel(model.cuda())
@@ -492,6 +508,13 @@ if __name__ == "__main__":
             test_token = torch.tensor([f for f in test_token_id], dtype=torch.long)
             test_dataset = TensorDataset(test_data, test_mask, test_label,test_token)
             test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size)
+        elif args.model_classes == "bilstm_start_end":
+            test_data_id, test_mask_id, test_start_id, test_end_id= gen_token_ner_lstm(test_data_raw, args.max_seq_length, word2idx, cys_label)
+            test_data = torch.tensor([f for f in test_data_id], dtype=torch.long)
+            test_mask = torch.tensor([f for f in traintest_mask_id_mask_id], dtype=torch.long)
+            test_start = torch.tensor([f for f in test_start_id], dtype=torch.long)
+            test_end = torch.tensor([f for f in test_end_id], dtype=torch.long)
+            test_dataset = TensorDataset(test_data, test_mask, test_start,test_end)
 
         print(args)
 
@@ -500,6 +523,11 @@ if __name__ == "__main__":
             test_model = Bilstmcrf(args, pretrain_word_embedding, len(label2index))
         elif args.model_classes == 'bilstm_mtl':
             test_model = Bilstm_CRF_MTL(args,pretrain_word_embedding,len(label2index))
+        elif args.model_classes == "bilstm_start_end":
+            test_model = Bilstm_ST_END(args,pretrain_word_embedding,len(cys_label))
+
+        
+
         if args.use_dataParallel:
             test_model = nn.DataParallel(test_model.cuda())
         test_model = test_model.to(device)
