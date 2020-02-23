@@ -1,5 +1,8 @@
 import os
-from util.util import *
+import json
+import numpy as np
+
+""" MalwareTextDB Data """
 
 train_file = 'D:/dataset/MalwareTextDB-2.0/data/train/tokenized'
 dev_file = 'D:/dataset/MalwareTextDB-2.0/data/dev/tokenized'
@@ -12,8 +15,6 @@ test3_file = 'D:/dataset/MalwareTextDB-2.0/data/test_3/tokenized'
     训练集 ：9435 个句子
     验证集：
 """
-
-
 def get_data(*filess):
     for filee in filess:
         print(filee)
@@ -118,6 +119,37 @@ def compute_O(data, label):
     print('句子label全为O的数量为：', num_O)
     print('占比为:', num_O / len(data))
 
+""" 安全中文Data """
 
+train_file = '/opt/hyp/NER/NER-model/data/json_data/train_data.json'
+dev_file = '/opt/hyp/NER/NER-model/data/json_data/dev_data.json'
+test_file = '/opt/hyp/NER/NER-model/data/json_data/test_data.json'
+
+# 统计实体长度
+def get_entity_len(*files):
+    entity = []
+    for file in files:
+        print(file)
+        data = json.load(open(file, encoding='utf-8'))
+        for text ,label in data:
+            text = text.split(' ')
+            label = label.split(' ')
+            for i,la in enumerate(label):
+                if la[0] == 'S':
+                    entity.append(text[i])
+                if la[0] == 'B':
+                    for j in range(i+1,len(label)):
+                        if label[j][0] == 'E':
+                            ent = ''.join(text[i:j+1])
+                            entity.append(ent)
+                            break
+    print(len(entity))
+    return entity
 if __name__ == '__main__':
-    get_data(train_file, dev_file, test1_file, test2_file, test3_file)
+    entity = get_entity_len(dev_file)
+    print(entity[:5])
+    entity_len = np.array([len(i) for i in entity])
+    print(np.max(entity_len),np.min(entity_len),np.mean(entity_len))
+    for i in entity:
+        if len(i) > 10 :
+            print(i)

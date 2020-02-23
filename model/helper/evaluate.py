@@ -29,7 +29,8 @@ def get_tags_bert(start,end,label_map,input_mask):
                 break
             if st[j] == 0:
                 continue
-            for k in range(j,len_tag+1):
+            end_start_len = min(len_tag+1,30) # 30 为实体的长度
+            for k in range(j,end_start_len):
                 if end[i][k] == st[j]:
                     if k == j:
                         tag[k-1]= 'S-' +label_map[st[j]]
@@ -40,8 +41,8 @@ def get_tags_bert(start,end,label_map,input_mask):
                         tag[k-1] = 'E-' +label_map[st[j]]
                     break
                 # 可选
-                if end[i][k] != 0:
-                    break 
+                # if end[i][k] != 0:
+                #     break 
         tags.append(tag)
     return tags
 
@@ -55,7 +56,7 @@ def get_tags(start,end,label_map,input_mask):
                 break
             if m == 0:
                 continue
-            for k in range(j,len(st)):
+            for k in range(j,min(len(st),30)):
                 if input_mask[i][k] == 0:
                     break
                 if end[i][k] == m:
@@ -74,7 +75,7 @@ def get_tags(start,end,label_map,input_mask):
     return tags
                     
 
-# 针对bilstm 的 双指针的召回label
+# 针对双指针的召回评估函数
 def evaluate_st_end(data, model, label_map, tag, args, train_logger, device, dev_test_data, mode,pad_token_label_id=-100, model_name=None):
     print("Evaluating on {} set...".format(mode))
     test_iterator = tqdm(data, desc="dev_test_interation")

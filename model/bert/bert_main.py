@@ -50,7 +50,6 @@ import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 from util.util import get_logger, compute_f1, compute_spans_bio, compute_spans_bieos, compute_instance_f1
-from model.lstm.lstmcrf import Bilstmcrf
 from model.helper.get_data import get_cyber_data, pregress
 from model.bert.utils_ner import convert_examples_to_features, read_examples_from_file, get_labels
 from model.bert.util_data_helper import Doubue_convert_examples_to_features,cys_label
@@ -368,7 +367,7 @@ if __name__ == "__main__":
     parser.add_argument('--dump_embedding', default=False, type=str2bool, help='是否保存词向量')
 
     parser.add_argument("--learning_rate", default=5e-5, type=float, help="The initial learning rate for Adam.")
-    parser.add_argument("--num_train_epochs", default=1, type=int, help="Total number of training epochs to perform.")
+    parser.add_argument("--num_train_epochs", default=10, type=int, help="Total number of training epochs to perform.")
     parser.add_argument('--batch_size', type=int, default=16, help='Training batch size.')
     parser.add_argument("--adam_epsilon", default=1e-8, type=float, help="Epsilon for Adam optimizer.")
     parser.add_argument('--seed', type=int, default=42)
@@ -469,14 +468,14 @@ if __name__ == "__main__":
 
         # DATASET
         if args.model_class == 'bert_double':
-            train_dataset = load_double_examples(test_data_raw, args, tokenizer, label2index, pad_token_label_id, 'train', train_logger)
+            train_dataset = load_double_examples(train_data_raw, args, tokenizer, label2index, pad_token_label_id, 'train', train_logger)
             dev_dataset = load_double_examples(dev_data_raw, args, tokenizer, label2index, pad_token_label_id, 'dev',train_logger)
             
             train_sampler = RandomSampler(train_dataset)
             train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size)
             dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size)
         elif args.model_class == 'bert':    
-            train_dataset = load_and_cache_examples(test_data_raw, args, tokenizer, label2index, pad_token_label_id, 'train', train_logger)
+            train_dataset = load_and_cache_examples(train_data_raw, args, tokenizer, label2index, pad_token_label_id, 'train', train_logger)
             dev_dataset = load_and_cache_examples(dev_data_raw, args, tokenizer, label2index, pad_token_label_id, 'dev',
                                             train_logger)
             
@@ -523,18 +522,30 @@ if __name__ == "__main__":
 
         # Model
         entity_model_save_dir = args.model_save_dir + 'pytorch_model.bin'
-        model = BertForTokenClassification.from_pretrained(entity_model_save_dir,config=config)
-        model = model.to(device)
-        # 如果命名不是pytorch_model.bin的话，需要load_state_dict
-        model.load_state_dict(torch.load(entity_model_save_dir))
-        for param in model.parameters():
-            param.requires_grad = False
-        if args.use_dataParallel:
-            model = nn.DataParallel(model.cuda())
-
-        # Result and save
-        entity_metric, entity_metric_instance, y_pred_entity = evaluate(test_dataloader, model, index2label, tag, args, train_logger, device, test_data_raw, 'test',
+        if args.model_class == 'bert':
+            model = BertForTokenClassification.from_pretrained(entity_model_save_dir,config=config)
+            model = model.to(device)
+            # 如果命名不是pytorch_model.bin的话，需要load_state_dict
+            model.load_state_dict(torch.load(entity_model_save_dir))
+            for param in model.parameters():
+                param.requires_grad = False
+            if args.use_dataParallel:
+                model = nn.DataParallel(model.cuda())
+            # Result and save
+            entity_metric, entity_metric_instance, y_pred_entity = evaluate(test_dataloader, model, index2label, tag, args, train_logger, device, test_data_raw, 'test',
                                                 pad_token_label_id)
+        elif args.model_class == 'bert_double':
+            model = BertForDoublePointClassification(args,config)
+            model = model.to(device)
+            # 如果命名不是pytorch_model.bin的话，需要load_state_dict
+            model.load_state_dict(torch.load(entity_model_save_dir))
+            for param in model.parameters():
+                param.requires_grad = False
+            if args.use_dataParallel:
+                model = nn.DataParallel(model.cuda())
+            metric, metric_instance = evaluate_st_end(test_dataloader, model, args.label_entity, tag, args, train_logger, device,
+                                            test_data_raw, 'test',pad_token_label_id,'bert')
+
         end_time = time.time()
         print('预测Time Cost:{}s'.format(end_time - start_time))
         train_logger.info('预测Time Cost:{}s'.format(end_time - start_time))

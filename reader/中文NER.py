@@ -104,22 +104,22 @@ def save_data(data, label, save_name, To_bieos=True):
 
 def toke_to_json(type=None):
     # Resume
-    train_file = 'D:/Paper_Shiyan/NER-Model/data/ResumeNER/train.char.bmes'
-    test_file = 'D:/Paper_Shiyan/NER-Model/data/ResumeNER/test.char.bmes'
-    dev_file = 'D:/Paper_Shiyan/NER-Model/data/ResumeNER/dev.char.bmes'
+    train_file = '/opt/hyp/NER/NER-model/data/other_data/MSRA/train.ner'
+    test_file = '/opt/hyp/NER/NER-model/data/other_data/MSRA/test.ner'
+    dev_file = '/opt/hyp/NER/NER-model/data/other_data/MSRA/dev.ner'
 
     # train_file = '/opt/hyp/NER/NER-model/data/train.txt'
     # dev_file = '/opt/hyp/NER/NER-model/data/dev.txt'
     # test_file = '/opt/hyp/NER/NER-model/data/test.txt'
 
     train_data, train_label = get_data(train_file)
-    save_data(train_data, train_label, 'D:/Paper_Shiyan/NER-Model/data/ResumeNER/json_data/train_data.json', False)
+    save_data(train_data, train_label, '/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data/train_data.json', False)
 
     dev_data, dev_label = get_data(dev_file)
-    save_data(dev_data, dev_label, 'D:/Paper_Shiyan/NER-Model/data/ResumeNER/json_data/dev_data.json', False)
+    save_data(dev_data, dev_label, '/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data/dev_data.json', False)
 
     test_data, test_label = get_data(test_file)
-    save_data(test_data, test_label, 'D:/Paper_Shiyan/NER-Model/data/ResumeNER/json_data/test_data.json', False)
+    save_data(test_data, test_label, '/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data/test_data.json', False)
 
     print(len(train_data), len(dev_data), len(test_data))
 
@@ -196,7 +196,7 @@ def analyse_data(*files):
         print('token数量为{}'.format(token_data))
 
 
-# toke_to_json()
+toke_to_json()
 analyse_data(train_file, test_file, dev_file)
 
 
