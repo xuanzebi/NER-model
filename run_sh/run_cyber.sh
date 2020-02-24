@@ -1,7 +1,7 @@
 export CUDA_VISIBLE_DEVICES=1
 python ../model/lstm/main.py --use_scheduler=True \
-                     --model_save_dir='/opt/hyp/NER/NER-model/saved_models/cyber/cyber_bilstm_5ofepoch/' \
-                     --tensorboard_dir='/opt/hyp/NER/NER-model/saved_models/cyber/cyber_bilstm_5ofepoch/runs/' \
+                     --model_save_dir='/opt/hyp/NER/NER-model/saved_models/cyber/cyber_bilstm_fgm/' \
+                     --tensorboard_dir='/opt/hyp/NER/NER-model/saved_models/cyber/cyber_bilstm_fgm/runs/' \
                      --batch_size=128 \
                      --optimizer='Adam' \
                      --momentum=0.9 \
@@ -23,4 +23,7 @@ python ../model/lstm/main.py --use_scheduler=True \
                      --model_classes='bilstm' \
                      --use_bieos=True \
                      --use_packpad=False \
-                     --save_best_model=False \
+                     --save_best_model=True \
+                     --freeze=False \
+                     --use_fgm=True \
+

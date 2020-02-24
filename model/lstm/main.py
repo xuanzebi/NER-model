@@ -28,7 +28,7 @@ warnings.filterwarnings("ignore")
 # os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 from util.util import get_logger, compute_f1, compute_spans_bio, compute_spans_bieos, compute_instance_f1
-from model.lstm.lstmcrf import Bilstmcrf
+from model.lstm.lstmcrf import Bilstmcrf,FGM
 from model.lstm.model import Bilstm_CRF_MTL,Bilstm_ST_END
 from model.helper.get_data import get_cyber_data, pregress,pregress_mtl
 from model.helper.convert_data import gen_token_ner_lstm, cys_label
@@ -156,6 +156,10 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
     tq = tqdm(range(args.num_train_epochs), desc="Epoch")
 
     p = 0
+
+    if args.use_fgm:
+        fgm = FGM(model)
+
     for epoch in tq:
         avg_loss = 0.
         epoch_start_time = time.time()
@@ -167,28 +171,42 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
         for step, batch in enumerate(epoch_iterator):
             model.zero_grad()
             _batch = tuple(t.to(device) for t in batch)
-            if args.model_classes == 'bilstm':
-                input_ids, input_mask, label_ids = _batch  
-                if args.use_packpad:
-                    loss, _ = model.forward_pack(input_ids, input_mask, label_ids)
-                else:
-                    loss, _ = model(input_ids, input_mask, label_ids)
-            elif args.model_classes == 'bilstm_mtl':
-                input_ids, input_mask, label_ids,token_id = _batch  
-                loss, _ = model(input_ids, input_mask, label_ids,token_id)
-            elif args.model_classes == 'bilstm_start_end':
-                input_ids, input_mask, start_id,end_id = _batch  
-                loss, _, _ = model(input_ids,input_mask,start_id,end_id)
+            
+            if args.use_fgm:
+                input_ids, input_mask, label_ids = _batch 
+                loss, _ = model(input_ids, input_mask, label_ids)
+                loss.backward()
+                fgm.attack()
+                loss_adv,_ = model(input_ids, input_mask, label_ids)
+                loss_adv.backward() # 反向传播，并在正常的grad基础上，累加对抗训练的梯度
+                fgm.restore() # 恢复embedding参数
+                # 梯度下降，更新参数
+                optimizer.step()
+                model.zero_grad()
+            else:
+                if args.model_classes == 'bilstm':
+                    input_ids, input_mask, label_ids = _batch  
+                    if args.use_packpad:
+                        loss, _ = model.forward_pack(input_ids, input_mask, label_ids)
+                    else:
+                        loss, _ = model(input_ids, input_mask, label_ids)
+                elif args.model_classes == 'bilstm_mtl':
+                    input_ids, input_mask, label_ids,token_id = _batch  
+                    loss, _ = model(input_ids, input_mask, label_ids,token_id)
+                elif args.model_classes == 'bilstm_start_end':
+                    input_ids, input_mask, start_id,end_id = _batch  
+                    loss, _, _ = model(input_ids,input_mask,start_id,end_id)
 
-            # loss, _ = model.module.calculate_loss(input_ids, input_mask, label_ids)
-            if args.use_dataParallel:
-                loss = torch.sum(loss)  # if DataParallel
+                # loss, _ = model.module.calculate_loss(input_ids, input_mask, label_ids)
+                if args.use_dataParallel:
+                    loss = torch.sum(loss)  # if DataParallel
 
-            tr_loss += loss.item()
-            avg_loss += loss.item() / len(train_dataloader)
+                tr_loss += loss.item()
+                avg_loss += loss.item() / len(train_dataloader)
 
-            loss.backward()
-            optimizer.step()
+                loss.backward()
+                optimizer.step()
+
             global_step += 1
 
             if args.logging_steps > 0 and global_step % args.logging_steps == 0:
@@ -234,14 +252,15 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
                 torch.save(model.state_dict(), model_name)
         else:      # 保存最佳的5个模型，取平均
             if metric['micro-f1'] > min(save_model_list):
-                save_model_list[save_model_list.index(min(save_model_list))] =  metric['micro-f1'] 
-                save_model_epoch[save_model_list.index(min(save_model_list))] = epoch
-                bertscore = max(save_model_list)
+                low_index = save_model_list.index(min(save_model_list))
+                save_model_list[low_index] =  metric['micro-f1'] 
+                save_model_epoch[low_index] = epoch
+                bestscore = max(save_model_list)
                 p += 1
                 model_name = args.model_save_dir + "entity_best." + str(p) + ".pt"
                 torch.save(model.state_dict(), model_name)
                 if p == 5:
-                    p == 0
+                    p = 0
 
         # releax-f1 token-level f1
         if metric_instance['micro-f1'] > bestscore_instance:
@@ -307,8 +326,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--do_train", default=True, type=str2bool, help="Whether to run training.")
     parser.add_argument("--do_test", default=False, type=str2bool, help="Whether to run test on the test set.")
-    parser.add_argument('--save_best_model', type=str2bool, default=True, help='Whether to save best model.')
-    parser.add_argument('--model_classes', type=str, default='bilstm_start_end',choices=['bilstm','bilstm_mtl','bilstm_start_end'], help='Which model to choose.')
+    parser.add_argument('--model_classes', type=str, default='bilstm',choices=['bilstm','bilstm_mtl','bilstm_start_end'], help='Which model to choose.')
     parser.add_argument('--model_save_dir', type=str, default='/opt/hyp/NER/NER-model/saved_models/test/',
                         help='Root dir for saving models.')
     parser.add_argument('--tensorboard_dir', default='/opt/hyp/NER/NER-model/saved_models/test/runs/', type=str)
@@ -324,10 +342,11 @@ if __name__ == "__main__":
 
     # parser.add_argument('--data_type', default='conll', help='数据类型 -conll - cyber')
     parser.add_argument("--use_bieos", default=True, type=str2bool, help="True:BIEOS False:BIO")
+    parser.add_argument('--save_best_model', type=str2bool, default=False, help='Whether to save best model.')
     parser.add_argument('--token_level_f1', default=False, type=str2bool, help='Sequence max_length.')
     parser.add_argument('--do_lower_case', default=False, type=str2bool, help='False 不计算token-level f1，true 计算')
     parser.add_argument('--freeze', default=True, type=str2bool, help='是否冻结词向量')
-    parser.add_argument('--use_crf', default=False, type=str2bool, help='是否使用crf')
+    parser.add_argument('--use_crf', default=True, type=str2bool, help='是否使用crf')
     parser.add_argument('--rnn_type', default='LSTM', type=str, help='LSTM/GRU')
     parser.add_argument('--gpu', default=torch.cuda.is_available(), type=str2bool)
     parser.add_argument('--use_number_norm', default=False, type=str2bool)
@@ -339,10 +358,11 @@ if __name__ == "__main__":
     parser.add_argument('--use_highway', default=False, type=str2bool)
     parser.add_argument('--dump_embedding', default=False, type=str2bool, help='是否保存词向量')
     parser.add_argument('--use_packpad', default=False, type=str2bool, help='是否使用packed_pad')
+    parser.add_argument('--use_fgm', default=False, type=str2bool, help='是否使用对抗样本')
 
     parser.add_argument("--learning_rate", default=0.015, type=float, help="The initial learning rate for Adam.")
     parser.add_argument("--num_train_epochs", default=100, type=int, help="Total number of training epochs to perform.")
-    parser.add_argument('--batch_size', type=int, default=128, help='Training batch size.')
+    parser.add_argument('--batch_size', type=int, default=512, help='Training batch size.')
     parser.add_argument("--adam_epsilon", default=1e-8, type=float, help="Epsilon for Adam optimizer.")
     parser.add_argument('--seed', type=int, default=1234)
     parser.add_argument('--max_seq_length', default=200, type=int, help='Sequence max_length.')
@@ -354,8 +374,8 @@ if __name__ == "__main__":
     parser.add_argument('--lr_decay', default=0.05, type=float)
     parser.add_argument('--momentum', default=0, type=float, help="0 or 0.9")
     parser.add_argument('--min_count', default=1, type=int)
-    parser.add_argument('--dropout', default=0.25, type=float, help='词向量后的dropout')
-    parser.add_argument('--dropoutlstm', default=0.25, type=float, help='lstm后的dropout')
+    parser.add_argument('--dropout', default=0.2, type=float, help='词向量后的dropout')
+    parser.add_argument('--dropoutlstm', default=0.2, type=float, help='lstm后的dropout')
 
     args = parser.parse_args()
 

@@ -1,7 +1,7 @@
 import os
 import json
 import numpy as np
-
+from collections import defaultdict
 """ MalwareTextDB Data """
 
 train_file = 'D:/dataset/MalwareTextDB-2.0/data/train/tokenized'
@@ -119,16 +119,12 @@ def compute_O(data, label):
     print('句子label全为O的数量为：', num_O)
     print('占比为:', num_O / len(data))
 
-""" 安全中文Data """
 
-train_file = '/opt/hyp/NER/NER-model/data/json_data/train_data.json'
-dev_file = '/opt/hyp/NER/NER-model/data/json_data/dev_data.json'
-test_file = '/opt/hyp/NER/NER-model/data/json_data/test_data.json'
-
-# 统计实体长度
-def get_entity_len(*files):
-    entity = []
+# 统计实体长度, 以及每类包含哪些实体
+def get_entity(*files):
     for file in files:
+        entity_type_num = defaultdict(dict)
+        entity = [] 
         print(file)
         data = json.load(open(file, encoding='utf-8'))
         for text ,label in data:
@@ -137,19 +133,43 @@ def get_entity_len(*files):
             for i,la in enumerate(label):
                 if la[0] == 'S':
                     entity.append(text[i])
+                    if text[i] not in entity_type_num[la[2:]]:
+                        entity_type_num[la[2:]][text[i]] = 1
+                    else:
+                        entity_type_num[la[2:]][text[i]] += 1
                 if la[0] == 'B':
                     for j in range(i+1,len(label)):
                         if label[j][0] == 'E':
                             ent = ''.join(text[i:j+1])
                             entity.append(ent)
+                            if ent not in entity_type_num[la[2:]]:
+                                entity_type_num[la[2:]][ent] = 1
+                            else:
+                                entity_type_num[la[2:]][ent] += 1
                             break
     print(len(entity))
-    return entity
+    return entity , entity_type_num
+
 if __name__ == '__main__':
-    entity = get_entity_len(dev_file)
-    print(entity[:5])
-    entity_len = np.array([len(i) for i in entity])
-    print(np.max(entity_len),np.min(entity_len),np.mean(entity_len))
-    for i in entity:
-        if len(i) > 10 :
-            print(i)
+    """ 安全中文Data """
+    train_file = '/opt/hyp/NER/NER-model/data/json_data/train_data.json'
+    dev_file = '/opt/hyp/NER/NER-model/data/json_data/dev_data.json'
+    test_file = '/opt/hyp/NER/NER-model/data/json_data/test_data.json'
+
+    entity,entity_num = get_entity(train_file)
+    a = {i:len(j) for i,j in entity_num.items()}
+    print(a)
+
+    sort_entnty_loc = sorted(entity_num['RT'].items(),key=lambda x: x[1],reverse=True)
+    print(sort_entnty_loc[:10])
+    # print(entity[:5])
+    # print(entity_num)
+
+    # 统计实体长度
+    # entity_len = np.array([len(i) for i in entity])
+    # print(np.max(entity_len),np.min(entity_len),np.mean(entity_len))
+    # for i in entity:
+    #     if len(i) > 10 :
+    #         print(i)
+    
+    # 
