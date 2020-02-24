@@ -46,8 +46,8 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+# import os
+# os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 from util.util import get_logger, compute_f1, compute_spans_bio, compute_spans_bieos, compute_instance_f1
 from model.helper.get_data import get_cyber_data, pregress

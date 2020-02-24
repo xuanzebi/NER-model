@@ -130,9 +130,9 @@ def toke_to_json(type=None):
 # dev_file = 'D:/dataset/ChineseNERdataset/ResumeNER/json_data/dev_data.json'
 
 # 中文安全数据
-train_file = '/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data/train_data.json'
-dev_file = '/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data/dev_data.json'
-test_file = '/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data/test_data.json'
+train_file = '/opt/hyp/NER/NER-model/data/other_data/WeiboNER/json_data/train_data.json'
+dev_file = '/opt/hyp/NER/NER-model/data/other_data/WeiboNER/json_data/dev_data.json'
+test_file = '/opt/hyp/NER/NER-model/data/other_data/WeiboNER/json_data/test_data.json'
 
 
 def analyse_data(*files):
@@ -196,8 +196,8 @@ def analyse_data(*files):
         print('token数量为{}'.format(token_data))
 
 
-toke_to_json()
-analyse_data(train_file, test_file, dev_file)
+# toke_to_json()
+# analyse_data(train_file, test_file, dev_file)
 
 
 def bmes_to_bies(*files):
@@ -257,3 +257,25 @@ def count_label():
 # count_label()
 
 # TODO: 将四个数据集的label的交集修改为一样label（在使用多任务学习时）
+
+# 将 json_data 写入成 conll格式
+# def write_data(fn, word_sequences, tag_sequences):
+#     text_file = open(fn, mode='w', encoding='utf-8')
+#     for i, words in enumerate(word_sequences):
+#         tags = tag_sequences[i]
+#         assert len(tags) == len(words)
+#         for j, word in enumerate(words):
+#             tag_1 = tags[j]
+#             text_file.write('%s %s\n' % (word, tag_1))
+#         text_file.write('\n')
+#     text_file.close()
+
+# train_file = '/opt/hyp/NER/NER-model/data/json_data/train_data.json'
+# dev_file = '/opt/hyp/NER/NER-model/data/json_data/dev_data.json'
+# test_file = '/opt/hyp/NER/NER-model/data/json_data/test_data.json'
+
+# train_data = json.load(open(test_file, 'r', encoding='utf-8'))
+# labels = [la.split(' ') for _, la in train_data]
+# texts = [la.split(' ') for la, _ in train_data]
+
+# write_data('/opt/hyp/NER/Batch_Parallel_LatticeLSTM/data/cyber_data/test.txt',texts,labels)

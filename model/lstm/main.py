@@ -24,8 +24,8 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+# import os
+# os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 from util.util import get_logger, compute_f1, compute_spans_bio, compute_spans_bieos, compute_instance_f1
 from model.lstm.lstmcrf import Bilstmcrf
@@ -147,12 +147,15 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
     test_result_instance = []
     bestscore, best_epoch = -1, 0
     bestscore_instance, best_epoch_instance = -1, 0
-    # save_model_list = [0,0,0,0,0]
+    save_model_list = [0,0,0,0,0]
+    save_model_epoch= [-1,-1,-1,-1,-1]
+
     tr_loss, logging_loss = 0.0, 0.0
     lr = defaultdict(list)
     global_step = 0
     tq = tqdm(range(args.num_train_epochs), desc="Epoch")
 
+    p = 0
     for epoch in tq:
         avg_loss = 0.
         epoch_start_time = time.time()
@@ -221,13 +224,24 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
 
         tb_writer.add_scalar('test_loss', metric['test_loss'], epoch)
 
-        if metric['micro-f1'] > bestscore:
-            bestscore = metric['micro-f1']
-            best_epoch = epoch
-            print('实体级别的F1的best model epoch is: %d' % epoch)
-            train_logger.info('实体级别的F1的best model epoch is: %d' % epoch)
-            model_name = args.model_save_dir + "entity_best.pt"
-            torch.save(model.state_dict(), model_name)
+        if args.save_best_model:
+            if metric['micro-f1'] > bestscore:
+                bestscore = metric['micro-f1']
+                best_epoch = epoch
+                print('实体级别的F1的best model epoch is: %d' % epoch)
+                train_logger.info('实体级别的F1的best model epoch is: %d' % epoch)
+                model_name = args.model_save_dir + "entity_best.pt"
+                torch.save(model.state_dict(), model_name)
+        else:      # 保存最佳的5个模型，取平均
+            if metric['micro-f1'] > min(save_model_list):
+                save_model_list[save_model_list.index(min(save_model_list))] =  metric['micro-f1'] 
+                save_model_epoch[save_model_list.index(min(save_model_list))] = epoch
+                bertscore = max(save_model_list)
+                p += 1
+                model_name = args.model_save_dir + "entity_best." + str(p) + ".pt"
+                torch.save(model.state_dict(), model_name)
+                if p == 5:
+                    p == 0
 
         # releax-f1 token-level f1
         if metric_instance['micro-f1'] > bestscore_instance:
@@ -253,10 +267,16 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
         test_result.append(metric)
         test_result_instance.append(metric_instance)
 
-    test_result.append({'best_dev_f1': bestscore,
-                        'best_dev_epoch': best_epoch})
-    test_result_instance.append({'best_dev_f1': bestscore_instance,
-                                 'best_dev_epoch': best_epoch_instance})
+    if args.save_best_model:
+        test_result.append({'best_dev_f1': bestscore,
+                            'best_dev_epoch': best_epoch})
+        test_result_instance.append({'best_dev_f1': bestscore_instance,
+                                    'best_dev_epoch': best_epoch_instance})
+    else:
+        test_result.append({'best_dev_f1': bestscore,
+                            'dev_bestof5_epoch': save_model_list})   
+
+              
     tb_writer.close()
     return test_result, test_result_instance, lr, train_loss_step, train_loss_epoch,dev_loss_epoch
 
