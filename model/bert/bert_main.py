@@ -51,10 +51,12 @@ warnings.filterwarnings("ignore")
 
 from util.util import get_logger, compute_f1, compute_spans_bio, compute_spans_bieos, compute_instance_f1
 from model.helper.get_data import get_cyber_data, pregress
+from model.helper.query_map import query_sign_map
 from model.bert.utils_ner import convert_examples_to_features, read_examples_from_file, get_labels
-from model.bert.util_data_helper import Doubue_convert_examples_to_features,cys_label
-from model.bert.bert_model import BertForDoublePointClassification
-from model.helper.evaluate import evaluate_crf,evaluate_instance,evaluate_st_end
+from model.bert.util_data_helper import Doubue_convert_examples_to_features,cys_label,msra_label,gen_query_ner,MRC_convert_examples_to_features
+from model.bert.bert_model import BertForDoublePointClassification,BertforMrcNER
+from model.helper.evaluate import evaluate_crf,evaluate_instance,evaluate_st_end,evaluate_mrc_ner
+from model.lstm.lstmcrf import FGM
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -145,6 +147,9 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
         optimizer, num_warmup_steps=warmup_steps, num_training_steps=t_total
     )
 
+    if args.use_fgm:
+        fgm = FGM(model)
+
     test_result = []
     test_result_instance = []
     bestscore, best_epoch = -1, 0
@@ -165,10 +170,20 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
             _batch = tuple(t.to(device) for t in batch)
             if args.model_class == 'bert':
                 input_ids, input_mask, segment_ids, label_ids = _batch
-                # loss, _ = model.module.calculate_loss(input_ids, input_mask, label_ids)
-                loss, _ = model(input_ids, input_mask, segment_ids, labels=label_ids)
+                if args.use_fgm:
+                    loss, _ = model(input_ids, input_mask, segment_ids, labels=label_ids)
+                    loss.backward()
+                    fgm.attack()
+                    loss_adv,_ = model(input_ids, input_mask, segment_ids, labels=label_ids)
+                    loss_adv.backward() # 反向传播，并在正常的grad基础上，累加对抗训练的梯度
+                    fgm.restore() # 恢复embedding参数
+                else:
+                    loss, _ = model(input_ids, input_mask, segment_ids, labels=label_ids)
             elif args.model_class == "bert_double":
                 input_ids, input_mask, segment_ids, start_ids,end_ids = _batch
+                loss,_,_ = model(input_ids, input_mask, segment_ids, start_ids=start_ids,end_ids=end_ids)
+            elif args.model_class == "bert_mrc":
+                input_ids, input_mask, segment_ids, start_ids,end_ids,ner_cate = _batch
                 loss,_,_ = model(input_ids, input_mask, segment_ids, start_ids=start_ids,end_ids=end_ids)
 
             if args.use_dataParallel:
@@ -176,7 +191,9 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
 
             tr_loss += loss.item()
             avg_loss += loss.item() / len(train_dataloader)
-            loss.backward()
+
+            if not args.use_fgm:
+                loss.backward()
 
             if (step + 1) % args.gradient_accumulation_steps == 0:
                 torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)  # 梯度裁剪
@@ -202,9 +219,12 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
             metric, metric_instance = evaluate(dev_dataloader, model, label_map, tag, args, train_logger, device,
                                             dev_test_data, 'dev', pad_token_label_id)
         elif args.model_class == 'bert_double':
-             metric, metric_instance = evaluate_st_end(dev_dataloader, model, args.label_entity, tag, args, train_logger, device,
+            metric, metric_instance = evaluate_st_end(dev_dataloader, model, args.label_entity, tag, args, train_logger, device,
                                             dev_test_data, 'dev',pad_token_label_id,'bert')
-
+        elif args.model_class == 'bert_mrc':
+            metric, metric_instance = evaluate_mrc_ner(dev_dataloader, model, args.label_entity, tag, args, train_logger, device,
+                                            dev_test_data, 'dev',pad_token_label_id,'bert')
+            
         metric_instance['epoch'] = epoch
         metric['epoch'] = epoch
         dev_loss_epoch[epoch] = metric['test_loss']
@@ -288,7 +308,7 @@ def load_and_cache_examples(data, args, tokenizer, label2index, pad_token_label_
     dataset = TensorDataset(all_input_ids, all_input_mask, all_segment_ids, all_label_ids)
     return dataset
 
-def load_double_examples(data, args, tokenizer, label2index, pad_token_label_id, mode, logger):
+def load_double_examples(data, args, tokenizer, pad_token_label_id, mode, logger):
     logger.info("Creating features from dataset file at %s", args.data_path)
     examples = read_examples_from_file(data, mode)
     features = Doubue_convert_examples_to_features(
@@ -312,6 +332,27 @@ def load_double_examples(data, args, tokenizer, label2index, pad_token_label_id,
     all_start_ids = torch.tensor([f.start_ids for f in features], dtype=torch.long)
     all_end_ids = torch.tensor([f.end_ids for f in features], dtype=torch.long)
     dataset = TensorDataset(all_input_ids, all_input_mask, all_segment_ids, all_start_ids,all_end_ids)
+    return dataset
+
+def load_mrc_examples(data, args, tokenizer, pad_token_label_id, mode, logger,allow_impossible):
+    logger.info("Creating features from dataset file at %s", args.data_path)
+    examples = gen_query_ner(data, query_sign_map,args.data_type)
+    features = MRC_convert_examples_to_features(
+        examples,
+        args.label_entity,
+        args.max_seq_length,
+        tokenizer,
+        pad_token=tokenizer.convert_tokens_to_ids([tokenizer.pad_token])[0],
+        pad_token_label_id=pad_token_label_id,
+        allow_impossible=allow_impossible,
+    )
+    all_input_ids = torch.tensor([f.input_ids for f in features], dtype=torch.long)
+    all_input_mask = torch.tensor([f.input_mask for f in features], dtype=torch.long)
+    all_segment_ids = torch.tensor([f.segment_ids for f in features], dtype=torch.long)
+    all_start_ids = torch.tensor([f.start_position for f in features], dtype=torch.long)
+    all_end_ids = torch.tensor([f.end_position for f in features], dtype=torch.long)
+    ner_cate = torch.tensor([f.ner_cate for f in features], dtype=torch.long)
+    dataset = TensorDataset(all_input_ids, all_input_mask, all_segment_ids, all_start_ids,all_end_ids,ner_cate)
     return dataset
 
 MODEL_CLASSES = {
@@ -345,7 +386,8 @@ if __name__ == "__main__":
                         help='对长文本或者短文本在验证测试的时候如何处理')
     parser.add_argument('--save_embed_path', default='', type=str, help='词向量存储路径')
     parser.add_argument("--model_type", default='bert', type=str, help="Model type selected in the list")
-    parser.add_argument("--model_class", default='bert_double', type=str, choices=["bert","bert_double","bert_mrc"])
+    parser.add_argument("--model_class", default='bert_mrc', type=str, choices=["bert","bert_double","bert_mrc"])
+    parser.add_argument("--data_type", default='cyber_sec_ch_ner', type=str, choices=["cyber_sec_ch_ner","zh_msra_ner",""])
     parser.add_argument("--model_name_or_path", default='/opt/hyp/NER/embedding/bert/chinese_L-12_H-768_A-12_pytorch', type=str,
                         help="Path to pre-trained model or shortcut name selected in the list: ")
 
@@ -365,6 +407,7 @@ if __name__ == "__main__":
     parser.add_argument('--load', default=True, type=str2bool, help='是否加载事先保存好的词向量')
     parser.add_argument('--use_highway', default=False, type=str2bool)
     parser.add_argument('--dump_embedding', default=False, type=str2bool, help='是否保存词向量')
+    parser.add_argument('--use_fgm', default=False, type=str2bool, help='是否加上对抗信息扰动')
 
     parser.add_argument("--learning_rate", default=5e-5, type=float, help="The initial learning rate for Adam.")
     parser.add_argument("--num_train_epochs", default=10, type=int, help="Total number of training epochs to perform.")
@@ -436,7 +479,12 @@ if __name__ == "__main__":
     print('该数据集的label为:',label2index)
     index2label = {j: i for i, j in label2index.items()}
     args.label = label2index
-    args.label_entity = cys_label
+
+    if 'msra' in args.data_type:
+        args.label_entity = msra_label
+    if "cyber" in args.data_type:
+        args.label_entity = cys_label
+
     pad_token_label_id = CrossEntropyLoss().ignore_index
 
     # MODEL
@@ -448,6 +496,8 @@ if __name__ == "__main__":
         config = BertConfig.from_pretrained(args.model_name_or_path, num_labels=len(label2index))
     elif args.model_class == 'bert_double':
         config = BertConfig.from_pretrained(args.model_name_or_path, num_labels=len(args.label_entity))
+    elif args.model_class == 'bert_mrc':
+        config = BertConfig.from_pretrained(args.model_name_or_path, num_labels=2)
 
     print("Let's use", torch.cuda.device_count(), "GPUs!")
     train_logger.info("Let's use{}GPUS".format(torch.cuda.device_count()))
@@ -461,6 +511,9 @@ if __name__ == "__main__":
             model = BertForTokenClassification.from_pretrained(args.model_name_or_path, config=config)
         elif args.model_class == 'bert_double':
             model = BertForDoublePointClassification(args,config)
+        elif args.model_class == 'bert_mrc':
+            model = BertforMrcNER(args,config)
+
         if args.use_dataParallel:
             model = nn.DataParallel(model.cuda())
         model = model.to(device)
@@ -468,20 +521,18 @@ if __name__ == "__main__":
 
         # DATASET
         if args.model_class == 'bert_double':
-            train_dataset = load_double_examples(train_data_raw, args, tokenizer, label2index, pad_token_label_id, 'train', train_logger)
-            dev_dataset = load_double_examples(dev_data_raw, args, tokenizer, label2index, pad_token_label_id, 'dev',train_logger)
-            
-            train_sampler = RandomSampler(train_dataset)
-            train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size)
-            dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size)
+            train_dataset = load_double_examples(train_data_raw, args, tokenizer, pad_token_label_id, 'train', train_logger)
+            dev_dataset = load_double_examples(dev_data_raw, args, tokenizer, pad_token_label_id, 'dev',train_logger)
         elif args.model_class == 'bert':    
             train_dataset = load_and_cache_examples(train_data_raw, args, tokenizer, label2index, pad_token_label_id, 'train', train_logger)
-            dev_dataset = load_and_cache_examples(dev_data_raw, args, tokenizer, label2index, pad_token_label_id, 'dev',
-                                            train_logger)
-            
-            train_sampler = RandomSampler(train_dataset)
-            train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size)
-            dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size)
+            dev_dataset = load_and_cache_examples(dev_data_raw, args, tokenizer, label2index, pad_token_label_id, 'dev',train_logger)
+        elif args.model_class == 'bert_mrc':
+            train_dataset = load_mrc_examples(train_data_raw, args, tokenizer, pad_token_label_id, 'train', train_logger,allow_impossible=False)
+            dev_dataset = load_mrc_examples(dev_data_raw, args, tokenizer, pad_token_label_id, 'dev',train_logger,allow_impossible=False)   
+       
+        train_sampler = RandomSampler(train_dataset)
+        train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size)
+        dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size)
 
         dev_result, dev_result_instance, lr, train_loss_step, train_loss_epoch,dev_loss_epoch = train(model, train_dataloader, dev_dataloader, args, device, tb_writer, \
                                                     index2label, tag, train_logger, dev_data_raw, pad_token_label_id)
@@ -517,7 +568,10 @@ if __name__ == "__main__":
         start_time = time.time()
 
         # TestData
-        test_dataset = load_and_cache_examples(test_data_raw, args, tokenizer, label2index, pad_token_label_id, 'test',train_logger)
+        if args.model_class == 'bert':
+            test_dataset = load_and_cache_examples(test_data_raw, args, tokenizer, label2index, pad_token_label_id, 'test',train_logger)
+        elif args.model_class == 'bert_mrc':
+            test_dataset = load_mrc_examples(test_data_raw, args, tokenizer, pad_token_label_id, 'test',train_logger,allow_impossible=False)
         test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size)
 
         # Model
@@ -544,6 +598,16 @@ if __name__ == "__main__":
             if args.use_dataParallel:
                 model = nn.DataParallel(model.cuda())
             metric, metric_instance = evaluate_st_end(test_dataloader, model, args.label_entity, tag, args, train_logger, device,
+                                            test_data_raw, 'test',pad_token_label_id,'bert')
+        elif args.model_class == 'bert_mrc':
+            model = BertforMrcNER(args,config)
+            model = model.to(device)
+            model.load_state_dict(torch.load(entity_model_save_dir))
+            for param in model.parameters():
+                param.requires_grad = False
+            if args.use_dataParallel:
+                model = nn.DataParallel(model.cuda())
+            metric, metric_instance = evaluate_mrc_ner(test_dataloader, model, args.label_entity, tag, args, train_logger, device,
                                             test_data_raw, 'test',pad_token_label_id,'bert')
 
         end_time = time.time()

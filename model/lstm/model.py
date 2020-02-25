@@ -106,7 +106,7 @@ class Bilstm_CRF_MTL(nn.Module):
             scores, tag_seq = self.crf._viterbi_decode(output2, input_mask)
             
             # token_loss = self.token_crf.neg_log_likelihood_loss(token_output,maskk,labels_token)
-            ans_loss = total_loss / batch_size * 0.7 + token_loss * 0.3
+            ans_loss = total_loss / batch_size  + token_loss
             return ans_loss, tag_seq
         else:
             loss_fct = nn.CrossEntropyLoss(ignore_index=0)

@@ -188,3 +188,24 @@ def get_labels(data):
                 index += 1
                 label2index[la] = index
     return label2index
+
+# data = []
+# data.append(('你 你好 == ~ 嘂','O O O O O'))
+# from transformers import BertTokenizer
+# tokenizer = BertTokenizer.from_pretrained('/opt/hyp/NER/embedding/bert/chinese_L-12_H-768_A-12_pytorch', do_lower_case=True)
+
+# examples = read_examples_from_file(data, 'train')
+# features = convert_examples_to_features(
+#     examples,
+#     get_labels(data),
+#     100,
+#     tokenizer,
+#     cls_token_at_end=False,
+#     cls_token=tokenizer.cls_token,
+#     cls_token_segment_id=0,
+#     sep_token=tokenizer.sep_token,
+#     pad_on_left=False,
+#     pad_token=tokenizer.convert_tokens_to_ids([tokenizer.pad_token])[0],
+#     pad_token_segment_id=0,
+#     pad_token_label_id=-100,
+# )

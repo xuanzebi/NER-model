@@ -172,41 +172,52 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
             model.zero_grad()
             _batch = tuple(t.to(device) for t in batch)
             
-            if args.use_fgm:
+            if args.model_classes == 'bilstm':
                 input_ids, input_mask, label_ids = _batch 
-                loss, _ = model(input_ids, input_mask, label_ids)
-                loss.backward()
-                fgm.attack()
-                loss_adv,_ = model(input_ids, input_mask, label_ids)
-                loss_adv.backward() # 反向传播，并在正常的grad基础上，累加对抗训练的梯度
-                fgm.restore() # 恢复embedding参数
-                # 梯度下降，更新参数
-                optimizer.step()
-                model.zero_grad()
-            else:
-                if args.model_classes == 'bilstm':
-                    input_ids, input_mask, label_ids = _batch  
+                if args.use_fgm:
+                    loss, _ = model(input_ids, input_mask, label_ids)
+                    loss.backward()
+                    fgm.attack()
+                    loss_adv,_ = model(input_ids, input_mask, label_ids)
+                    loss_adv.backward() # 反向传播，并在正常的grad基础上，累加对抗训练的梯度
+                    fgm.restore() # 恢复embedding参数
+                    # 梯度下降，更新参数
+                    optimizer.step()
+                    model.zero_grad()
+                else:
                     if args.use_packpad:
                         loss, _ = model.forward_pack(input_ids, input_mask, label_ids)
                     else:
                         loss, _ = model(input_ids, input_mask, label_ids)
-                elif args.model_classes == 'bilstm_mtl':
-                    input_ids, input_mask, label_ids,token_id = _batch  
+                    loss.backward()
+                    optimizer.step()
+            elif args.model_classes == 'bilstm_mtl':
+                input_ids, input_mask, label_ids,token_id = _batch 
+                if args.use_fgm:
                     loss, _ = model(input_ids, input_mask, label_ids,token_id)
-                elif args.model_classes == 'bilstm_start_end':
-                    input_ids, input_mask, start_id,end_id = _batch  
-                    loss, _, _ = model(input_ids,input_mask,start_id,end_id)
-
-                # loss, _ = model.module.calculate_loss(input_ids, input_mask, label_ids)
-                if args.use_dataParallel:
-                    loss = torch.sum(loss)  # if DataParallel
-
-                tr_loss += loss.item()
-                avg_loss += loss.item() / len(train_dataloader)
-
+                    loss.backward()
+                    fgm.attack()
+                    loss_adv,_ = model(input_ids, input_mask, label_ids,token_id)
+                    loss_adv.backward() # 反向传播，并在正常的grad基础上，累加对抗训练的梯度
+                    fgm.restore() # 恢复embedding参数
+                    # 梯度下降，更新参数
+                    optimizer.step()
+                    model.zero_grad()
+                else:
+                    loss, _ = model(input_ids, input_mask, label_ids,token_id)
+                    loss.backward()
+                    optimizer.step()
+            elif args.model_classes == 'bilstm_start_end':
+                input_ids, input_mask, start_id,end_id = _batch  
+                loss, _, _ = model(input_ids,input_mask,start_id,end_id)
                 loss.backward()
                 optimizer.step()
 
+            if args.use_dataParallel:
+                loss = torch.sum(loss)  # if DataParallel
+
+            tr_loss += loss.item()
+            avg_loss += loss.item() / len(train_dataloader)
             global_step += 1
 
             if args.logging_steps > 0 and global_step % args.logging_steps == 0:
@@ -293,7 +304,7 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
                                     'best_dev_epoch': best_epoch_instance})
     else:
         test_result.append({'best_dev_f1': bestscore,
-                            'dev_bestof5_epoch': save_model_list})   
+                            'dev_bestof5_epoch': (save_model_list,save_model_epoch)})   
 
               
     tb_writer.close()
