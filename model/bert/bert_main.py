@@ -377,7 +377,7 @@ if __name__ == "__main__":
     parser.add_argument('--model_save_dir', type=str, default='/opt/hyp/NER/NER-model/saved_models/test/',
                         help='Root dir for saving models.')
     parser.add_argument('--tensorboard_dir', default='/opt/hyp/NER/NER-model/saved_models/test/runs/', type=str)
-    parser.add_argument('--data_path', default='/opt/hyp/NER/NER-model/data/json_data', type=str,
+    parser.add_argument('--data_path', default='/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data', type=str,
                         help='数据路径')
     parser.add_argument('--pred_embed_path', default='', type=str,
                         help="预训练词向量路径,'cc.zh.300.vec','sgns.baidubaike.bigram-char','Tencent_AILab_ChineseEmbedding.txt'")
@@ -387,7 +387,7 @@ if __name__ == "__main__":
     parser.add_argument('--save_embed_path', default='', type=str, help='词向量存储路径')
     parser.add_argument("--model_type", default='bert', type=str, help="Model type selected in the list")
     parser.add_argument("--model_class", default='bert_mrc', type=str, choices=["bert","bert_double","bert_mrc"])
-    parser.add_argument("--data_type", default='cyber_sec_ch_ner', type=str, choices=["cyber_sec_ch_ner","zh_msra_ner",""])
+    parser.add_argument("--data_type", default='zh_msra_ner', type=str, choices=["cyber_sec_ch_ner","zh_msra_ner",""])
     parser.add_argument("--model_name_or_path", default='/opt/hyp/NER/embedding/bert/chinese_L-12_H-768_A-12_pytorch', type=str,
                         help="Path to pre-trained model or shortcut name selected in the list: ")
 
@@ -527,7 +527,7 @@ if __name__ == "__main__":
             train_dataset = load_and_cache_examples(train_data_raw, args, tokenizer, label2index, pad_token_label_id, 'train', train_logger)
             dev_dataset = load_and_cache_examples(dev_data_raw, args, tokenizer, label2index, pad_token_label_id, 'dev',train_logger)
         elif args.model_class == 'bert_mrc':
-            train_dataset = load_mrc_examples(train_data_raw, args, tokenizer, pad_token_label_id, 'train', train_logger,allow_impossible=False)
+            train_dataset = load_mrc_examples(test_data_raw, args, tokenizer, pad_token_label_id, 'train', train_logger,allow_impossible=False)
             dev_dataset = load_mrc_examples(dev_data_raw, args, tokenizer, pad_token_label_id, 'dev',train_logger,allow_impossible=False)   
        
         train_sampler = RandomSampler(train_dataset)

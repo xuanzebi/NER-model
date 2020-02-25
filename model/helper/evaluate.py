@@ -137,10 +137,10 @@ def evaluate_st_end(data, model, label_map, tag, args, train_logger, device, dev
         return metric, metric_instance
 
 
-def get_tags_mrc(start,end,label_map,input_mask,ner_cate):
+def get_tags_mrc(args,start,end,label_map,input_mask,ner_cate):
     tags = []
     label_map = {int(i):j for i,j in label_map.items()}
-    query_info_dict = query_sign_map['cyber_sec_ch_ner']['natural_query']
+    query_info_dict = query_sign_map[args.data_type]['natural_query']
     for i, st in enumerate(start):
         cur_cate = label_map[ner_cate[i]]
         len_query_cate = len(query_info_dict[cur_cate])
@@ -215,8 +215,8 @@ def evaluate_mrc_ner(data, model, label_map, tag, args, train_logger, device, de
             y_pred = get_tags(start_logits,end_logits,label_map,input_mask)
             assert len(y_true) == len(y_pred)
         elif model_name == 'bert':
-            y_true = get_tags_mrc(start_id,end_id,label_map,input_mask,ner_cate)
-            y_pred = get_tags_mrc(start_logits,end_logits,label_map,input_mask,ner_cate)
+            y_true = get_tags_mrc(args,start_id,end_id,label_map,input_mask,ner_cate)
+            y_pred = get_tags_mrc(args,start_logits,end_logits,label_map,input_mask,ner_cate)
             assert len(y_true) == len(y_pred)
 
         Y_PRED.extend(y_pred)

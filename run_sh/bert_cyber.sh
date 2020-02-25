@@ -1,6 +1,6 @@
-export CUDA_VISIBLE_DEVICES=1
-python ../model/bert/bert_main.py  --model_save_dir='/opt/hyp/NER/NER-model/saved_models/cyber/cyber_bert_fgm/' \
-                     --tensorboard_dir='/opt/hyp/NER/NER-model/saved_models/cyber/cyber_bert_fgm/runs/' \
+export CUDA_VISIBLE_DEVICES=0
+python ../model/bert/bert_main.py  --model_save_dir='/opt/hyp/NER/NER-model/saved_models/cyber/cyber_bert_mrc/' \
+                     --tensorboard_dir='/opt/hyp/NER/NER-model/saved_models/cyber/cyber_bert_mrc/runs/' \
                      --batch_size=16 \
                      --data_path='/opt/hyp/NER/NER-model/data/json_data' \
                      --model_name_or_path='/opt/hyp/NER/embedding/bert/chinese_L-12_H-768_A-12_pytorch' \
@@ -13,8 +13,10 @@ python ../model/bert/bert_main.py  --model_save_dir='/opt/hyp/NER/NER-model/save
                      --learning_rate=5e-5 \
                      --use_dataParallel=False \
                      --use_crf=False \
-                     --model_class='bert' \
-                     --use_fgm=True \
+                     --model_class='bert_mrc' \
+                     --use_fgm=False \
+                     --data_type='cyber_sec_ch_ner' \
+
 
 
 
