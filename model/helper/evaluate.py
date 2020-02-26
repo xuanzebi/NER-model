@@ -159,7 +159,10 @@ def get_tags_mrc(args,start,end,label_map,input_mask,ner_cate):
                     else:
                         tag[j-len_query_cate-2] = 'B-' + cur_cate
                         for p in range(j+1,k):
-                            tag[p-len_query_cate-2] = 'I-' + cur_cate
+                            if 'msra' in args.data_type:
+                                tag[p-len_query_cate-2] = 'M-' + cur_cate
+                            else:
+                                tag[p-len_query_cate-2] = 'I-' + cur_cate
                         tag[k-len_query_cate-2] = 'E-' + cur_cate
                     break
                 # 可选

@@ -353,7 +353,10 @@ def load_mrc_examples(data, args, tokenizer, pad_token_label_id, mode, logger,al
     all_end_ids = torch.tensor([f.end_position for f in features], dtype=torch.long)
     ner_cate = torch.tensor([f.ner_cate for f in features], dtype=torch.long)
     dataset = TensorDataset(all_input_ids, all_input_mask, all_segment_ids, all_start_ids,all_end_ids,ner_cate)
-    return dataset
+    if mode == 'test':
+        return dataset,features
+    else:
+        return dataset
 
 MODEL_CLASSES = {
     "bert": (BertConfig, BertForTokenClassification, BertTokenizer),
@@ -371,12 +374,12 @@ if __name__ == "__main__":
     start_time = time.time()
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--do_train", default=True, type=str2bool, help="Whether to run training.")
-    parser.add_argument("--do_test", default=False, type=str2bool, help="Whether to run test on the test set.")
+    parser.add_argument("--do_train", default=False, type=str2bool, help="Whether to run training.")
+    parser.add_argument("--do_test", default=True, type=str2bool, help="Whether to run test on the test set.")
     parser.add_argument('--save_best_model', type=str2bool, default=True, help='Whether to save best model.')
-    parser.add_argument('--model_save_dir', type=str, default='/opt/hyp/NER/NER-model/saved_models/test/',
+    parser.add_argument('--model_save_dir', type=str, default='/opt/hyp/NER/NER-model/saved_models/msra/msra_bert_mrc/',
                         help='Root dir for saving models.')
-    parser.add_argument('--tensorboard_dir', default='/opt/hyp/NER/NER-model/saved_models/test/runs/', type=str)
+    parser.add_argument('--tensorboard_dir', default='/opt/hyp/NER/NER-model/saved_models/msra/msra_bert_mrc/runs/', type=str)
     parser.add_argument('--data_path', default='/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data', type=str,
                         help='数据路径')
     parser.add_argument('--pred_embed_path', default='', type=str,
@@ -425,7 +428,7 @@ if __name__ == "__main__":
     parser.add_argument('--min_count', default=1, type=int)
     parser.add_argument('--dropout', default=0.5, type=float, help='词向量后的dropout')
     parser.add_argument('--dropoutlstm', default=0.5, type=float, help='lstm后的dropout')
-    parser.add_argument("--warmup_proportion", default=0.2, type=int, help="Linear warmup over warmup_steps.")
+    parser.add_argument("--warmup_proportion", default=0.1, type=int, help="Linear warmup over warmup_steps.")
     parser.add_argument("--weight_decay", default=0.01, type=float, help="Weight decay if we apply some. 0/0.01")
     parser.add_argument("--max_grad_norm", default=1.0, type=float, help="Max gradient norm.")
     parser.add_argument("--gradient_accumulation_steps", type=int, default=1,
@@ -527,7 +530,7 @@ if __name__ == "__main__":
             train_dataset = load_and_cache_examples(train_data_raw, args, tokenizer, label2index, pad_token_label_id, 'train', train_logger)
             dev_dataset = load_and_cache_examples(dev_data_raw, args, tokenizer, label2index, pad_token_label_id, 'dev',train_logger)
         elif args.model_class == 'bert_mrc':
-            train_dataset = load_mrc_examples(test_data_raw, args, tokenizer, pad_token_label_id, 'train', train_logger,allow_impossible=False)
+            train_dataset = load_mrc_examples(train_data_raw, args, tokenizer, pad_token_label_id, 'train', train_logger,allow_impossible=False)
             dev_dataset = load_mrc_examples(dev_data_raw, args, tokenizer, pad_token_label_id, 'dev',train_logger,allow_impossible=False)   
        
         train_sampler = RandomSampler(train_dataset)
@@ -571,9 +574,10 @@ if __name__ == "__main__":
         if args.model_class == 'bert':
             test_dataset = load_and_cache_examples(test_data_raw, args, tokenizer, label2index, pad_token_label_id, 'test',train_logger)
         elif args.model_class == 'bert_mrc':
-            test_dataset = load_mrc_examples(test_data_raw, args, tokenizer, pad_token_label_id, 'test',train_logger,allow_impossible=False)
+            test_dataset,test_features = load_mrc_examples(test_data_raw, args, tokenizer, pad_token_label_id, 'test',train_logger,allow_impossible=False)
         test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size)
 
+        print(len(test_features))
         # Model
         entity_model_save_dir = args.model_save_dir + 'pytorch_model.bin'
         if args.model_class == 'bert':
@@ -597,7 +601,7 @@ if __name__ == "__main__":
                 param.requires_grad = False
             if args.use_dataParallel:
                 model = nn.DataParallel(model.cuda())
-            metric, metric_instance = evaluate_st_end(test_dataloader, model, args.label_entity, tag, args, train_logger, device,
+            entity_metric, entity_metric_instance,y_pred_entity = evaluate_st_end(test_dataloader, model, args.label_entity, tag, args, train_logger, device,
                                             test_data_raw, 'test',pad_token_label_id,'bert')
         elif args.model_class == 'bert_mrc':
             model = BertforMrcNER(args,config)
@@ -607,7 +611,7 @@ if __name__ == "__main__":
                 param.requires_grad = False
             if args.use_dataParallel:
                 model = nn.DataParallel(model.cuda())
-            metric, metric_instance = evaluate_mrc_ner(test_dataloader, model, args.label_entity, tag, args, train_logger, device,
+            entity_metric, entity_metric_instance,y_pred_entity = evaluate_mrc_ner(test_dataloader, model, args.label_entity, tag, args, train_logger, device,
                                             test_data_raw, 'test',pad_token_label_id,'bert')
 
         end_time = time.time()
@@ -629,14 +633,17 @@ if __name__ == "__main__":
 
         # print(len(y_pred_entity))
         # print(len(test_data_raw))
-        assert len(y_pred_entity) == len(test_data_raw)
-        results = []
-        for i, (text, label) in enumerate(test_data_raw):
-            res = []
-            res.append(text)
-            res.append(label)
-            res.append(' '.join(y_pred_entity[i]))
-            results.append(res)
+        if args.model_class == 'bert':
+            assert len(y_pred_entity) == len(test_data_raw)
+            results = []
+            for i, (text, label) in enumerate(test_data_raw):
+                res = []
+                res.append(text)
+                res.append(label)
+                res.append(' '.join(y_pred_entity[i]))
+                results.append(res)
 
-        with codecs.open(result_dir + '/test_pred_entity.txt', 'w', encoding='utf-8') as f:
-            json.dump(results, f, indent=4, ensure_ascii=False)
+            with codecs.open(result_dir + '/test_pred_entity.txt', 'w', encoding='utf-8') as f:
+                json.dump(results, f, indent=4, ensure_ascii=False)
+        elif args.model_class == 'bert_mrc':
+            pass
