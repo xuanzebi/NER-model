@@ -428,7 +428,7 @@ if __name__ == "__main__":
     parser.add_argument('--min_count', default=1, type=int)
     parser.add_argument('--dropout', default=0.5, type=float, help='词向量后的dropout')
     parser.add_argument('--dropoutlstm', default=0.5, type=float, help='lstm后的dropout')
-    parser.add_argument("--warmup_proportion", default=0.1, type=int, help="Linear warmup over warmup_steps.")
+    parser.add_argument("--warmup_proportion", default=0.1, type=float, help="Linear warmup over warmup_steps.")
     parser.add_argument("--weight_decay", default=0.01, type=float, help="Weight decay if we apply some. 0/0.01")
     parser.add_argument("--max_grad_norm", default=1.0, type=float, help="Max gradient norm.")
     parser.add_argument("--gradient_accumulation_steps", type=int, default=1,
@@ -573,11 +573,12 @@ if __name__ == "__main__":
         # TestData
         if args.model_class == 'bert':
             test_dataset = load_and_cache_examples(test_data_raw, args, tokenizer, label2index, pad_token_label_id, 'test',train_logger)
+        elif args.model_class == 'bert_double':
+            test_dataset = load_double_examples(test_data_raw, args, tokenizer, pad_token_label_id, 'test', train_logger)
         elif args.model_class == 'bert_mrc':
             test_dataset,test_features = load_mrc_examples(test_data_raw, args, tokenizer, pad_token_label_id, 'test',train_logger,allow_impossible=False)
         test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size)
 
-        print(len(test_features))
         # Model
         entity_model_save_dir = args.model_save_dir + 'pytorch_model.bin'
         if args.model_class == 'bert':

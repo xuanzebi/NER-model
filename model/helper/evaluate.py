@@ -19,7 +19,8 @@ def evaluate_crf(y_true, y_pred, tag):
     metric = compute_f1(gold_sentences, pred_sentences)
     return metric
 
-def get_tags_bert(start,end,label_map,input_mask):
+def get_tags_bert(start,end,label_map,input_mask,args):
+    """多个start指针，一个end如何处理，1个start，多个end如何处理"""
     tags = []
     label_map = {int(i):j for i,j in label_map.items()}
     for i, st in enumerate(start):
@@ -114,8 +115,8 @@ def evaluate_st_end(data, model, label_map, tag, args, train_logger, device, dev
             y_true = get_tags(start_id,end_id,label_map,input_mask)
             y_pred = get_tags(start_logits,end_logits,label_map,input_mask)
         elif model_name == 'bert':
-            y_true = get_tags_bert(start_id,end_id,label_map,input_mask)
-            y_pred = get_tags_bert(start_logits,end_logits,label_map,input_mask)
+            y_true = get_tags_bert(start_id,end_id,label_map,input_mask,args)
+            y_pred = get_tags_bert(start_logits,end_logits,label_map,input_mask,args)
 
         Y_PRED.extend(y_pred)
         Y_TRUE.extend(y_true)
@@ -134,6 +135,46 @@ def evaluate_st_end(data, model, label_map, tag, args, train_logger, device, dev
 
 
 def get_tags_mrc(args,start,end,label_map,input_mask,ner_cate):
+    """多个start指针，一个end如何处理，1个start，多个end如何处理
+        该函数是根据start指针来匹配，但是end指针只能用一次。"""
+    tags = []
+    label_map = {int(i):j for i,j in label_map.items()}
+    query_info_dict = query_sign_map[args.data_type]['natural_query']
+    for i, st in enumerate(start):
+        cur_end = 0
+        cur_cate = label_map[ner_cate[i]]
+        len_query_cate = len(query_info_dict[cur_cate])
+        len_text = sum(input_mask[i]==1)
+        tag = ['O'] * (len_text - len_query_cate - 3)  # CLS 和 SEP
+        for j in range(len_query_cate+2,len_text-1):
+            if st[j] == 0:
+                continue
+            end_start_len = min(len_text-1,j+20) # 30 为实体的长度
+            end_start = max(j,cur_end) # 多个start 1个end指针，end遍历用最近的
+            for k in range(end_start,end_start_len):
+                if end[i][k] == st[j]:
+                    if k == j:
+                        tag[k-len_query_cate-2] = 'S-' + cur_cate
+                    else:
+                        tag[j-len_query_cate-2] = 'B-' + cur_cate
+                        for p in range(j+1,k):
+                            if 'msra' in args.data_type:
+                                tag[p-len_query_cate-2] = 'M-' + cur_cate
+                            else:
+                                tag[p-len_query_cate-2] = 'I-' + cur_cate
+                        tag[k-len_query_cate-2] = 'E-' + cur_cate
+                        cur_end = k + 1
+                    break
+                # 可选
+                # if end[i][k] != 0:
+                #     break 
+        tags.append(tag)
+    return tags
+
+
+def get_tags_mrc_v2(args,start,end,label_map,input_mask,ner_cate):
+    """多个start指针，一个end如何处理，1个start，多个end如何处理
+        首先召回start指针里的第一个，如果在start和end中还有start则跳过"""
     tags = []
     label_map = {int(i):j for i,j in label_map.items()}
     query_info_dict = query_sign_map[args.data_type]['natural_query']
@@ -142,7 +183,8 @@ def get_tags_mrc(args,start,end,label_map,input_mask,ner_cate):
         len_query_cate = len(query_info_dict[cur_cate])
         len_text = sum(input_mask[i]==1)
         tag = ['O'] * (len_text - len_query_cate - 3)  # CLS 和 SEP
-        for j in range(len_query_cate+2,len_text-1):
+        j = len_query_cate + 2
+        while j < len_text-1:
             if st[j] == 0:
                 continue
             end_start_len = min(len_text-1,j+20) # 30 为实体的长度
@@ -158,13 +200,14 @@ def get_tags_mrc(args,start,end,label_map,input_mask,ner_cate):
                             else:
                                 tag[p-len_query_cate-2] = 'I-' + cur_cate
                         tag[k-len_query_cate-2] = 'E-' + cur_cate
+                        j = k
                     break
+            j += 1
                 # 可选
                 # if end[i][k] != 0:
                 #     break 
         tags.append(tag)
     return tags
-
 
 # 针对双指针的召回评估函数
 def evaluate_mrc_ner(data, model, label_map, tag, args, train_logger, device, dev_test_data, mode,pad_token_label_id=-100, model_name=None):
@@ -212,8 +255,8 @@ def evaluate_mrc_ner(data, model, label_map, tag, args, train_logger, device, de
             y_pred = get_tags(start_logits,end_logits,label_map,input_mask)
             assert len(y_true) == len(y_pred)
         elif model_name == 'bert':
-            y_true = get_tags_mrc(args,start_id,end_id,label_map,input_mask,ner_cate)
-            y_pred = get_tags_mrc(args,start_logits,end_logits,label_map,input_mask,ner_cate)
+            y_true = get_tags_mrc_v2(args,start_id,end_id,label_map,input_mask,ner_cate)
+            y_pred = get_tags_mrc_v2(args,start_logits,end_logits,label_map,input_mask,ner_cate)
             assert len(y_true) == len(y_pred)
 
         Y_PRED.extend(y_pred)
