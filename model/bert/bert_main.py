@@ -530,7 +530,7 @@ if __name__ == "__main__":
             train_dataset = load_and_cache_examples(train_data_raw, args, tokenizer, label2index, pad_token_label_id, 'train', train_logger)
             dev_dataset = load_and_cache_examples(dev_data_raw, args, tokenizer, label2index, pad_token_label_id, 'dev',train_logger)
         elif args.model_class == 'bert_mrc':
-            train_dataset = load_mrc_examples(train_data_raw, args, tokenizer, pad_token_label_id, 'train', train_logger,allow_impossible=False)
+            train_dataset = load_mrc_examples(train_data_raw, args, tokenizer, pad_token_label_id, 'train', train_logger,allow_impossible=True)
             dev_dataset = load_mrc_examples(dev_data_raw, args, tokenizer, pad_token_label_id, 'dev',train_logger,allow_impossible=False)   
        
         train_sampler = RandomSampler(train_dataset)

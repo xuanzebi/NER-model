@@ -26,11 +26,9 @@ def get_tags_bert(start,end,label_map,input_mask):
         len_tag = sum(input_mask[i]==1) -2
         tag = ['O'] * len_tag  # CLS 和 SEP
         for j in range(1,len_tag+1):
-            if input_mask[i][j] == 0:
-                break
             if st[j] == 0:
                 continue
-            end_start_len = min(len_tag+1,30) # 30 为实体的长度
+            end_start_len = min(len_tag+1,j+30) # 30 为实体的长度
             for k in range(j,end_start_len):
                 if end[i][k] == st[j]:
                     if k == j:
@@ -38,12 +36,12 @@ def get_tags_bert(start,end,label_map,input_mask):
                     else:
                         tag[j-1] = 'B-' +label_map[st[j]]
                         for p in range(j+1,k):
-                            tag[p-1] = 'I-' +label_map[st[j]]
+                            if 'msra' in args.data_type:
+                                tag[p-1] = 'M-' +label_map[st[j]]
+                            else:
+                                tag[p-1] = 'I-' +label_map[st[j]]
                         tag[k-1] = 'E-' +label_map[st[j]]
                     break
-                # 可选
-                # if end[i][k] != 0:
-                #     break 
         tags.append(tag)
     return tags
 
@@ -57,7 +55,8 @@ def get_tags(start,end,label_map,input_mask):
                 break
             if m == 0:
                 continue
-            for k in range(j,min(len(st),30)):
+            entity_len = min(len(st),j+30)
+            for k in range(j,entity_len):
                 if input_mask[i][k] == 0:
                     break
                 if end[i][k] == m:
@@ -69,9 +68,6 @@ def get_tags(start,end,label_map,input_mask):
                             tag[p] = 'I-' +label_map[m]
                         tag[k] = 'E-' +label_map[m]
                     break
-                # 可选
-                # if end[i][k] != 0:
-                #     break 
         tags.append(tag)
     return tags
                     
@@ -144,14 +140,12 @@ def get_tags_mrc(args,start,end,label_map,input_mask,ner_cate):
     for i, st in enumerate(start):
         cur_cate = label_map[ner_cate[i]]
         len_query_cate = len(query_info_dict[cur_cate])
-        len_tag = sum(input_mask[i]==1)-len_query_cate -3
-        tag = ['O'] * len_tag  # CLS 和 SEP
-        for j in range(len_query_cate+2,len_tag+1):
-            if input_mask[i][j] == 0:
-                break
+        len_text = sum(input_mask[i]==1)
+        tag = ['O'] * (len_text - len_query_cate - 3)  # CLS 和 SEP
+        for j in range(len_query_cate+2,len_text-1):
             if st[j] == 0:
                 continue
-            end_start_len = min(len_tag+1,30) # 30 为实体的长度
+            end_start_len = min(len_text-1,j+20) # 30 为实体的长度
             for k in range(j,end_start_len):
                 if end[i][k] == st[j]:
                     if k == j:

@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 cys_label = {"0": "O", "1": "RT", "2": "LOC", "3": 'PER', "4": "ORG", "5": "SW", "6": "VUL_ID"}
-msra_label = {"0":"NS","1": "NR","2": "NT"}
+msra_label = {"0":"O","1":"NS","2": "NR","3": "NT"}
 
 class InputExample(object):
     """A single training/test example for token classification."""
@@ -284,36 +284,44 @@ def MRC_convert_examples_to_features(
         input_tokens = []
         start_pos = []
         end_pos = []
+        segment_ids = []
+        input_mask = []
         # ADD [CLS]
         input_tokens.append(cls_token)
+        segment_ids.append(0)
         start_pos.append(pad_token_label_id)
         end_pos.append(pad_token_label_id)
 
         for query_item in query_tokens:
             input_tokens.append(query_item)
-            start_pos.append(0)
-            end_pos.append(0)
+            segment_ids.append(0)
+            start_pos.append(pad_token_label_id)
+            end_pos.append(pad_token_label_id)
 
         # ADD [SEP]
         input_tokens.append(sep_token)
+        segment_ids.append(0)
         start_pos.append(pad_token_label_id)
         end_pos.append(pad_token_label_id)
 
         input_tokens.extend(all_doc_tokens)
+        segment_ids.extend([1] * len(all_doc_tokens))
+        input_mask.extend([1] * len(all_doc_tokens))
         start_pos.extend(doc_start_pos)
         end_pos.extend(doc_end_pos)
         # ADD [SEP]
         input_tokens.append(sep_token)
+        segment_ids.append(1)
         start_pos.append(pad_token_label_id)
         end_pos.append(pad_token_label_id)
 
-        segment_ids = [sequence_a_segment_id] * len(input_tokens)
+
         input_ids = tokenizer.convert_tokens_to_ids(input_tokens)
 
         # The mask has 1 for real tokens and 0 for padding tokens. Only real
         # tokens are attended to.
         input_mask = [1 if mask_padding_with_zero else 0] * len(input_ids)
-
+        
         # Zero-pad up to the sequence length.
         padding_length = max_seq_length - len(input_ids)
 

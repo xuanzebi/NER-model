@@ -1,6 +1,6 @@
 export CUDA_VISIBLE_DEVICES=0
-python ../model/bert/bert_main.py  --model_save_dir='/opt/hyp/NER/NER-model/saved_models/cyber/cyber_bert_mrc/' \
-                     --tensorboard_dir='/opt/hyp/NER/NER-model/saved_models/cyber/cyber_bert_mrc/runs/' \
+python ../model/bert/bert_main.py  --model_save_dir='/opt/hyp/NER/NER-model/saved_models/cyber/cyber_bert_mrc_allow/' \
+                     --tensorboard_dir='/opt/hyp/NER/NER-model/saved_models/cyber/cyber_bert_mrc_allow/runs/' \
                      --batch_size=16 \
                      --data_path='/opt/hyp/NER/NER-model/data/json_data' \
                      --model_name_or_path='/opt/hyp/NER/embedding/bert/chinese_L-12_H-768_A-12_pytorch' \

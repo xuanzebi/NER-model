@@ -10,11 +10,13 @@ python ../model/bert/bert_main.py  --model_save_dir='/opt/hyp/NER/NER-model/save
                      --seed=42 \
                      --max_seq_length=156 \
                      --use_bieos=True \
-                     --learning_rate=1e-5 \
+                     --learning_rate=5e-6 \
                      --use_dataParallel=False \
                      --model_class='bert_mrc' \
                      --use_crf=False \
                      --data_type='zh_msra_ner' \
+
+
 
 
 
