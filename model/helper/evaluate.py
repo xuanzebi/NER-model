@@ -186,6 +186,7 @@ def get_tags_mrc_v2(args,start,end,label_map,input_mask,ner_cate):
         j = len_query_cate + 2
         while j < len_text-1:
             if st[j] == 0:
+                j +=1
                 continue
             end_start_len = min(len_text-1,j+20) # 30 为实体的长度
             for k in range(j,end_start_len):

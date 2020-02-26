@@ -374,7 +374,7 @@ if __name__ == "__main__":
     start_time = time.time()
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--do_train", default=False, type=str2bool, help="Whether to run training.")
+    parser.add_argument("--do_train", default=True, type=str2bool, help="Whether to run training.")
     parser.add_argument("--do_test", default=True, type=str2bool, help="Whether to run test on the test set.")
     parser.add_argument('--save_best_model', type=str2bool, default=True, help='Whether to save best model.')
     parser.add_argument('--model_save_dir', type=str, default='/opt/hyp/NER/NER-model/saved_models/msra/msra_bert_mrc/',
