@@ -117,6 +117,101 @@ class Bilstm_CRF_MTL(nn.Module):
             return loss + token_loss, output2
 
 
+# TODO 
+class Bilstm_MTL(nn.Module):
+    """
+    bilstm-crf模型 + 多任务学习(使用多个数据来多任务学习共享参数))
+    """
+
+    def __init__(self, args, cyber_pretrain_word_embedding,msra_pretrain_word_embedding, cyber_label_size,msra_label_size):
+        super(Bilstm_MTL, self).__init__()
+        self.use_crf = args.use_crf
+        self.use_char = args.use_char
+        self.use_token_mtl = args.use_token_mtl
+        self.gpu = args.gpu
+        self.use_pre = args.use_pre
+        self.rnn_hidden_dim = args.rnn_hidden_dim
+        self.rnn_type = args.rnn_type
+        self.max_seq_length = args.max_seq_length
+        self.use_highway = args.use_highway
+        self.dropoutlstm = nn.Dropout(args.dropoutlstm)
+        self.wordrep_cyber = WordRep(args, cyber_pretrain_word_embedding)
+        self.msra_cyber = WordRep(args, msra_pretrain_word_embedding)
+
+        self.lstm = nn.LSTM(args.word_emb_dim, self.rnn_hidden_dim, num_layers=args.num_layers, batch_first=True,
+                            bidirectional=True)
+        self.gru = nn.GRU(args.word_emb_dim, self.rnn_hidden_dim, num_layers=args.num_layers, batch_first=True,
+                          bidirectional=True)
+
+        self.cyber_label_size = cyber_label_size
+        self.msra_label_size = msra_label_size
+
+        if self.use_crf:
+            self.cyber_crf = CRF(self.cyber_label_size, self.gpu)
+            self.msra_crf = CRF(self.msra_label_size, self.gpu)
+            self.cyber_label_size += 2
+            self.msra_label_size += 2
+
+        self.hidden2tag_cyber = nn.Linear(args.rnn_hidden_dim * 2, self.cyber_label_size)
+
+        self.hidden2tag_msra = nn.Linear(args.rnn_hidden_dim * 2,self.msra_label_size)
+        self.hidden2token =  nn.Linear(args.rnn_hidden_dim * 2, 2)
+
+    def forward(self, word_input, input_mask, labels,labels_token,data_type):
+
+        if data_type == 1:
+            word_input = self.wordrep_cyber(word_input)
+        elif data_type == 2:
+            word_input = self.msra_cyber(word_input)
+
+        input_mask.requires_grad = False
+        word_input = word_input * (input_mask.unsqueeze(-1).float())
+        batch_size = word_input.size(0)
+
+        if self.rnn_type == 'LSTM':
+            output, _ = self.lstm(word_input)
+        elif self.rnn_type == 'GRU':
+            output, _ = self.gru(word_input)
+
+        output = self.dropoutlstm(output)
+        if data_type == 1:
+            output = self.hidden2tag_cyber(output)
+        elif data_type == 2:
+            output = self.hidden2tag_msra(output)
+
+        if self.use_token_mtl:
+            token_cyber = self.hidden2token(output)
+            loss_token = nn.CrossEntropyLoss()
+            active_loss = input_mask.view(-1) == 1
+            active_logits = token_cyber.view(-1, 2)[active_loss]
+            active_labels = labels_token.view(-1)[active_loss]
+            token_loss = loss_token(active_logits, active_labels)
+
+        maskk = input_mask.ge(1)
+  
+        if self.use_crf:
+            if data_type == 1:
+                crf_loss = self.cyber_crf.neg_log_likelihood_loss(output, maskk, labels)
+                scores, tag_seq = self.cyber_crf._viterbi_decode(output, input_mask)
+            elif data_type == 2:
+                crf_loss = self.msra_crf.neg_log_likelihood_loss(output, maskk, labels)
+                scores, tag_seq = self.msra_crf._viterbi_decode(output, input_mask)
+            # token_loss = self.token_crf.neg_log_likelihood_loss(token_output,maskk,labels_token)
+            if self.use_token_mtl:
+                ans_loss = crf_loss / batch_size  + token_loss
+            else:
+                ans_loss = crf_loss / batch_size 
+            return ans_loss, tag_seq
+        else:
+            pass
+            # loss_fct = nn.CrossEntropyLoss(ignore_index=0)
+            # active_loss = input_mask.view(-1) == 1
+            # active_logits = output2.view(-1, self.label_size)[active_loss]
+            # active_labels = labels.view(-1)[active_loss]
+            # loss = loss_fct(active_logits, active_labels)
+            # return loss + token_loss, output2
+
+
 class Bilstm_ST_END(nn.Module):
     """
     bilstm-crf模型

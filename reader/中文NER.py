@@ -219,21 +219,21 @@ def bmes_to_bies(*files):
 
 
 def count_label():
-    resume_train_file = 'D:/Paper_Shiyan/NER-Model/data/ResumeNER/json_data/train_data.json'
-    resume_dev_file = 'D:/Paper_Shiyan/NER-Model/data/ResumeNER/json_data/dev_data.json'
-    resume_test_file = 'D:/Paper_Shiyan/NER-Model/data/ResumeNER/json_data/test_data.json'
+    resume_train_file = '/opt/hyp/NER/NER-model/data/other_data/ResumeNER/json_data/train_data.json'
+    resume_dev_file = '/opt/hyp/NER/NER-model/data/other_data/ResumeNER/json_data/dev_data.json'
+    resume_test_file = '/opt/hyp/NER/NER-model/data/other_data/ResumeNER/json_data/test_data.json'
 
-    cyber_train_file = 'D:/Paper_Shiyan/NER-Model/data/Cyberdata/json_data/train_data.json'
-    cyber_dev_file = 'D:/Paper_Shiyan/NER-Model/data/Cyberdata/json_data/dev_data.json'
-    cyber_test_file = 'D:/Paper_Shiyan/NER-Model/data/Cyberdata/json_data/test_data.json'
+    cyber_train_file = '/opt/hyp/NER/NER-model/data/json_data/train_data.json'
+    cyber_dev_file = '/opt/hyp/NER/NER-model/data/json_data/dev_data.json'
+    cyber_test_file = '/opt/hyp/NER/NER-model/data/json_data/test_data.json'
 
-    weibo_train_file = 'D:/Paper_Shiyan/NER-Model/data/WeiboNER/json_data/train_data.json'
-    weibo_dev_file = 'D:/Paper_Shiyan/NER-Model/data/WeiboNER/json_data/dev_data.json'
-    weibo_test_file = 'D:/Paper_Shiyan/NER-Model/data/WeiboNER/json_data/test_data.json'
+    weibo_train_file = '/opt/hyp/NER/NER-model/data/other_data/WeiboNER/json_data/train_data.json'
+    weibo_dev_file = '/opt/hyp/NER/NER-model/data/other_data/WeiboNER/json_data/dev_data.json'
+    weibo_test_file = '/opt/hyp/NER/NER-model/data/other_data/WeiboNER/json_data/test_data.json'
 
-    msra_train_file = 'D:/Paper_Shiyan/NER-Model/data/MSRA/json_data/train_data.json'
-    msra_dev_file = 'D:/Paper_Shiyan/NER-Model/data/MSRA/json_data/dev_data.json'
-    msra_test_file = 'D:/Paper_Shiyan/NER-Model/data/MSRA/json_data/test_data.json'
+    msra_train_file = '/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data/train_data.json'
+    msra_dev_file = '/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data/dev_data.json'
+    msra_test_file = '/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data/test_data.json'
 
     def label_count(*files, type):
         label_set = set()
@@ -243,7 +243,7 @@ def count_label():
 
             for lab in labels:
                 for la in lab.split(' '):
-                    label_set.add(la)
+                    label_set.add(la[2:])
 
         print('======' + type + '的label为======')
         print(label_set, len(label_set))
@@ -254,7 +254,7 @@ def count_label():
     label_count(cyber_train_file, cyber_test_file, cyber_dev_file, type='Cyber')
 
 
-# count_label()
+count_label()
 
 # TODO: 将四个数据集的label的交集修改为一样label（在使用多任务学习时）
 

@@ -168,3 +168,4 @@ def pregress_mtl(data, word2idx, label2idx, max_seq_lenth):
         TOKEN_LABEL_ID.append(token_id)
 
     return INPUT_ID, INPUT_MASK, LABEL_ID,TOKEN_LABEL_ID
+

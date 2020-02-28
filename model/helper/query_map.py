@@ -20,7 +20,9 @@
 #       * LOC --- Location
 #       * PRO --- Profession
 #       * CONT --- Country
-#   3. OntoNotes 5.0 (4)
+#   3 、Weibo(8)
+#       * LOC.NAM', 'ORG.NOM', 'PER.NAM', 'PER.NOM', 'GPE.NOM', 'ORG.NAM', 'GPE.NAM', 'LOC.NOM'
+#   4. OntoNotes 5.0 (4)
 #       * LOC --- Non-GPE locations, mountain ranges, bodies of water
 #       * PER --- People, including fictional 
 #       * GPE --- Countries, cities, states 

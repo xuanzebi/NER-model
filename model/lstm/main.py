@@ -29,10 +29,12 @@ warnings.filterwarnings("ignore")
 
 from util.util import get_logger, compute_f1, compute_spans_bio, compute_spans_bieos, compute_instance_f1
 from model.lstm.lstmcrf import Bilstmcrf,FGM
-from model.lstm.model import Bilstm_CRF_MTL,Bilstm_ST_END
+from model.lstm.model import Bilstm_CRF_MTL,Bilstm_ST_END,Bilstm_MTL
 from model.helper.get_data import get_cyber_data, pregress,pregress_mtl
 from model.helper.convert_data import gen_token_ner_lstm, cys_label
 from model.helper.evaluate import evaluate_crf,evaluate_instance,evaluate_st_end
+from model.lstm.helper import evaluate,train_mtl
+from model.helper.batchsamper import MultitastdataBatchsampler
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -43,88 +45,6 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
-
-
-def evaluate(data, model, label_map, tag, args, train_logger, device, dev_test_data, mode):
-    print("Evaluating on {} set...".format(mode))
-    test_iterator = tqdm(data, desc="dev_test_interation")
-    y_pred = []
-    y_true = []
-    test_loss = 0.
-    test_step = 0
-
-    for step, test_batch in enumerate(test_iterator):
-        # print(len(test_batch))
-        test_step += 1
-        model.eval()
-        _test_batch = tuple(t.to(device) for t in test_batch)
-
-        with torch.no_grad():
-            if args.model_classes == 'bilstm':
-                input_ids, input_mask, label_ids = _test_batch  
-                loss, logits = model(input_ids, input_mask, label_ids)
-            elif args.model_classes == 'bilstm_mtl':
-                input_ids, input_mask, label_ids,token_id = _test_batch  
-                loss, logits = model(input_ids, input_mask, label_ids,token_id)
-
-        if args.use_dataParallel:
-            loss = torch.sum(loss)  # if DataParallel model.module
-
-        if args.use_crf == False:
-            logits = torch.argmax(F.log_softmax(logits, dim=-1), dim=-1)
-
-        logits = logits.detach().cpu().numpy()
-        test_loss += loss.item()
-        label_ids = label_ids.to('cpu').numpy()
-        input_mask = input_mask.cpu().data.numpy()
-
-        if args.deal_long_short_data == 'cut':
-            for i, label in enumerate(label_ids):
-                temp_1 = []
-                temp_2 = []
-                for j, m in enumerate(label):
-                    if input_mask[i][j] != 0:
-                        temp_1.append(label_map[m])
-                        temp_2.append(label_map[logits[i][j]])
-                        if j == label.size - 1:  # len(label),args.max_seq_len
-                            assert (len(temp_1) == len(temp_2))
-                            y_true.append(temp_1)
-                            y_pred.append(temp_2)
-                    elif input_mask[i][j] == 0:
-                        assert (len(temp_1) == len(temp_2))
-                        y_true.append(temp_1)
-                        y_pred.append(temp_2)
-                        break
-        elif args.deal_long_short_data == 'pad':
-            # 只保存到定义的max_seq_len的长度
-            for i, label in enumerate(label_ids):
-                y_true.append([label_map[m] for m in label])
-                y_pred.append([label_map[m] for m in logits[i]])
-        elif args.deal_long_short_data == 'stay':
-            for i, label in enumerate(label_ids):
-                dev_test_len = dev_test_data[i][1].split(' ')
-                if len(dev_test_len) <= args.max_seq_length:
-                    y_true.append([label_map[m] for m in label])
-                    y_pred.append([label_map[m] for m in logits[i]])
-                else:
-                    tmp_pred = [label_map[m] for m in logits[i]]
-                    tmp2 = len(dev_test_len) - args.max_seq_length
-                    while tmp2 > 0:
-                        tmp_pred.append('O')
-                        tmp2 -= 1
-                    y_true.append(dev_test_len)
-                    y_pred.append(tmp_pred)
-                    assert len(dev_test_len) == len(tmp_pred)
-
-        test_iterator.set_postfix(test_loss=loss.item())
-
-    metric_instance = evaluate_instance(y_true, y_pred)
-    metric = evaluate_crf(y_true, y_pred, tag)
-    metric['test_loss'] = test_loss / test_step
-    if mode == 'test':
-        return metric, metric_instance, y_pred
-    else:
-        return metric, metric_instance
 
 
 def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, label_map, tag, train_logger,
@@ -193,20 +113,18 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
                     optimizer.step()
             elif args.model_classes == 'bilstm_mtl':
                 input_ids, input_mask, label_ids,token_id = _batch 
-                if args.use_fgm:
-                    loss, _ = model(input_ids, input_mask, label_ids,token_id)
-                    loss.backward()
-                    fgm.attack()
-                    loss_adv,_ = model(input_ids, input_mask, label_ids,token_id)
-                    loss_adv.backward() # 反向传播，并在正常的grad基础上，累加对抗训练的梯度
-                    fgm.restore() # 恢复embedding参数
-                    # 梯度下降，更新参数
-                    optimizer.step()
-                    model.zero_grad()
-                else:
-                    loss, _ = model(input_ids, input_mask, label_ids,token_id)
-                    loss.backward()
-                    optimizer.step()
+                loss, _ = model(input_ids, input_mask, label_ids,token_id)
+                loss.backward()
+                optimizer.step()
+            elif args.model_classes == 'bilstm_data_mtl':
+                input_ids, input_mask, label_ids,token_id,data_type = _batch 
+                a = [int(k) for k in data_type]
+                a = set(a)
+                assert len(a) == 1  # 确保每个batch里只有一个data_type
+                data_type_id = int(data_type[0])
+                loss,_=model(input_ids, input_mask, label_ids,token_id,data_type_id)
+                loss.backward()
+                optimizer.step()
             elif args.model_classes == 'bilstm_start_end':
                 input_ids, input_mask, start_id,end_id = _batch  
                 loss, _, _ = model(input_ids,input_mask,start_id,end_id)
@@ -329,6 +247,28 @@ def save_config(config, path, verbose=True):
         print("Config saved to file {}".format(path))
     return config
 
+def load_tensor_data_mtl(data,word2index,label2index,args,data_type):
+    train_data_id, train_mask_id, train_label_id,train_token_id = pregress_mtl(data, word2idx, label2index,max_seq_lenth=args.max_seq_length)
+    train_data = torch.tensor([f for f in train_data_id], dtype=torch.long)
+    train_mask = torch.tensor([f for f in train_mask_id], dtype=torch.long)
+    train_label = torch.tensor([f for f in train_label_id], dtype=torch.long)
+    train_token = torch.tensor([f for f in train_token_id], dtype=torch.long)
+    if data_type == 'cyber':
+        data_type_tensor = torch.tensor([1]*train_data.size(0),dtype=torch.long)
+    elif data_type == 'msra':
+        data_type_tensor = torch.tensor([2]*train_data.size(0),dtype=torch.long)
+    return train_data,train_mask,train_label,train_token,data_type_tensor
+
+def mix_data_tensor(origin_data,new_data):
+    origin_data, origin_mask,origin_label,origin_token,origin_data_type = origin_data
+    new_data, new_mask,new_label,new_token,new_data_type = new_data
+    train_data = torch.cat((origin_data,new_data),0)
+    train_mask = torch.cat((origin_mask,new_mask),0)
+    train_label = torch.cat((origin_label,new_label),0)
+    train_token = torch.cat((origin_token,new_token),0)
+    train_data_type = torch.cat((origin_data_type,new_data_type),0)
+    train_dataset = TensorDataset(train_data,train_mask,train_label,train_token,train_data_type)
+    return train_dataset
 
 if __name__ == "__main__":
     print(os.getcwd())
@@ -337,12 +277,13 @@ if __name__ == "__main__":
 
     parser.add_argument("--do_train", default=True, type=str2bool, help="Whether to run training.")
     parser.add_argument("--do_test", default=False, type=str2bool, help="Whether to run test on the test set.")
-    parser.add_argument('--model_classes', type=str, default='bilstm',choices=['bilstm','bilstm_mtl','bilstm_start_end'], help='Which model to choose.')
+    parser.add_argument('--model_classes', type=str, default='bilstm_data_mtl',choices=['bilstm','bilstm_mtl','bilstm_start_end',"bilstm_data_mtl"], help='Which model to choose.')
     parser.add_argument('--model_save_dir', type=str, default='/opt/hyp/NER/NER-model/saved_models/test/',
                         help='Root dir for saving models.')
     parser.add_argument('--tensorboard_dir', default='/opt/hyp/NER/NER-model/saved_models/test/runs/', type=str)
     parser.add_argument('--data_path', default='/opt/hyp/NER/NER-model/data/json_data', type=str,help='数据路径')
-    parser.add_argument('--pred_embed_path', default='/opt/hyp/NER/embedding/sgns.baidubaike.bigram-char', type=str,
+    parser.add_argument('--data_mtl_path', default='/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data', type=str,help='多任务学习的数据路径')
+    parser.add_argument('--pred_embed_path', default='/opt/hyp/NER/embedding/Tencent_AILab_ChineseEmbedding.txt', type=str,
                         help="预训练词向量路径,'cc.zh.300.vec','sgns.baidubaike.bigram-char','Tencent_AILab_ChineseEmbedding.txt'")
     parser.add_argument('--optimizer', default='Adam', choices=['Adam', 'SGD'], type=str)
     parser.add_argument('--deal_long_short_data', default='cut', choices=['cut', 'pad', 'stay'], type=str,
@@ -370,6 +311,8 @@ if __name__ == "__main__":
     parser.add_argument('--dump_embedding', default=False, type=str2bool, help='是否保存词向量')
     parser.add_argument('--use_packpad', default=False, type=str2bool, help='是否使用packed_pad')
     parser.add_argument('--use_fgm', default=False, type=str2bool, help='是否使用对抗样本')
+    parser.add_argument('--use_token_mtl', default=False, type=str2bool, help='是否使用token级别多任务')
+    parser.add_argument('--data_mtl', default=False, type=str2bool, help='是否使用数据级别多任务')
 
     parser.add_argument("--learning_rate", default=0.015, type=float, help="The initial learning rate for Adam.")
     parser.add_argument("--num_train_epochs", default=100, type=int, help="Total number of training epochs to perform.")
@@ -430,12 +373,27 @@ if __name__ == "__main__":
     new_data.extend(train_data_raw)
     new_data.extend(test_data_raw)
     new_data.extend(dev_data_raw)
-
     pretrain_word_embedding, vocab, word2idx, idx2word, label2index, index2label = get_cyber_data(new_data, args)
+
+    if args.model_classes == 'bilstm_data_mtl':
+
+        args.save_embed_path = '/opt/hyp/NER/NER-model/data/embedding/Tencent_AILab_ChineseEmbedding_msra.p'
+
+        msra_train_data_raw = json.load(open(args.data_mtl_path + '/train_data.json', encoding='utf-8'))
+        msra_test_data_raw = json.load(open(args.data_mtl_path + '/test_data.json', encoding='utf-8'))
+        msra_dev_data_raw = json.load(open(args.data_mtl_path + '/dev_data.json', encoding='utf-8'))
+    
+        msra_new_data = []
+        msra_new_data.extend(msra_train_data_raw)
+        msra_new_data.extend(msra_test_data_raw)
+        msra_new_data.extend(msra_dev_data_raw)
+
+        msra_pretrain_word_embedding, msra_vocab, msra_word2idx, msra_idx2word, msra_label2index, msra_index2label = get_cyber_data(msra_new_data, args)
+        args.label_msra = msra_label2index
+        train_logger.info('多任务学习的训练集大小为{}'.format(len(msra_new_data)))
 
     args.label = label2index
     args.vocab_size = len(vocab)
-
     args.label_entity = cys_label
 
     print("Let's use", torch.cuda.device_count(), "GPUs!")
@@ -467,6 +425,7 @@ if __name__ == "__main__":
             train_mask = torch.tensor([f for f in train_mask_id], dtype=torch.long)
             train_label = torch.tensor([f for f in train_label_id], dtype=torch.long)
             train_token = torch.tensor([f for f in train_token_id], dtype=torch.long)
+            
             train_dataset = TensorDataset(train_data, train_mask, train_label,train_token)
 
             dev_data, dev_mask, dev_label,dev_token_id = pregress_mtl(dev_data_raw, word2idx, label2index, max_seq_lenth=args.max_seq_length)
@@ -478,6 +437,19 @@ if __name__ == "__main__":
 
             train_sampler = RandomSampler(train_dataset)
             train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size)
+            dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size)
+        elif args.model_classes == 'bilstm_data_mtl':
+            """   data_type{0:cyber,1:msra}          """
+            cyber_dataset = load_tensor_data_mtl(train_data_raw,word2idx,label2index,args,'cyber')
+            msra_dataset = load_tensor_data_mtl(msra_new_data,msra_word2idx,msra_label2index,args,'msra')
+            train_dataset = mix_data_tensor(cyber_dataset,msra_dataset)
+            
+            dev_data,dev_mask,dev_label,dev_token,dev_data_type = load_tensor_data_mtl(dev_data_raw,word2idx,label2index,args,'cyber')
+            dev_dataset = TensorDataset(dev_data,dev_mask,dev_label,dev_token,dev_data_type)
+
+            train_sampler = RandomSampler(train_dataset)
+            multitasksamper = MultitastdataBatchsampler(train_sampler, batch_size=args.batch_size, drop_last=False, data_type=[1, 2])
+            train_dataloader = DataLoader(train_dataset, batch_sampler=multitasksamper)
             dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size)
         elif args.model_classes == "bilstm_start_end":
             train_data_id, train_mask_id, start_id, end_id= gen_token_ner_lstm(train_data_raw, args.max_seq_length, word2idx, cys_label)
@@ -505,6 +477,9 @@ if __name__ == "__main__":
         elif args.model_classes == 'bilstm_mtl':
             print('===============================多任务================================')
             model = Bilstm_CRF_MTL(args,pretrain_word_embedding,len(label2index))
+        elif args.model_classes == 'bilstm_data_mtl':
+            print('===============================数据多任务================================')
+            model = Bilstm_MTL(args,pretrain_word_embedding,msra_pretrain_word_embedding,len(label2index),len(msra_label2index))
         elif args.model_classes == "bilstm_start_end":
             print("=====================双指针======================")
             model = Bilstm_ST_END(args,pretrain_word_embedding,len(cys_label))
@@ -514,8 +489,8 @@ if __name__ == "__main__":
         model = model.to(device)
 
         print('===============================开始训练================================')
-        dev_result, dev_result_instance, lr, train_loss_step, train_loss_epoch, dev_loss_epoch = train(model, train_dataloader, dev_dataloader, args, device, tb_writer, \
-                                                    index2label, tag, train_logger, dev_data_raw)
+        dev_result, dev_result_instance, lr, train_loss_step, train_loss_epoch, dev_loss_epoch = train(model, train_dataloader, dev_dataloader, 
+                                                    args, device, tb_writer, index2label, tag, train_logger, dev_data_raw)
 
         # Save and Result
         with codecs.open(result_dir + '/dev_result.txt', 'w', encoding='utf-8') as f:
@@ -559,6 +534,10 @@ if __name__ == "__main__":
             test_token = torch.tensor([f for f in test_token_id], dtype=torch.long)
             test_dataset = TensorDataset(test_data, test_mask, test_label,test_token)
             test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size)
+        elif args.model_classes == 'bilstm_data_mtl':
+            test_data,test_mask,test_label,test_token,test_data_type = load_tensor_data_mtl(test_data_raw,word2idx,label2index,args,'cyber')
+            test_dataset = TensorDataset(test_data,test_mask,test_label,test_token,test_data_type)
+            test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size)
         elif args.model_classes == "bilstm_start_end":
             test_data_id, test_mask_id, test_start_id, test_end_id= gen_token_ner_lstm(test_data_raw, args.max_seq_length, word2idx, cys_label)
             test_data = torch.tensor([f for f in test_data_id], dtype=torch.long)
@@ -574,10 +553,10 @@ if __name__ == "__main__":
             test_model = Bilstmcrf(args, pretrain_word_embedding, len(label2index))
         elif args.model_classes == 'bilstm_mtl':
             test_model = Bilstm_CRF_MTL(args,pretrain_word_embedding,len(label2index))
+        elif args.model_classes == 'bilstm_data_mtl':
+            test_model = Bilstm_MTL(args,pretrain_word_embedding,msra_pretrain_word_embedding,len(label2index),len(msra_label2index))
         elif args.model_classes == "bilstm_start_end":
             test_model = Bilstm_ST_END(args,pretrain_word_embedding,len(cys_label))
-
-        
 
         if args.use_dataParallel:
             test_model = nn.DataParallel(test_model.cuda())
