@@ -59,7 +59,7 @@ class MultitastdataBatchsampler(BatchSampler):
             yield_batch += 1
         print('==================')
         print(len(self),yield_batch)
-        assert len(self) == yield_batch  # 因为最后有可能有两个不够batch的数据类别，所以yield_batch 有可能要比len() 大 1
+        # assert len(self) == yield_batch  # 因为最后有可能有两个不够batch的数据类别，所以yield_batch 有可能要比len() 大 1
  
     def __len__(self):
         if self.drop_last:

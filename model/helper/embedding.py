@@ -154,3 +154,65 @@ def build_word2vec_embedding(model, word_index):
                 except KeyError:
                     unknown_words.append(word)
     return embedding_matrix, unknown_words
+
+
+
+# ELMO 、BERT 
+def get_elmo_bert():
+    cyber_train_file = '/opt/hyp/NER/NER-model/data/json_data/train_data.json'
+    cyber_dev_file = '/opt/hyp/NER/NER-model/data/json_data/dev_data.json'
+    cyber_test_file = '/opt/hyp/NER/NER-model/data/json_data/test_data.json'
+
+    train_data = json.load(open(cyber_train_file,'r',encoding='utf-8'))
+    test_data = json.load(open(cyber_test_file,'r',encoding='utf-8'))
+    dev_data = json.load(open(cyber_dev_file,'r',encoding='utf-8'))
+
+    """ ELMO """
+    import sys
+    package_dir_b = "/opt/hyp/project/ELMoForManyLangs"
+    sys.path.insert(0, package_dir_b)
+
+    from elmoformanylangs import Embedder
+    e = Embedder('/opt/hyp/NER/embedding/elmo/zhs.model/',batch_size=4)
+    labels = [la for _, la in test_data]
+    texts = [la.split() for la, _ in test_data]
+
+    print(len(texts))
+    elmo_embedding = e.sents2elmo(texts,-1)
+    word_embedding = []
+
+    with open('/opt/hyp/NER/NER-model/data/elmo/cyber_elmo_test.txt','w',encoding='utf-8') as fw:
+        for i in range(len(texts)):
+            # tmp = torch.from_numpy(elmo_embedding[i])
+            tmp = elmo_embedding[i].tolist()
+            a = " ".join([str(j) for i in tmp for j in i])
+            fw.write(a + '\n')
+            if i % 600 == 0:
+                print('========================' + str(i) + '==========================')
+
+    """ BERT （首先从bert源码 提取出bert词向量）"""
+    labels = [la for _, la in train_data]
+    texts = [la.split() for la, _ in dev_data]
+    bert_embeddings = []
+    ans = 0
+    dis_match = 0
+    import codecs
+    import json
+
+    with codecs.open('/opt/hyp/NER/NER-model/data/bert/cyber_bert_dev_ouput.json', "r",encoding='utf-8') as input_f:
+        with open('','w',encoding='utf-8') as fw:
+            data_ans = []
+            for line in input_f:
+                datas = json.loads(line.strip())
+                embedding = [i['layers'][0]['values'] for i in datas['features'][1:-1]] # 除去 CLS 和 SEP
+
+                if len(embedding) != len(texts[ans]):
+                    dis_match += 1
+                    print(len(embedding),len(texts[ans]))
+
+                a = " ".join([str(j) for i in embedding for j in i])
+                fw.write(a + '\n')
+
+                ans += 1
+                if ans % 500 == 0:
+                    print('========================'+ str(ans) + '==============================')

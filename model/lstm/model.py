@@ -7,13 +7,13 @@ class WordRep(nn.Module):
     词向量：glove/字向量/elmo/bert/flair
     """
 
-    def __init__(self, args, pretrain_word_embedding):
+    def __init__(self, args, pretrain_word_embedding,freeze=True):
         super(WordRep, self).__init__()
         self.word_emb_dim = args.word_emb_dim
         self.char_emb_dim = args.char_emb_dim
         self.use_char = args.use_char
         self.use_pre = args.use_pre
-        self.freeze = args.freeze
+        self.freeze = freeze
         self.drop = nn.Dropout(args.dropout)
 
         if self.use_pre:
@@ -135,8 +135,8 @@ class Bilstm_MTL(nn.Module):
         self.max_seq_length = args.max_seq_length
         self.use_highway = args.use_highway
         self.dropoutlstm = nn.Dropout(args.dropoutlstm)
-        self.wordrep_cyber = WordRep(args, cyber_pretrain_word_embedding)
-        self.msra_cyber = WordRep(args, msra_pretrain_word_embedding)
+        self.wordrep_cyber = WordRep(args, cyber_pretrain_word_embedding,args.freeze)
+        self.msra_cyber = WordRep(args, msra_pretrain_word_embedding,args.msra_freeze)
 
         self.lstm = nn.LSTM(args.word_emb_dim, self.rnn_hidden_dim, num_layers=args.num_layers, batch_first=True,
                             bidirectional=True)

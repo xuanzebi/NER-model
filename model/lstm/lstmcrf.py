@@ -2,7 +2,17 @@ import torch
 import torch.nn as nn
 from model.lstm.crf import CRF
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
+from torch.nn import CrossEntropyLoss, MSELoss
+import codecs
+import json
+import gc
+import numpy as np
+from transformers.modeling_bert import BertPreTrainedModel,BertModel,BertConfig
 
+import sys
+package_dir_b = "/opt/hyp/project/ELMoForManyLangs"
+sys.path.insert(0, package_dir_b)
+from elmoformanylangs import Embedder
 
 class Highway(nn.Module):
     def __init__(self, input_dim, num_layers=1):
@@ -60,6 +70,40 @@ class WordRep(nn.Module):
         word_represent = self.drop(word_embs)
         return word_represent
 
+def get_elmo_embedding(word_input,input_mask,guid,embeddings):
+    bert_emb = torch.zeros(len(word_input),200,1024,dtype=torch.float)
+
+    for i, gu_id in enumerate(guid):
+        tmp = torch.from_numpy(embeddings[gu_id])
+        if tmp.size(0) < 200:
+            a = torch.zeros(200-tmp.size(0),1024,dtype=torch.float)
+            tmp = torch.cat((tmp,a),0)
+
+        bert_emb[i] = tmp
+
+    return bert_emb
+    
+
+def get_bert_embedding(word_input,input_mask,guids,embeddings):
+    """每一个line是一条文本数据，考虑将"""
+    bert_emb = torch.zeros(len(word_input),200,768,dtype=torch.float)
+    for i,te in enumerate(guids):
+        text_len = sum(input_mask[i] == 1)
+        tmp = torch.from_numpy(embeddings[te])
+
+        if len(embeddings[te]) < text_len:
+            a = torch.randn(text_len-len(embeddings[te]),768,dtype=torch.float)
+            tmp = torch.cat((tmp,a),0)
+
+        if tmp.size(0) < 200:
+            a = torch.zeros(200-tmp.size(0),768,dtype=torch.float)
+            tmp = torch.cat((tmp,a),0)
+
+        bert_emb[i] = tmp
+
+    return bert_emb
+
+# TODO  尝试使用官方代码，测试效果
 class FGM():
     def __init__(self, model):
         self.model = model
@@ -100,10 +144,32 @@ class Bilstmcrf(nn.Module):
         self.use_highway = args.use_highway
         self.dropoutlstm = nn.Dropout(args.dropoutlstm)
         self.wordrep = WordRep(args, pretrain_word_embedding)
+        self.use_elmo = args.use_elmo
+        self.use_bert = args.use_bert
+        self.args = args
+        self.word_emb_dim = args.word_emb_dim
+        
+        if self.use_bert:
+            if not self.args.test:
+                self.train_bert_embeddings = self._load_elmo_bert_embedding('/opt/hyp/NER/NER-model/data/bert/embedding/cyber_bert_train_embedding.txt','bert')
+                self.dev_bert_embeddings = self._load_elmo_bert_embedding('/opt/hyp/NER/NER-model/data/bert/embedding/cyber_bert_dev_embedding.txt','bert')
+            if self.args.test:
+                self.test_bert_embeddings = self._load_elmo_bert_embedding('/opt/hyp/NER/NER-model/data/bert/embedding/cyber_bert_test_embedding.txt','bert')
+        if self.use_elmo:
+            if not self.args.test:
+                self.train_elmo_embeddings = self._load_elmo_bert_embedding('/opt/hyp/NER/NER-model/data/elmo/cyber_elmo_train.txt','elmo')
+                self.dev_elmo_embeddings = self._load_elmo_bert_embedding('/opt/hyp/NER/NER-model/data/elmo/cyber_elmo_dev.txt','elmo')
+            if self.args.test:
+                self.test_elmo_embeddings = self._load_elmo_bert_embedding('/opt/hyp/NER/NER-model/data/elmo/cyber_elmo_test.txt','elmo')
 
-        self.lstm = nn.LSTM(args.word_emb_dim, self.rnn_hidden_dim, num_layers=args.num_layers, batch_first=True,
+        gc.collect()
+
+        if self.use_elmo:
+            self.word_emb_dim = args.word_emb_dim + 1024
+
+        self.lstm = nn.LSTM(self.word_emb_dim, self.rnn_hidden_dim, num_layers=args.num_layers, batch_first=True,
                             bidirectional=True)
-        self.gru = nn.GRU(args.word_emb_dim, self.rnn_hidden_dim, num_layers=args.num_layers, batch_first=True,
+        self.gru = nn.GRU(self.word_emb_dim, self.rnn_hidden_dim, num_layers=args.num_layers, batch_first=True,
                           bidirectional=True)
 
         self.label_size = label_size
@@ -114,6 +180,20 @@ class Bilstmcrf(nn.Module):
             self.highway = Highway(args.rnn_hidden_dim * 2, 1)
 
         self.hidden2tag = nn.Linear(args.rnn_hidden_dim * 2, self.label_size)
+
+    def _load_elmo_bert_embedding(self,path,mode):
+        embeddings = []
+        if mode == 'elmo':
+            emb_size = 1024
+        elif mode == 'bert':
+            emb_size = 768
+
+        with open(path,'r',encoding='utf-8') as fr:
+            for line in fr:
+                if line:
+                    a = np.asarray(line.strip().split(' '), dtype='float32').reshape(-1, emb_size)
+                    embeddings.append(a)
+        return embeddings
 
     # pack_padded  pad_packed_sequence
     def forward_pack(self, word_input, input_mask, labels):
@@ -156,18 +236,37 @@ class Bilstmcrf(nn.Module):
             loss = loss_fct(active_logits, active_labels)
             return loss, output
 
-    def forward(self, word_input, input_mask, labels):
+    def forward(self, word_input, input_mask, labels,guids=None,mode=None):
         # word_input input_mask   FloatTensor
-        word_input = self.wordrep(word_input)
+        word_input_id = self.wordrep(word_input)
+
+        if self.use_elmo:
+            if mode == 'train':
+                elmo_embedding = get_elmo_embedding(word_input,input_mask,guids,self.train_elmo_embeddings)
+            elif mode == 'test':
+                elmo_embedding = get_elmo_embedding(word_input,input_mask,guids,self.test_elmo_embeddings)
+            elif mode == 'dev':
+                elmo_embedding = get_elmo_embedding(word_input,input_mask,guids,self.dev_elmo_embeddings)
+            elmo_embedding = elmo_embedding.to('cuda')
+            word_input_id = torch.cat((word_input_id,elmo_embedding),-1)
+        if self.use_bert:
+            if mode == 'train':
+                bert_embedding = get_bert_embedding(word_input,input_mask,guids,self.train_bert_embeddings)
+            elif mode == 'test':
+                bert_embedding = get_bert_embedding(word_input,input_mask,guids,self.test_bert_embeddings)
+            elif mode == 'dev':
+                bert_embedding = get_bert_embedding(word_input,input_mask,guids,self.dev_bert_embeddings)
+            bert_embedding = bert_embedding.to('cuda')
+            word_input_id = torch.cat((word_input_id,bert_embedding),1)
 
         input_mask.requires_grad = False
-        word_input = word_input * (input_mask.unsqueeze(-1).float())
+        word_input_id = word_input_id * (input_mask.unsqueeze(-1).float())
 
-        batch_size = word_input.size(0)
+        batch_size = word_input_id.size(0)
         if self.rnn_type == 'LSTM':
-            output, _ = self.lstm(word_input)
+            output, _ = self.lstm(word_input_id)
         elif self.rnn_type == 'GRU':
-            output, _ = self.gru(word_input)
+            output, _ = self.gru(word_input_id)
 
         if self.use_highway:
             output = self.highway(output)

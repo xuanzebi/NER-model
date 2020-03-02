@@ -86,7 +86,52 @@ def get_cyber_data(data, args):
     pretrain_word_embedding = build_pretrain_embedding(args, word2idx)
     return pretrain_word_embedding, vocab, word2idx, idx2word, label2index, index2label
 
+class InputFeatures(object):
+    """A single set of features of data."""
 
+    def __init__(self,input_ids, input_mask,label_ids,guid):
+        self.input_ids = input_ids
+        self.input_mask = input_mask
+        self.guid = guid
+        self.label_ids = label_ids
+
+def pregress_bert_embedding(data, word2idx, label2idx, max_seq_lenth):
+    guid = 0
+    features = []
+    for text, label in data:
+        input_mask = []
+        input_id = []
+        label_id = []
+        text = text.split(' ')
+        label = label.split(' ')
+        for te, la in zip(text, label):
+            te = te.strip()
+            if te in word2idx:
+                input_id.append(word2idx[te])
+            else:
+                input_id.append(word2idx['</UNK>'])
+            label_id.append(label2idx[la])
+            input_mask.append(1)
+
+        if len(input_id) > max_seq_lenth:
+            input_id = input_id[:max_seq_lenth]
+            label_id = label_id[:max_seq_lenth]
+            input_mask = input_mask[:max_seq_lenth]
+
+        while len(input_id) < max_seq_lenth:
+            input_id.append(0)
+            label_id.append(0)
+            input_mask.append(0)
+
+        assert len(input_id) == len(label_id) == len(input_mask) == max_seq_lenth
+        features.append(
+            InputFeatures(input_ids=input_id, input_mask=input_mask,label_ids=label_id,guid=guid)
+        )
+        guid += 1
+
+    return features
+
+    
 def pregress(data, word2idx, label2idx, max_seq_lenth):
     INPUT_ID = []
     INPUT_MASK = []
