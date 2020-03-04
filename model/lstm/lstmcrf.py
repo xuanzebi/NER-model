@@ -75,6 +75,9 @@ def get_elmo_embedding(word_input,input_mask,guid,embeddings):
 
     for i, gu_id in enumerate(guid):
         tmp = torch.from_numpy(embeddings[gu_id])
+        if tmp.size(0) > 200:
+            tmp = tmp[:200,:]
+
         if tmp.size(0) < 200:
             a = torch.zeros(200-tmp.size(0),1024,dtype=torch.float)
             tmp = torch.cat((tmp,a),0)
@@ -166,6 +169,8 @@ class Bilstmcrf(nn.Module):
 
         if self.use_elmo:
             self.word_emb_dim = args.word_emb_dim + 1024
+        if self.use_bert:
+            self.word_emb_dim = args.word_emb_dim + 768
 
         self.lstm = nn.LSTM(self.word_emb_dim, self.rnn_hidden_dim, num_layers=args.num_layers, batch_first=True,
                             bidirectional=True)
@@ -257,7 +262,7 @@ class Bilstmcrf(nn.Module):
             elif mode == 'dev':
                 bert_embedding = get_bert_embedding(word_input,input_mask,guids,self.dev_bert_embeddings)
             bert_embedding = bert_embedding.to('cuda')
-            word_input_id = torch.cat((word_input_id,bert_embedding),1)
+            word_input_id = torch.cat((word_input_id,bert_embedding),-1)
 
         input_mask.requires_grad = False
         word_input_id = word_input_id * (input_mask.unsqueeze(-1).float())

@@ -51,6 +51,7 @@ class Bilstm_CRF_MTL(nn.Module):
         self.rnn_type = args.rnn_type
         self.max_seq_length = args.max_seq_length
         self.use_highway = args.use_highway
+        self.use_multi_token_mtl = args.use_multi_token_mtl
         self.dropoutlstm = nn.Dropout(args.dropoutlstm)
         self.wordrep = WordRep(args, pretrain_word_embedding)
 
@@ -70,7 +71,11 @@ class Bilstm_CRF_MTL(nn.Module):
 
         self.hidden2tag = nn.Linear(args.rnn_hidden_dim * 2, self.label_size)
 
-        self.hidden2token = nn.Linear(args.rnn_hidden_dim * 2,2)
+        self.num_token_label = 2
+        if self.use_multi_token_mtl:
+            self.num_token_label += 2
+
+        self.hidden2token = nn.Linear(args.rnn_hidden_dim * 2,self.num_token_label)
 
     def forward(self, word_input, input_mask, labels,labels_token):
         # word_input input_mask   FloatTensor
@@ -96,7 +101,7 @@ class Bilstm_CRF_MTL(nn.Module):
         loss_token = nn.CrossEntropyLoss(ignore_index=0)
         active_loss = input_mask.view(-1) == 1
 
-        active_logits = token_output.view(-1, 2)[active_loss]
+        active_logits = token_output.view(-1, self.num_token_label)[active_loss]
         active_labels = labels_token.view(-1)[active_loss]
         token_loss = loss_token(active_logits, active_labels)
 

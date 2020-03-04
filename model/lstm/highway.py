@@ -26,8 +26,8 @@ class Highway(nn.Module):
             current_inputs = gate * linear_part + (1 - gate) * nonlinear_part
         return current_inputs
 
-h = Highway(30,2)
-x = torch.rand(10,25,30)
-print(x.shape)
-y = h(x)
-print(y.shape)
+# h = Highway(30,2)
+# x = torch.rand(10,25,30)
+# print(x.shape)
+# y = h(x)
+# print(y.shape)
