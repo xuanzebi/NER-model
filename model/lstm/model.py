@@ -1,13 +1,14 @@
 import torch
 import torch.nn as nn
 from model.lstm.crf import CRF
+from model.lstm.helper import Highway
 
 class WordRep(nn.Module):
     """
     词向量：glove/字向量/elmo/bert/flair
     """
 
-    def __init__(self, args, pretrain_word_embedding,freeze=True):
+    def __init__(self, args, pretrain_word_embedding,freeze):
         super(WordRep, self).__init__()
         self.word_emb_dim = args.word_emb_dim
         self.char_emb_dim = args.char_emb_dim
@@ -34,7 +35,6 @@ class WordRep(nn.Module):
         word_represent = self.drop(word_embs)
         return word_represent
 
-
 class Bilstm_CRF_MTL(nn.Module):
     """
     bilstm-crf模型 + 多任务学习(预测实体的token<尝试过CRF与不过>，以及使用多个数据来多任务学习共享参数)
@@ -53,7 +53,8 @@ class Bilstm_CRF_MTL(nn.Module):
         self.use_highway = args.use_highway
         self.use_multi_token_mtl = args.use_multi_token_mtl
         self.dropoutlstm = nn.Dropout(args.dropoutlstm)
-        self.wordrep = WordRep(args, pretrain_word_embedding)
+
+        self.wordrep = WordRep(args, pretrain_word_embedding,args.freeze)
 
         self.lstm = nn.LSTM(args.word_emb_dim, self.rnn_hidden_dim, num_layers=args.num_layers, batch_first=True,
                             bidirectional=True)
@@ -71,9 +72,8 @@ class Bilstm_CRF_MTL(nn.Module):
 
         self.hidden2tag = nn.Linear(args.rnn_hidden_dim * 2, self.label_size)
 
-        self.num_token_label = 2
-        if self.use_multi_token_mtl:
-            self.num_token_label += 2
+        self.num_token_label = 2 + self.use_multi_token_mtl
+        print('多任务学习token数量为' + str(self.num_token_label) + '====================')
 
         self.hidden2token = nn.Linear(args.rnn_hidden_dim * 2,self.num_token_label)
 
@@ -140,6 +140,7 @@ class Bilstm_MTL(nn.Module):
         self.max_seq_length = args.max_seq_length
         self.use_highway = args.use_highway
         self.dropoutlstm = nn.Dropout(args.dropoutlstm)
+
         self.wordrep_cyber = WordRep(args, cyber_pretrain_word_embedding,args.freeze)
         self.msra_cyber = WordRep(args, msra_pretrain_word_embedding,args.msra_freeze)
 
@@ -233,7 +234,7 @@ class Bilstm_ST_END(nn.Module):
         self.max_seq_length = args.max_seq_length
         self.use_highway = args.use_highway
         self.dropoutlstm = nn.Dropout(args.dropoutlstm)
-        self.wordrep = WordRep(args, pretrain_word_embedding)
+        self.wordrep = WordRep(args, pretrain_word_embedding,args.freeze)
 
         self.lstm = nn.LSTM(args.word_emb_dim, self.rnn_hidden_dim, num_layers=args.num_layers, batch_first=True,
                             bidirectional=True)

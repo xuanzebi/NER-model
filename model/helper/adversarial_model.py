@@ -3,41 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from model.lstm.crf import CRF
-
-
-class WordRep(nn.Module):
-    """
-    词向量：glove/字向量/elmo/bert/flair
-    """
-
-    def __init__(self, args, pretrain_word_embedding):
-        super(WordRep, self).__init__()
-        self.word_emb_dim = args.word_emb_dim
-        self.char_emb_dim = args.char_emb_dim
-        self.use_char = args.use_char
-        self.use_pre = args.use_pre
-        self.freeze = args.freeze
-        self.drop = nn.Dropout(args.dropout)
-
-        if self.use_pre:
-            if self.freeze:
-                self.word_embedding = nn.Embedding.from_pretrained(torch.from_numpy(pretrain_word_embedding),
-                                                                   freeze=True).float()
-            else:
-                self.word_embedding = nn.Embedding.from_pretrained(torch.from_numpy(pretrain_word_embedding),
-                                                                   freeze=False).float()
-        else:
-            self.word_embedding = nn.Embedding(args.vocab_size, 300)
-
-        if self.use_char:
-            pass
-
-    def forward(self, word_input):
-        word_embs = self.word_embedding(word_input)
-        word_represent = self.drop(word_embs)
-        return word_represent
-
-
+from model.lstm.helper import Highway,WordRep
     
 # TODO  尝试使用官方代码，测试效果
 class FGM():
@@ -100,15 +66,37 @@ def _kl_divergence_with_logits(q_logits, p_logits):
     kl_loss = torch.mean(kl)
     return kl_loss
 
+def _project(x, epsilon):
+    """
+    把向量x投影到半径为epsilon的球面上
+    x: [bsz, seq_length, hid_size]
+    epsilon: float number
+    """
+    x_l2_norm = torch.sqrt(
+        torch.sum(
+            torch.pow(x, 2),
+            [1, 2], keepdim=True
+        ) + 1e-6
+    )  # [bsz, 1, 1]
+    x_l2_norm_clipped = torch.clamp(x_l2_norm, 0, epsilon)
+    x_projected = x * (x_l2_norm_clipped / x_l2_norm)
+    return x_projected  # [bsz, seq_length, hid_size]
+
 class adversarial_train_loss(object):
-    def __init__(self, loss_fn,at_fgm_epsilon=1.0,vat_epsilon=1.0,vat_num_power_iteration=1,
-                vat_small_constant_for_finite_diff=1e-1):
+    def __init__(self, loss_fn,at_fgm_epsilon=1.0,vat_epsilon=5.0,vat_num_power_iteration=1,
+                    vat_small_constant_for_finite_diff=1e-1,pgd_alpha = 0.3,pgd_epsilon=1,pgd_iter=3):
         super(adversarial_train_loss, self).__init__()
         self.loss_fn = loss_fn
         self.at_fgm_epsilon = at_fgm_epsilon
+
         self.vat_epsilon = vat_epsilon 
         self.vat_num_power_iteration = vat_num_power_iteration 
         self.vat_small_constant_for_finite_diff=vat_small_constant_for_finite_diff
+
+        self.pgd_alpha = pgd_alpha
+        self.pgd_epsilon = pgd_epsilon
+        self.pgd_iter = pgd_iter
+
     
     def adversarial_loss(self,loss,embedded,input_mask,labels,labels_token=None):
         emb_grad = grad(loss,embedded, retain_graph=True)[0]
@@ -124,14 +112,14 @@ class adversarial_train_loss(object):
             d = d * input_mask.unsqueeze(-1).float()
             d = _scale_l2(d, self.vat_small_constant_for_finite_diff)
 
-            vat_logits = self.loss_fn(embedded + d)
+            vat_logits = self.loss_fn(embedded + d,input_mask)
 
             kl = _kl_divergence_with_logits(logits4vat, vat_logits)
             d = grad(kl, d, retain_graph=True)[0]
             d = d.detach()
 
         vat_perb = _scale_l2(d, self.vat_epsilon)
-        vat_logits_real = self.loss_fn(embedded + vat_perb)
+        vat_logits_real = self.loss_fn(embedded + vat_perb,input_mask)
         kl_loss = _kl_divergence_with_logits(logits4vat, vat_logits_real)
 
         return kl_loss
@@ -139,8 +127,21 @@ class adversarial_train_loss(object):
     # def combo_loss(self):
     #     return self.adversarial_loss() + self.virtual_adversarial_loss()
 
-    def PGD_loss(self,):
-        pass
+    def PGD_loss(self,loss, embedding_output, input_mask,labels,labels_token=None):
+        for i in range(self.pgd_iter):
+            if i == 0:
+                pgd_grad = grad(loss, embedding_output, retain_graph=True)[0]
+                pgd_perb = _project(_scale_l2(pgd_grad.detach(), self.pgd_alpha), self.pgd_epsilon)
+            else:
+                pgd_grad = grad(pgd_loss, pgd_perb, retain_graph=True)[0]
+                pgd_perb = _project(
+                    _scale_l2(pgd_grad.detach(), self.pgd_alpha) + pgd_perb.detach(),
+                    self.pgd_epsilon
+                )
+            if i < self.pgd_iter - 1:
+                pgd_perb.requires_grad = True
+            pgd_loss = self.loss_fn(embedding_output + pgd_perb,input_mask,labels,labels_token)
+        return pgd_loss
 
     def Freelb_loss(self,):
         pass
@@ -175,8 +176,8 @@ class Bilstmcrf_adv(nn.Module):
         self.dropoutlstm = nn.Dropout(args.dropoutlstm)
         self.wordrep = WordRep(args, pretrain_word_embedding)
 
-        self.FGM = args.FGM
-        self.adv_loss = adversarial_train_loss(self._adv_forward)
+        self.use_adv = args.use_adv
+        self.adv_func = adversarial_train_loss(self._adv_forward)
         self.adv_loss_type = args.adv_loss_type
 
         self.args = args
@@ -192,7 +193,9 @@ class Bilstmcrf_adv(nn.Module):
             self.crf = CRF(self.label_size, self.gpu)
             self.label_size += 2
         self.hidden2tag = nn.Linear(args.rnn_hidden_dim * 2, self.label_size)
-        self.hidden2token = nn.Linear(args.rnn_hidden_dim * 2,2)
+
+        self.num_token = 2 + args.use_multi_token_mtl
+        self.hidden2token = nn.Linear(args.rnn_hidden_dim * 2,self.num_token)
    
     def forward(self, word_input, input_mask, labels,labels_token=None,mode=None):
         # word_input input_mask   FloatTensor
@@ -211,11 +214,11 @@ class Bilstmcrf_adv(nn.Module):
 
         output2 = self.hidden2tag(output)
 
-        if self.args.use_token_mtl:
+        if self.args.use_multi_token_mtl >=0 :
             token_output = self.hidden2token(output)
             loss_token = nn.CrossEntropyLoss(ignore_index=0)
             active_loss = input_mask.view(-1) == 1
-            active_logits = token_output.view(-1, 2)[active_loss]
+            active_logits = token_output.view(-1, self.num_token)[active_loss]
             active_labels = labels_token.view(-1)[active_loss]
             token_loss = loss_token(active_logits, active_labels)
 
@@ -225,11 +228,20 @@ class Bilstmcrf_adv(nn.Module):
             scores, tag_seq = self.crf._viterbi_decode(output2, input_mask)
 
             total_loss = total_loss / batch_size
-            if self.args.use_token_mtl:
+
+            if self.args.use_multi_token_mtl>=0:
                     total_loss = total_loss + token_loss
 
-            if self.FGM and not mode:
-                adv_loss = adversarial_loss(word_input_id,total_loss,self._adv_forward,input_mask,labels,labels_token=labels_token)
+            if self.use_adv and not mode:
+                if self.adv_loss_type == 'fgm':
+                    adv_loss = self.adv_func.adversarial_loss(total_loss,word_input_id,input_mask,labels,labels_token=labels_token)
+                elif self.adv_loss_type == 'vat':
+                    adv_loss = self.adv_func.virtual_adversarial_loss(output2,word_input_id,input_mask)
+                elif self.adv_loss_type == 'pgd':
+                    adv_loss = self.adv_func.PGD_loss(total_loss,word_input_id,input_mask,labels,labels_token=labels_token)
+                elif self.adv_loss_type == 'fgm_vat':
+                    adv_loss = self.adv_func.adversarial_loss(total_loss,word_input_id,input_mask,labels,labels_token=labels_token) \
+                                 + self.adv_func.virtual_adversarial_loss(output2,word_input_id,input_mask)
                 total_loss = total_loss  + adv_loss
             return total_loss, tag_seq
         else:
@@ -243,7 +255,7 @@ class Bilstmcrf_adv(nn.Module):
             return loss, output
 
        
-    def _adv_forward(self, word_input, input_mask, labels,labels_token):
+    def _adv_forward(self, word_input, input_mask, labels=None,labels_token=None):
         input_mask.requires_grad = False
         word_input_id = word_input * (input_mask.unsqueeze(-1).float())
 
@@ -259,27 +271,30 @@ class Bilstmcrf_adv(nn.Module):
         output = self.dropoutlstm(output)
         output2 = self.hidden2tag(output)
 
-        if self.args.use_token_mtl:
+        if self.args.use_multi_token_mtl>=0:
             token_output = self.hidden2token(output)
             loss_token = nn.CrossEntropyLoss(ignore_index=0)
             active_loss = input_mask.view(-1) == 1
-            active_logits = token_output.view(-1, 2)[active_loss]
+            active_logits = token_output.view(-1, self.num_token)[active_loss]
             active_labels = labels_token.view(-1)[active_loss]
             token_loss = loss_token(active_logits, active_labels)
 
         maskk = input_mask.ge(1)
-        if self.use_crf:
-            total_loss = self.crf.neg_log_likelihood_loss(output2, maskk, labels)
-            total_loss = total_loss / batch_size
-            if self.args.use_token_mtl:
-                    total_loss = total_loss + token_loss
-            return total_loss
+        if  labels is None:
+            return output2
         else:
-            loss_fct = nn.CrossEntropyLoss(ignore_index=0)
+            if self.use_crf:
+                total_loss = self.crf.neg_log_likelihood_loss(output2, maskk, labels)
+                total_loss = total_loss / batch_size
+                if self.args.use_multi_token_mtl>=0:
+                        total_loss = total_loss + token_loss
+                return total_loss
+            else:
+                loss_fct = nn.CrossEntropyLoss(ignore_index=0)
 
-            active_loss = input_mask.view(-1) == 1
-            active_logits = output.view(-1, self.label_size)[active_loss]
-            active_labels = labels.view(-1)[active_loss]
-            loss = loss_fct(active_logits, active_labels)
+                active_loss = input_mask.view(-1) == 1
+                active_logits = output.view(-1, self.label_size)[active_loss]
+                active_labels = labels.view(-1)[active_loss]
+                loss = loss_fct(active_logits, active_labels)
 
-            return loss, output
+                return loss, output
