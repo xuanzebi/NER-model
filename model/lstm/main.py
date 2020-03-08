@@ -195,7 +195,10 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
                     if args.use_packpad:
                         loss, _ = model.forward_pack(input_ids, input_mask, label_ids)
                     else:
-                        loss, _ = model(input_ids, input_mask, label_ids)
+                        if args.adv_loss_type == 'freelb':
+                            loss, _ = model(input_ids, input_mask, label_ids,model=model)
+                        else:
+                            loss, _ = model(input_ids, input_mask, label_ids)
                         loss.backward()
                         optimizer.step()
                     # if args.use_fgm:
@@ -394,7 +397,7 @@ if __name__ == "__main__":
                         help="预训练词向量路径,'cc.zh.300.vec','sgns.baidubaike.bigram-char','Tencent_AILab_ChineseEmbedding.txt'")
     parser.add_argument('--optimizer', default='Adam', choices=['Adam', 'SGD'], type=str)
     parser.add_argument('--rnn_type', default='LSTM', type=str, help='LSTM/GRU')
-    parser.add_argument('--adv_loss_type', default='pgd', choices=['','fgm','vat','pgd','freelb','fgm_vat'], type=str)
+    parser.add_argument('--adv_loss_type', default='freelb', choices=['','fgm','vat','pgd','freelb','fgm_vat'], type=str)
     parser.add_argument('--deal_long_short_data', default='cut', choices=['cut', 'pad', 'stay'], type=str, help='对长文本或者短文本在验证测试的时候如何处理')
     parser.add_argument('--save_embed_path',default='/opt/hyp/NER/NER-model/data/embedding/Tencent_AILab_ChineseEmbedding_msra.p', type=str,
                         help='词向量存储路径')

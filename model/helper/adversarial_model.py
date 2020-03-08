@@ -2,6 +2,7 @@ from torch.autograd import grad
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.nn import CrossEntropyLoss, MSELoss
 from model.lstm.crf import CRF
 from model.lstm.helper import Highway,WordRep
     
@@ -97,6 +98,10 @@ class adversarial_train_loss(object):
         self.pgd_epsilon = pgd_epsilon
         self.pgd_iter = pgd_iter
 
+        self.freelb_alpha = 0.3
+        self.freelb_epsilon = 1.0
+        self.freelb_iter = 3
+
     
     def adversarial_loss(self,loss,embedded,input_mask,labels,labels_token=None):
         emb_grad = grad(loss,embedded, retain_graph=True)[0]
@@ -143,9 +148,29 @@ class adversarial_train_loss(object):
             pgd_loss = self.loss_fn(embedding_output + pgd_perb,input_mask,labels,labels_token)
         return pgd_loss
 
-    def Freelb_loss(self,):
-        pass
+    def Freelb_loss(self,model,embedding_output,input_mask,labels,labels_token=None):
+        import math
+        num_params = 0
+        for param in model.parameters():  num_params += param.numel()
 
+        freelb_perb = torch.rand_like(embedding_output, requires_grad=True)
+        freelb_perb.data = (2 * self.freelb_epsilon * freelb_perb.data - self.freelb_epsilon) / math.sqrt(num_params)
+        for i in range(self.freelb_iter):
+            freelb_loss = self.loss_fn(embedding_output + freelb_perb,input_mask,labels,labels_token)
+            # 积累模型参数的grad
+            freelb_loss.backward(retain_graph=True)
+            # 更新扰动
+            freelb_perb = _project(
+                _scale_l2(freelb_perb.grad.detach(), self.freelb_alpha) +
+                freelb_perb.detach(),
+                self.freelb_epsilon
+            )
+            if i < self.freelb_iter - 1:
+                freelb_perb.requires_grad = True
+
+                # 对积累的grad取平均
+        for param in model.parameters():
+            if param.grad is not None:  param.grad = param.grad / self.freelb_iter
 
 def adversarial_loss(embedded, loss, loss_fn,input_mask,labels,perturb_norm_length=1.0,labels_token=None):
     """Adds gradient to embedding and recomputes classification loss.
@@ -197,7 +222,7 @@ class Bilstmcrf_adv(nn.Module):
         self.num_token = 2 + args.use_multi_token_mtl
         self.hidden2token = nn.Linear(args.rnn_hidden_dim * 2,self.num_token)
    
-    def forward(self, word_input, input_mask, labels,labels_token=None,mode=None):
+    def forward(self, word_input, input_mask, labels,labels_token=None,mode=None,model=None):
         # word_input input_mask   FloatTensor
         word_input_id = self.wordrep(word_input)
 
@@ -214,13 +239,14 @@ class Bilstmcrf_adv(nn.Module):
 
         output2 = self.hidden2tag(output)
 
-        if self.args.use_multi_token_mtl >=0 :
-            token_output = self.hidden2token(output)
-            loss_token = nn.CrossEntropyLoss(ignore_index=0)
-            active_loss = input_mask.view(-1) == 1
-            active_logits = token_output.view(-1, self.num_token)[active_loss]
-            active_labels = labels_token.view(-1)[active_loss]
-            token_loss = loss_token(active_logits, active_labels)
+        if labels_token is not None:
+            if self.args.use_multi_token_mtl >=0 :
+                token_output = self.hidden2token(output)
+                loss_token = nn.CrossEntropyLoss(ignore_index=0)
+                active_loss = input_mask.view(-1) == 1
+                active_logits = token_output.view(-1, self.num_token)[active_loss]
+                active_labels = labels_token.view(-1)[active_loss]
+                token_loss = loss_token(active_logits, active_labels)
 
         maskk = input_mask.ge(1)
         if self.use_crf:
@@ -242,6 +268,12 @@ class Bilstmcrf_adv(nn.Module):
                 elif self.adv_loss_type == 'fgm_vat':
                     adv_loss = self.adv_func.adversarial_loss(total_loss,word_input_id,input_mask,labels,labels_token=labels_token) \
                                  + self.adv_func.virtual_adversarial_loss(output2,word_input_id,input_mask)
+                elif self.adv_loss_type == 'freelb':
+                    adv_loss = 0
+                    self.adv_func.Freelb_loss(model,word_input_id,input_mask,labels,labels_token)
+                    # if labels_token is not None:
+                    #     if self.args.use_multi_token_mtl >=0 :
+                    #         adv_loss += self.adv_func.virtual_adversarial_loss(token_output,word_input_id,input_mask)
                 total_loss = total_loss  + adv_loss
             return total_loss, tag_seq
         else:
@@ -271,13 +303,14 @@ class Bilstmcrf_adv(nn.Module):
         output = self.dropoutlstm(output)
         output2 = self.hidden2tag(output)
 
-        if self.args.use_multi_token_mtl>=0:
-            token_output = self.hidden2token(output)
-            loss_token = nn.CrossEntropyLoss(ignore_index=0)
-            active_loss = input_mask.view(-1) == 1
-            active_logits = token_output.view(-1, self.num_token)[active_loss]
-            active_labels = labels_token.view(-1)[active_loss]
-            token_loss = loss_token(active_logits, active_labels)
+        if labels_token is not None:
+            if self.args.use_multi_token_mtl>=0:
+                token_output = self.hidden2token(output)
+                loss_token = nn.CrossEntropyLoss(ignore_index=0)
+                active_loss = input_mask.view(-1) == 1
+                active_logits = token_output.view(-1, self.num_token)[active_loss]
+                active_labels = labels_token.view(-1)[active_loss]
+                token_loss = loss_token(active_logits, active_labels)
 
         maskk = input_mask.ge(1)
         if  labels is None:
