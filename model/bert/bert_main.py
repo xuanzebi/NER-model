@@ -439,14 +439,15 @@ if __name__ == "__main__":
     if not os.path.exists(args.model_save_dir):
         os.makedirs(args.model_save_dir)
 
-    if os.path.exists(args.model_save_dir):
-        for root, dirs, files in os.walk(args.model_save_dir):
-            for sub_dir in dirs:
-                for sub_root, sub_di, sub_files in os.walk(os.path.join(root,sub_dir)):
-                    for sub_file in sub_files:
-                        os.remove(os.path.join(sub_root,sub_file))
-            for envent_file in files:
-                os.remove(os.path.join(root,envent_file))
+    if args.do_train:
+        if os.path.exists(args.model_save_dir):
+            for root, dirs, files in os.walk(args.model_save_dir):
+                for sub_dir in dirs:
+                    for sub_root, sub_di, sub_files in os.walk(os.path.join(root,sub_dir)):
+                        for sub_file in sub_files:
+                            os.remove(os.path.join(sub_root,sub_file))
+                for envent_file in files:
+                    os.remove(os.path.join(root,envent_file))
 
     result_dir = args.model_save_dir + '/result'
     if not os.path.exists(result_dir):
