@@ -63,10 +63,10 @@ def evaluate(data, model, label_map, tag, args, train_logger, device, dev_test_d
         _test_batch = tuple(t.to(device) for t in test_batch)
 
         with torch.no_grad():
-            if args.model_classes in ['bilstm','cnn','bilstm_cnn']:
+            if args.use_multi_token_mtl < 0:
                 input_ids, input_mask, label_ids = _test_batch  
-                loss, logits = model(input_ids, input_mask, label_ids)
-            elif args.model_classes == 'bilstm_mtl':
+                loss, logits = model(input_ids, input_mask, label_ids,mode='dev')
+            elif args.use_multi_token_mtl >= 0:
                 input_ids, input_mask, label_ids,token_id = _test_batch  
                 if args.use_adv:
                     loss, logits = model(input_ids, input_mask, label_ids,labels_token=token_id,mode='dev')
@@ -153,12 +153,12 @@ def train(model, train_dataloader, dev_dataloader, args, device, tb_writer, labe
             model.zero_grad()
             _batch = tuple(t.to(device) for t in batch)
             
-            if args.model_classes in ['bilstm','cnn','bilstm_cnn']:
+            if args.use_multi_token_mtl < 0:
                 input_ids, input_mask, label_ids = _batch 
                 loss, _ = model(input_ids, input_mask, label_ids)
                 loss.backward()
                 optimizer.step()
-            elif args.model_classes == 'bilstm_mtl':
+            elif args.use_multi_token_mtl >= 0:
                 input_ids, input_mask, label_ids,token_id = _batch 
                 loss, _ = model(input_ids, input_mask, label_ids,token_id)
                 loss.backward()
@@ -272,19 +272,19 @@ if __name__ == "__main__":
 
     parser.add_argument("--do_train", default=True, type=str2bool, help="Whether to run training.")
     parser.add_argument("--do_test", default=False, type=str2bool, help="Whether to run test on the test set.")
-    parser.add_argument('--model_classes', type=str, default='cnn',
-                    choices=['bilstm','bilstm_mtl','bilstm_start_end',"bilstm_cnn","cnn"], help='Which model to choose.')
+    parser.add_argument('--model_classes', type=str, default='bilstm_cnn_pool',
+                    choices=['bilstm','bilstm_mtl','bilstm_start_end',"bilstm_cnn","cnn","bilstm_cnn_pool"], help='Which model to choose.')
     parser.add_argument('--model_save_dir', type=str, default='/opt/hyp/NER/NER-model/saved_models/test/',
                         help='Root dir for saving models.')
-    parser.add_argument('--tensorboard_dir', default='/opt/hyp/NER/NER-model/saved_models/test/runs/', type=str)
     parser.add_argument('--data_path', default='/opt/hyp/NER/NER-model/data/other_data/ResumeNER/json_data', type=str,help='数据路径')
     parser.add_argument('--pred_embed_path', default='/opt/hyp/NER/embedding/Tencent_AILab_ChineseEmbedding.txt', type=str,
                         help="预训练词向量路径,'cc.zh.300.vec','sgns.baidubaike.bigram-char','Tencent_AILab_ChineseEmbedding.txt'")
     parser.add_argument('--optimizer', default='Adam', choices=['Adam', 'SGD'], type=str)
     parser.add_argument('--rnn_type', default='LSTM', type=str, help='LSTM/GRU')
-    parser.add_argument('--adv_loss_type', default='freelb', choices=['','fgm','vat','pgd','freelb','fgm_vat'], type=str)
-    parser.add_argument('--cnn_mode', default='GLDR', choices=['CNN','GCNN','GLDR'], type=str)
-    parser.add_argument('--pos_emb', default=2, choices=[0,1,2], type=int)
+    parser.add_argument('--adv_loss_type', default='pgd', choices=['','fgm','vat','pgd','freelb','fgm_vat'], type=str)
+    parser.add_argument('--cnn_pooling_mode', default='dim', choices=['seq','dim'], type=str,help="dim 是在句子长度上max_pooling，seq是在每个词的所有特征上max_pooling")
+    parser.add_argument('--cnn_mode', default='CNNPOOLING', choices=['CNN','GCNN','GLDR','CNNPOOLING'], type=str)
+    parser.add_argument('--pos_emb', default=0, choices=[0,1,2], type=int)
     parser.add_argument('--deal_long_short_data', default='cut', choices=['cut', 'pad', 'stay'], type=str, help='对长文本或者短文本在验证测试的时候如何处理')
     parser.add_argument('--save_embed_path',default='/opt/hyp/NER/NER-model/data/embedding/Tencent_AILab_ChineseEmbedding_resume.p', type=str,
                         help='词向量存储路径')
@@ -294,7 +294,7 @@ if __name__ == "__main__":
     parser.add_argument('--save_best_model', type=str2bool, default=False, help='Whether to save best model.')
     parser.add_argument('--token_level_f1', default=False, type=str2bool, help='Sequence max_length.')
     parser.add_argument('--do_lower_case', default=False, type=str2bool, help='False 不计算token-level f1，true 计算')
-    parser.add_argument('--freeze', default=True, type=str2bool, help='是否冻结词向量')
+    parser.add_argument('--freeze', default=False, type=str2bool, help='是否冻结词向量')
     parser.add_argument('--msra_freeze', default=True, type=str2bool, help='多任务的词向量是否冻结词向量')
     parser.add_argument('--use_crf', default=True, type=str2bool, help='是否使用crf')
     parser.add_argument('--gpu', default=torch.cuda.is_available(), type=str2bool)
@@ -308,7 +308,7 @@ if __name__ == "__main__":
     parser.add_argument('--dump_embedding', default=False, type=str2bool, help='是否保存词向量')
     parser.add_argument('--use_packpad', default=False, type=str2bool, help='是否使用packed_pad')
     parser.add_argument('--use_adv', default=True, type=str2bool, help='是否使用对抗样本')
-    parser.add_argument('--use_cnn_fea', default=True, type=str2bool, help='是否使用cnn')
+    parser.add_argument('--use_cnn_fea', default=False, type=str2bool, help='是否使用cnn')
 
     parser.add_argument("--learning_rate", default=0.015, type=float, help="The initial learning rate for Adam.")
     parser.add_argument('--char_emb_dim', default=30, type=int)
@@ -321,6 +321,7 @@ if __name__ == "__main__":
     parser.add_argument('--word_emb_dim', default=200, type=int, help='预训练词向量的维度')
     parser.add_argument('--cnn_dim', default=200, type=int, help='')
     parser.add_argument('--use_multi_token_mtl', default=-1, type=int, help='0/1/2  0表示不用，1表示使用3个token，2表示4个token')
+    parser.add_argument('--multi_token_loss_alpha', default=-1, type=int, help='多任务学习的权重')
     # parser.add_argument('--gcnn_inter_dim', default=200, type=int, help='')
     parser.add_argument('--rnn_hidden_dim', default=128, type=int, help='rnn的隐状态的大小')
     parser.add_argument('--num_layers', default=1, type=int, help='rnn中的层数')
@@ -349,6 +350,7 @@ if __name__ == "__main__":
     if not os.path.exists(result_dir):
         os.makedirs(result_dir)
     
+    args.tensorboard_dir = args.model_save_dir + '/runs'
     if not os.path.exists(args.tensorboard_dir):
         os.makedirs(args.tensorboard_dir)
 
@@ -398,7 +400,7 @@ if __name__ == "__main__":
     if args.do_train:
         args.test = False
         # Dataset
-        if args.model_classes in ['bilstm','cnn','bilstm_cnn']:
+        if args.use_multi_token_mtl < 0:
             train_data_id, train_mask_id, train_label_id = pregress(train_data_raw, word2idx, label2index,max_seq_lenth=args.max_seq_length)
             train_data = torch.tensor([f for f in train_data_id], dtype=torch.long)
             train_mask = torch.tensor([f for f in train_mask_id], dtype=torch.long)
@@ -414,7 +416,7 @@ if __name__ == "__main__":
             train_sampler = RandomSampler(train_dataset)
             train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size)
             dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size)
-        elif args.model_classes == 'bilstm_mtl':
+        elif args.use_multi_token_mtl >= 0:
             train_data_id, train_mask_id, train_label_id,train_token_id = pregress_mtl(train_data_raw, word2idx, label2index,max_seq_lenth=args.max_seq_length,
                                                                                                                             mode=args.use_multi_token_mtl)
             train_data = torch.tensor([f for f in train_data_id], dtype=torch.long)
@@ -439,10 +441,10 @@ if __name__ == "__main__":
             if args.use_adv:
                 model = Bilstmcrf_adv(args, pretrain_word_embedding, len(label2index))
             else:
-                model = Bilstmcrf(args, pretrain_word_embedding, len(label2index))
+                model = Bilstmcrf_cnn(args, pretrain_word_embedding, len(label2index))
         elif args.model_classes == 'cnn':
             model = CNN_BASE(args, pretrain_word_embedding, len(label2index),args.cnn_mode)
-        elif args.model_classes == 'bilstm_cnn':
+        elif args.model_classes in ['bilstm_cnn','bilstm_cnn_pool']:
             model = Bilstmcrf_cnn(args, pretrain_word_embedding, len(label2index))
         if args.use_dataParallel:
             model = nn.DataParallel(model.cuda())
@@ -477,14 +479,14 @@ if __name__ == "__main__":
         print('=========================测试集==========================')
         args.test = True
         # Dataset
-        if args.model_classes in ['bilstm','cnn','bilstm_cnn']:
+        if args.use_multi_token_mtl < 0:
             test_data, test_mask, test_label = pregress(test_data_raw, word2idx, label2index, max_seq_lenth=args.max_seq_length)
             test_data = torch.tensor([f for f in test_data], dtype=torch.long)
             test_mask = torch.tensor([f for f in test_mask], dtype=torch.long)
             test_label = torch.tensor([f for f in test_label], dtype=torch.long)
             test_dataset = TensorDataset(test_data, test_mask, test_label)
             test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size)
-        elif args.model_classes == 'bilstm_mtl':
+        elif args.use_multi_token_mtl >= 0:
             test_data, test_mask, test_label,test_token_id = pregress_mtl(test_data_raw, word2idx, label2index, max_seq_lenth=args.max_seq_length,mode=args.use_multi_token_mtl)
             test_data = torch.tensor([f for f in test_data], dtype=torch.long)
             test_mask = torch.tensor([f for f in test_mask], dtype=torch.long)
@@ -499,10 +501,10 @@ if __name__ == "__main__":
             if args.use_adv:
                 test_model = Bilstmcrf_adv(args, pretrain_word_embedding, len(label2index))
             else:
-                test_model = Bilstmcrf(args, pretrain_word_embedding, len(label2index))
+                test_model = Bilstmcrf_cnn(args, pretrain_word_embedding, len(label2index))
         elif args.model_classes == 'cnn':
             test_model = CNN_BASE(args, pretrain_word_embedding, len(label2index),args.cnn_mode)
-        elif args.model_classes == 'bilstm_cnn':
+        elif args.model_classes in ['bilstm_cnn','bilstm_cnn_pool']:
             test_model = Bilstmcrf_cnn(args, pretrain_word_embedding, len(label2index))
 
         if args.use_dataParallel:

@@ -29,7 +29,7 @@ warnings.filterwarnings("ignore")
 # os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 from util.util import get_logger, compute_f1, compute_spans_bio, compute_spans_bieos, compute_instance_f1
-from model.lstm.lstmcrf import Bilstmcrf,FGM
+from model.lstm.lstmcrf import Bilstmcrf
 from model.lstm.model import Bilstm_CRF_MTL,Bilstm_ST_END,Bilstm_MTL
 from model.helper.get_data import get_cyber_data, pregress,pregress_mtl,pregress_bert_embedding
 from model.helper.convert_data import gen_token_ner_lstm, cys_label
@@ -392,15 +392,15 @@ if __name__ == "__main__":
     parser.add_argument('--model_save_dir', type=str, default='/opt/hyp/NER/NER-model/saved_models/test/',
                         help='Root dir for saving models.')
     parser.add_argument('--tensorboard_dir', default='/opt/hyp/NER/NER-model/saved_models/test/runs/', type=str)
-    parser.add_argument('--data_path', default='/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data', type=str,help='数据路径')
+    parser.add_argument('--data_path', default='/opt/hyp/NER/NER-model/data/other_data/ResumeNER/json_data', type=str,help='数据路径')
     parser.add_argument('--data_mtl_path', default='/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data', type=str,help='多任务学习的数据路径')
     parser.add_argument('--pred_embed_path', default='/opt/hyp/NER/embedding/Tencent_AILab_ChineseEmbedding.txt', type=str,
                         help="预训练词向量路径,'cc.zh.300.vec','sgns.baidubaike.bigram-char','Tencent_AILab_ChineseEmbedding.txt'")
     parser.add_argument('--optimizer', default='Adam', choices=['Adam', 'SGD'], type=str)
     parser.add_argument('--rnn_type', default='LSTM', type=str, help='LSTM/GRU')
-    parser.add_argument('--adv_loss_type', default='freelb', choices=['','fgm','vat','pgd','freelb','fgm_vat'], type=str)
+    parser.add_argument('--adv_loss_type', default='pgd', choices=['','fgm','vat','pgd','freelb','fgm_vat'], type=str)
     parser.add_argument('--deal_long_short_data', default='cut', choices=['cut', 'pad', 'stay'], type=str, help='对长文本或者短文本在验证测试的时候如何处理')
-    parser.add_argument('--save_embed_path',default='/opt/hyp/NER/NER-model/data/embedding/Tencent_AILab_ChineseEmbedding_msra.p', type=str,
+    parser.add_argument('--save_embed_path',default='/opt/hyp/NER/NER-model/data/embedding/Tencent_AILab_ChineseEmbedding_resume.p', type=str,
                         help='词向量存储路径')
 
     # parser.add_argument('--data_type', default='conll', help='数据类型 -conll - cyber')

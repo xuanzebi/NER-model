@@ -172,17 +172,6 @@ class adversarial_train_loss(object):
         for param in model.parameters():
             if param.grad is not None:  param.grad = param.grad / self.freelb_iter
 
-def adversarial_loss(embedded, loss, loss_fn,input_mask,labels,perturb_norm_length=1.0,labels_token=None):
-    """Adds gradient to embedding and recomputes classification loss.
-        embedded: embedding参数    
-        loss_fn: model 计算loss
-    """
-    # retain_graph True 梯度会在当前计算图累积
-    emb_grad = grad(loss, embedded, retain_graph=True)[0]
-    perturb = _scale_l2(emb_grad.detach(),perturb_norm_length)
-    return loss_fn(embedded + perturb,input_mask,labels,labels_token)
-
-
 class Bilstmcrf_adv(nn.Module):
     """
     bilstm-crf模型
