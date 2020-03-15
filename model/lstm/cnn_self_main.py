@@ -282,7 +282,7 @@ if __name__ == "__main__":
     parser.add_argument('--optimizer', default='Adam', choices=['Adam', 'SGD'], type=str)
     parser.add_argument('--rnn_type', default='LSTM', type=str, help='LSTM/GRU')
     parser.add_argument('--adv_loss_type', default='pgd', choices=['','fgm','vat','pgd','freelb','fgm_vat'], type=str)
-    parser.add_argument('--cnn_pooling_mode', default='dim', choices=['seq','dim'], type=str,help="dim 是在句子长度上max_pooling，seq是在每个词的所有特征上max_pooling")
+    parser.add_argument('--cnn_pooling_mode', default='seq', choices=['seq','dim'], type=str,help="dim 是在句子长度上max_pooling，seq是在每个词的所有特征上max_pooling")
     parser.add_argument('--cnn_mode', default='CNNPOOLING', choices=['CNN','GCNN','GLDR','CNNPOOLING'], type=str)
     parser.add_argument('--pos_emb', default=0, choices=[0,1,2], type=int)
     parser.add_argument('--deal_long_short_data', default='cut', choices=['cut', 'pad', 'stay'], type=str, help='对长文本或者短文本在验证测试的时候如何处理')

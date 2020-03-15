@@ -1,2048 +1,0 @@
-2020-02-26 23:08:07.774979: W tensorflow/stream_executor/platform/default/dso_loader.cc:55] Could not load dynamic library 'libnvinfer.so.6'; dlerror: libnvinfer.so.6: cannot open shared object file: No such file or directory
-2020-02-26 23:08:07.775071: W tensorflow/stream_executor/platform/default/dso_loader.cc:55] Could not load dynamic library 'libnvinfer_plugin.so.6'; dlerror: libnvinfer_plugin.so.6: cannot open shared object file: No such file or directory
-2020-02-26 23:08:07.775081: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:30] Cannot dlopen some TensorRT libraries. If you would like to use Nvidia GPU with TensorRT, please make sure the missing libraries mentioned above are installed properly.
-各参数数值为Namespace(adam_epsilon=1e-08, batch_size=16, char_emb_dim=30, data_path='/opt/hyp/NER/NER-model/data/other_data/MSRA/json_data', data_type='zh_msra_ner', deal_long_short_data='cut', do_lower_case=False, do_test=True, do_train=True, dropout=0.5, dropoutlstm=0.5, dump_embedding=False, freeze=True, gpu=True, gradient_accumulation_steps=1, learning_rate=1e-05, load=True, logging_steps=50, lr_decay=0.05, max_grad_norm=1.0, max_seq_length=156, min_count=1, model_class='bert_mrc', model_name_or_path='/opt/hyp/NER/embedding/bert/chinese_L-12_H-768_A-12_pytorch', model_save_dir='/opt/hyp/NER/NER-model/saved_models/msra/msra_bert_mrc/', model_type='bert', momentum=0, num_layers=1, num_train_epochs=50, optimizer='Adam', pred_embed_path='', rnn_hidden_dim=128, rnn_type='LSTM', save_best_model=True, save_embed_path='', seed=42, tensorboard_dir='/opt/hyp/NER/NER-model/saved_models/msra/msra_bert_mrc/runs/', token_level_f1=False, use_bieos=True, use_char=False, use_crf=False, use_dataParallel=False, use_fgm=False, use_highway=False, use_number_norm=False, use_pre=True, use_scheduler=True, warmup_proportion=0.1, weight_decay=0.01, word_emb_dim=300)
-训练集大小为41728，验证集大小为4636，测试集大小为4360
-Model name '/opt/hyp/NER/embedding/bert/chinese_L-12_H-768_A-12_pytorch' not found in model shortcut name list (bert-base-uncased, bert-large-uncased, bert-base-cased, bert-large-cased, bert-base-multilingual-uncased, bert-base-multilingual-cased, bert-base-chinese, bert-base-german-cased, bert-large-uncased-whole-word-masking, bert-large-cased-whole-word-masking, bert-large-uncased-whole-word-masking-finetuned-squad, bert-large-cased-whole-word-masking-finetuned-squad, bert-base-cased-finetuned-mrpc, bert-base-german-dbmdz-cased, bert-base-german-dbmdz-uncased, bert-base-finnish-cased-v1, bert-base-finnish-uncased-v1, bert-base-dutch-cased). Assuming '/opt/hyp/NER/embedding/bert/chinese_L-12_H-768_A-12_pytorch' is a path, a model identifier, or url to a directory containing tokenizer files.
-Didn't find file /opt/hyp/NER/embedding/bert/chinese_L-12_H-768_A-12_pytorch/added_tokens.json. We won't load it.
-Didn't find file /opt/hyp/NER/embedding/bert/chinese_L-12_H-768_A-12_pytorch/special_tokens_map.json. We won't load it.
-Didn't find file /opt/hyp/NER/embedding/bert/chinese_L-12_H-768_A-12_pytorch/tokenizer_config.json. We won't load it.
-loading file /opt/hyp/NER/embedding/bert/chinese_L-12_H-768_A-12_pytorch/vocab.txt
-loading file None
-loading file None
-loading file None
-loading configuration file /opt/hyp/NER/embedding/bert/chinese_L-12_H-768_A-12_pytorch/config.json
-Model config BertConfig {
-  "architectures": null,
-  "attention_probs_dropout_prob": 0.1,
-  "bos_token_id": 0,
-  "directionality": "bidi",
-  "do_sample": false,
-  "eos_token_ids": 0,
-  "finetuning_task": null,
-  "hidden_act": "gelu",
-  "hidden_dropout_prob": 0.1,
-  "hidden_size": 768,
-  "id2label": {
-    "0": "LABEL_0",
-    "1": "LABEL_1"
-  },
-  "initializer_range": 0.02,
-  "intermediate_size": 3072,
-  "is_decoder": false,
-  "label2id": {
-    "LABEL_0": 0,
-    "LABEL_1": 1
-  },
-  "layer_norm_eps": 1e-12,
-  "length_penalty": 1.0,
-  "max_length": 20,
-  "max_position_embeddings": 512,
-  "model_type": "bert",
-  "num_attention_heads": 12,
-  "num_beams": 1,
-  "num_hidden_layers": 12,
-  "num_labels": 2,
-  "num_return_sequences": 1,
-  "output_attentions": false,
-  "output_hidden_states": false,
-  "output_past": true,
-  "pad_token_id": 0,
-  "pooler_fc_size": 768,
-  "pooler_num_attention_heads": 12,
-  "pooler_num_fc_layers": 3,
-  "pooler_size_per_head": 128,
-  "pooler_type": "first_token_transform",
-  "pruned_heads": {},
-  "repetition_penalty": 1.0,
-  "temperature": 1.0,
-  "top_k": 50,
-  "top_p": 1.0,
-  "torchscript": false,
-  "type_vocab_size": 2,
-  "use_bfloat16": false,
-  "vocab_size": 21128
-}
-
-Let's use1GPUS
-Creating features from dataset file at /opt/hyp/NER/NER-model/data/other_data/MSRA/json_data
-Writing example 0 of 125184
-*** Example ***
-guid: 1
-tokens: [CLS] 抽 象 和 具 体 的 地 点 [SEP] 当 希 望 工 程 救 助 的 百 万 儿 童 成 长 起 来 ， 科 教 兴 国 蔚 然 成 风 时 ， 今 天 有 收 藏 价 值 的 书 你 没 买 ， 明 日 就 叫 你 悔 不 当 初 ！ [SEP]
-input_ids: 101 2853 6496 1469 1072 860 4638 1765 4157 102 2496 2361 3307 2339 4923 3131 1221 4638 4636 674 1036 4997 2768 7270 6629 3341 8024 4906 3136 1069 1744 5917 4197 2768 7599 3198 8024 791 1921 3300 3119 5966 817 966 4638 741 872 3766 743 8024 3209 3189 2218 1373 872 2637 679 2496 1159 8013 102 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-input_mask: 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-segment_ids: 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-start_ids: -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100
-end_ids: -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100
-*** Example ***
-guid: 2
-tokens: [CLS] 真 实 和 虚 构 的 人 名 [SEP] 当 希 望 工 程 救 助 的 百 万 儿 童 成 长 起 来 ， 科 教 兴 国 蔚 然 成 风 时 ， 今 天 有 收 藏 价 值 的 书 你 没 买 ， 明 日 就 叫 你 悔 不 当 初 ！ [SEP]
-input_ids: 101 4696 2141 1469 5994 3354 4638 782 1399 102 2496 2361 3307 2339 4923 3131 1221 4638 4636 674 1036 4997 2768 7270 6629 3341 8024 4906 3136 1069 1744 5917 4197 2768 7599 3198 8024 791 1921 3300 3119 5966 817 966 4638 741 872 3766 743 8024 3209 3189 2218 1373 872 2637 679 2496 1159 8013 102 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-input_mask: 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-segment_ids: 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-start_ids: -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100
-end_ids: -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100
-*** Example ***
-guid: 3
-tokens: [CLS] 公 司 , 党 派 等 组 织 机 构 [SEP] 当 希 望 工 程 救 助 的 百 万 儿 童 成 长 起 来 ， 科 教 兴 国 蔚 然 成 风 时 ， 今 天 有 收 藏 价 值 的 书 你 没 买 ， 明 日 就 叫 你 悔 不 当 初 ！ [SEP]
-input_ids: 101 1062 1385 117 1054 3836 5023 5299 5302 3322 3354 102 2496 2361 3307 2339 4923 3131 1221 4638 4636 674 1036 4997 2768 7270 6629 3341 8024 4906 3136 1069 1744 5917 4197 2768 7599 3198 8024 791 1921 3300 3119 5966 817 966 4638 741 872 3766 743 8024 3209 3189 2218 1373 872 2637 679 2496 1159 8013 102 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-input_mask: 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-segment_ids: 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-start_ids: -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100
-end_ids: -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100
-*** Example ***
-guid: 4
-tokens: [CLS] 抽 象 和 具 体 的 地 点 [SEP] 藏 书 本 来 就 是 所 有 传 统 收 藏 门 类 中 的 第 一 大 户 ， 只 是 我 们 结 束 温 饱 的 时 间 太 短 而 已 。 [SEP]
-input_ids: 101 2853 6496 1469 1072 860 4638 1765 4157 102 5966 741 3315 3341 2218 3221 2792 3300 837 5320 3119 5966 7305 5102 704 4638 5018 671 1920 2787 8024 1372 3221 2769 812 5310 3338 3946 7653 4638 3198 7313 1922 4764 5445 2347 511 102 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-input_mask: 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-segment_ids: 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-start_ids: -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100
-end_ids: -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100
-*** Example ***
-guid: 5
-tokens: [CLS] 真 实 和 虚 构 的 人 名 [SEP] 藏 书 本 来 就 是 所 有 传 统 收 藏 门 类 中 的 第 一 大 户 ， 只 是 我 们 结 束 温 饱 的 时 间 太 短 而 已 。 [SEP]
-input_ids: 101 4696 2141 1469 5994 3354 4638 782 1399 102 5966 741 3315 3341 2218 3221 2792 3300 837 5320 3119 5966 7305 5102 704 4638 5018 671 1920 2787 8024 1372 3221 2769 812 5310 3338 3946 7653 4638 3198 7313 1922 4764 5445 2347 511 102 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-input_mask: 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-segment_ids: 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-start_ids: -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100
-end_ids: -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100 -100
-Writing example 10000 of 125184
-Writing example 20000 of 125184
-Writing example 30000 of 125184
-Writing example 40000 of 125184
-Writing example 50000 of 125184
-Writing example 60000 of 125184
-Writing example 70000 of 125184
-Writing example 80000 of 125184
-Writing example 90000 of 125184
-Writing example 100000 of 125184
-Writing example 110000 of 125184
-Writing example 120000 of 125184
-training example 125184
-Creating features from dataset file at /opt/hyp/NER/NER-model/data/other_data/MSRA/json_data
-training example 2712
-Epoch:   0%|          | 0/50 [00:00<?, ?it/s]
-Iteration:   0%|          | 0/7824 [00:00<?, ?it/s][A
-Iteration:   0%|          | 0/7824 [00:00<?, ?it/s, train_loss=1.45][A
-Iteration:   0%|          | 1/7824 [00:00<40:13,  3.24it/s, train_loss=1.45][A
-Iteration:   0%|          | 1/7824 [00:00<40:13,  3.24it/s, train_loss=1.48][A
-Iteration:   0%|          | 2/7824 [00:00<36:31,  3.57it/s, train_loss=1.48][A
-Iteration:   0%|          | 2/7824 [00:00<36:31,  3.57it/s, train_loss=1.47][A
-Iteration:   0%|          | 3/7824 [00:00<33:51,  3.85it/s, train_loss=1.47][A
-Iteration:   0%|          | 3/7824 [00:00<33:51,  3.85it/s, train_loss=1.44][A
-Iteration:   0%|          | 4/7824 [00:00<31:40,  4.12it/s, train_loss=1.44][A
-Iteration:   0%|          | 4/7824 [00:01<31:40,  4.12it/s, train_loss=1.43][A
-Iteration:   0%|          | 5/7824 [00:01<30:14,  4.31it/s, train_loss=1.43][A
-Iteration:   0%|          | 5/7824 [00:01<30:14,  4.31it/s, train_loss=1.41][A
-Iteration:   0%|          | 6/7824 [00:01<29:09,  4.47it/s, train_loss=1.41][A
-Iteration:   0%|          | 6/7824 [00:01<29:09,  4.47it/s, train_loss=1.45][A
-Iteration:   0%|          | 7/7824 [00:01<28:28,  4.58it/s, train_loss=1.45][A
-Iteration:   0%|          | 7/7824 [00:01<28:28,  4.58it/s, train_loss=1.46][A
-Iteration:   0%|          | 8/7824 [00:01<27:54,  4.67it/s, train_loss=1.46][A
-Iteration:   0%|          | 8/7824 [00:01<27:54,  4.67it/s, train_loss=1.46][A
-Iteration:   0%|          | 9/7824 [00:01<27:34,  4.72it/s, train_loss=1.46][A
-Iteration:   0%|          | 9/7824 [00:02<27:34,  4.72it/s, train_loss=1.44][A
-Iteration:   0%|          | 10/7824 [00:02<27:23,  4.75it/s, train_loss=1.44][A
-Iteration:   0%|          | 10/7824 [00:02<27:23,  4.75it/s, train_loss=1.44][A
-Iteration:   0%|          | 11/7824 [00:02<27:08,  4.80it/s, train_loss=1.44][A
-Iteration:   0%|          | 11/7824 [00:02<27:08,  4.80it/s, train_loss=1.45][A
-Iteration:   0%|          | 12/7824 [00:02<27:02,  4.82it/s, train_loss=1.45][A
-Iteration:   0%|          | 12/7824 [00:02<27:02,  4.82it/s, train_loss=1.45][A
-Iteration:   0%|          | 13/7824 [00:02<26:54,  4.84it/s, train_loss=1.45][A
-Iteration:   0%|          | 13/7824 [00:02<26:54,  4.84it/s, train_loss=1.47][A
-Iteration:   0%|          | 14/7824 [00:02<26:47,  4.86it/s, train_loss=1.47][A
-Iteration:   0%|          | 14/7824 [00:03<26:47,  4.86it/s, train_loss=1.46][A
-Iteration:   0%|          | 15/7824 [00:03<27:09,  4.79it/s, train_loss=1.46][A
-Iteration:   0%|          | 15/7824 [00:03<27:09,  4.79it/s, train_loss=1.46][A
-Iteration:   0%|          | 16/7824 [00:03<27:35,  4.72it/s, train_loss=1.46][A
-Iteration:   0%|          | 16/7824 [00:03<27:35,  4.72it/s, train_loss=1.43][A
-Iteration:   0%|          | 17/7824 [00:03<27:32,  4.72it/s, train_loss=1.43][A
-Iteration:   0%|          | 17/7824 [00:03<27:32,  4.72it/s, train_loss=1.45][A
-Iteration:   0%|          | 18/7824 [00:03<27:37,  4.71it/s, train_loss=1.45][A
-Iteration:   0%|          | 18/7824 [00:04<27:37,  4.71it/s, train_loss=1.41][A
-Iteration:   0%|          | 19/7824 [00:04<27:32,  4.72it/s, train_loss=1.41][A
-Iteration:   0%|          | 19/7824 [00:04<27:32,  4.72it/s, train_loss=1.41][A
-Iteration:   0%|          | 20/7824 [00:04<27:29,  4.73it/s, train_loss=1.41][A
-Iteration:   0%|          | 20/7824 [00:04<27:29,  4.73it/s, train_loss=1.46][A
-Iteration:   0%|          | 21/7824 [00:04<27:27,  4.74it/s, train_loss=1.46][A
-Iteration:   0%|          | 21/7824 [00:04<27:27,  4.74it/s, train_loss=1.46][A
-Iteration:   0%|          | 22/7824 [00:04<27:26,  4.74it/s, train_loss=1.46][A
-Iteration:   0%|          | 22/7824 [00:04<27:26,  4.74it/s, train_loss=1.44][A
-Iteration:   0%|          | 23/7824 [00:04<27:27,  4.74it/s, train_loss=1.44][A
-Iteration:   0%|          | 23/7824 [00:05<27:27,  4.74it/s, train_loss=1.44][A
-Iteration:   0%|          | 24/7824 [00:05<27:26,  4.74it/s, train_loss=1.44][A
-Iteration:   0%|          | 24/7824 [00:05<27:26,  4.74it/s, train_loss=1.44][A
-Iteration:   0%|          | 25/7824 [00:05<27:28,  4.73it/s, train_loss=1.44][A
-Iteration:   0%|          | 25/7824 [00:05<27:28,  4.73it/s, train_loss=1.44][A
-Iteration:   0%|          | 26/7824 [00:05<27:27,  4.73it/s, train_loss=1.44][A
-Iteration:   0%|          | 26/7824 [00:05<27:27,  4.73it/s, train_loss=1.39][A
-Iteration:   0%|          | 27/7824 [00:05<27:27,  4.73it/s, train_loss=1.39][A
-Iteration:   0%|          | 27/7824 [00:05<27:27,  4.73it/s, train_loss=1.39][A
-Iteration:   0%|          | 28/7824 [00:05<27:27,  4.73it/s, train_loss=1.39][A
-Iteration:   0%|          | 28/7824 [00:06<27:27,  4.73it/s, train_loss=1.43][A
-Iteration:   0%|          | 29/7824 [00:06<27:26,  4.73it/s, train_loss=1.43][A
-Iteration:   0%|          | 29/7824 [00:06<27:26,  4.73it/s, train_loss=1.39][A
-Iteration:   0%|          | 30/7824 [00:06<27:09,  4.78it/s, train_loss=1.39][A
-Iteration:   0%|          | 30/7824 [00:06<27:09,  4.78it/s, train_loss=1.44][A
-Iteration:   0%|          | 31/7824 [00:06<26:53,  4.83it/s, train_loss=1.44][A
-Iteration:   0%|          | 31/7824 [00:06<26:53,  4.83it/s, train_loss=1.45][A
-Iteration:   0%|          | 32/7824 [00:06<26:41,  4.87it/s, train_loss=1.45][A
-Iteration:   0%|          | 32/7824 [00:06<26:41,  4.87it/s, train_loss=1.42][A
-Iteration:   0%|          | 33/7824 [00:06<26:32,  4.89it/s, train_loss=1.42][A
-Iteration:   0%|          | 33/7824 [00:07<26:32,  4.89it/s, train_loss=1.36][A
-Iteration:   0%|          | 34/7824 [00:07<26:26,  4.91it/s, train_loss=1.36][A
-Iteration:   0%|          | 34/7824 [00:07<26:26,  4.91it/s, train_loss=1.43][A
-Iteration:   0%|          | 35/7824 [00:07<26:24,  4.92it/s, train_loss=1.43][A
-Iteration:   0%|          | 35/7824 [00:07<26:24,  4.92it/s, train_loss=1.41][A
-Iteration:   0%|          | 36/7824 [00:07<26:18,  4.93it/s, train_loss=1.41][A
-Iteration:   0%|          | 36/7824 [00:07<26:18,  4.93it/s, train_loss=1.42][A
-Iteration:   0%|          | 37/7824 [00:07<26:30,  4.89it/s, train_loss=1.42][A
-Iteration:   0%|          | 37/7824 [00:07<26:30,  4.89it/s, train_loss=1.42][A
-Iteration:   0%|          | 38/7824 [00:07<26:26,  4.91it/s, train_loss=1.42][A
-Iteration:   0%|          | 38/7824 [00:08<26:26,  4.91it/s, train_loss=1.43][A
-Iteration:   0%|          | 39/7824 [00:08<26:28,  4.90it/s, train_loss=1.43][A
-Iteration:   0%|          | 39/7824 [00:08<26:28,  4.90it/s, train_loss=1.4] [A
-Iteration:   1%|          | 40/7824 [00:08<26:29,  4.90it/s, train_loss=1.4][A
-Iteration:   1%|          | 40/7824 [00:08<26:29,  4.90it/s, train_loss=1.42][A
-Iteration:   1%|          | 41/7824 [00:08<26:24,  4.91it/s, train_loss=1.42][A
-Iteration:   1%|          | 41/7824 [00:08<26:24,  4.91it/s, train_loss=1.41][A
-Iteration:   1%|          | 42/7824 [00:08<26:21,  4.92it/s, train_loss=1.41][A
-Iteration:   1%|          | 42/7824 [00:09<26:21,  4.92it/s, train_loss=1.4] [A
-Iteration:   1%|          | 43/7824 [00:09<26:19,  4.93it/s, train_loss=1.4][A
-Iteration:   1%|          | 43/7824 [00:09<26:19,  4.93it/s, train_loss=1.38][A
-Iteration:   1%|          | 44/7824 [00:09<26:17,  4.93it/s, train_loss=1.38][A
-Iteration:   1%|          | 44/7824 [00:09<26:17,  4.93it/s, train_loss=1.37][A
-Iteration:   1%|          | 45/7824 [00:09<26:20,  4.92it/s, train_loss=1.37][A
-Iteration:   1%|          | 45/7824 [00:09<26:20,  4.92it/s, train_loss=1.38][A
-Iteration:   1%|          | 46/7824 [00:09<26:24,  4.91it/s, train_loss=1.38][A
-Iteration:   1%|          | 46/7824 [00:09<26:24,  4.91it/s, train_loss=1.4] [A
-Iteration:   1%|          | 47/7824 [00:09<26:22,  4.91it/s, train_loss=1.4][A
-Iteration:   1%|          | 47/7824 [00:10<26:22,  4.91it/s, train_loss=1.39][A
-Iteration:   1%|          | 48/7824 [00:10<26:28,  4.89it/s, train_loss=1.39][A
-Iteration:   1%|          | 48/7824 [00:10<26:28,  4.89it/s, train_loss=1.38][A
-Iteration:   1%|          | 49/7824 [00:10<26:29,  4.89it/s, train_loss=1.38][A
-Iteration:   1%|          | 49/7824 [00:10<26:29,  4.89it/s, train_loss=1.39][A
-Iteration:   1%|          | 50/7824 [00:10<26:25,  4.90it/s, train_loss=1.39][A
-Iteration:   1%|          | 50/7824 [00:10<26:25,  4.90it/s, train_loss=1.4] [A
-Iteration:   1%|          | 51/7824 [00:10<26:29,  4.89it/s, train_loss=1.4][A
-Iteration:   1%|          | 51/7824 [00:10<26:29,  4.89it/s, train_loss=1.4][A
-Iteration:   1%|          | 52/7824 [00:10<26:28,  4.89it/s, train_loss=1.4][A
-Iteration:   1%|          | 52/7824 [00:11<26:28,  4.89it/s, train_loss=1.35][A
-Iteration:   1%|          | 53/7824 [00:11<26:34,  4.87it/s, train_loss=1.35][A
-Iteration:   1%|          | 53/7824 [00:11<26:34,  4.87it/s, train_loss=1.39][A
-Iteration:   1%|          | 54/7824 [00:11<26:34,  4.87it/s, train_loss=1.39][A
-Iteration:   1%|          | 54/7824 [00:11<26:34,  4.87it/s, train_loss=1.36][A
-Iteration:   1%|          | 55/7824 [00:11<26:27,  4.89it/s, train_loss=1.36][A
-Iteration:   1%|          | 55/7824 [00:11<26:27,  4.89it/s, train_loss=1.36][A
-Iteration:   1%|          | 56/7824 [00:11<26:35,  4.87it/s, train_loss=1.36][A
-Iteration:   1%|          | 56/7824 [00:11<26:35,  4.87it/s, train_loss=1.35][A
-Iteration:   1%|          | 57/7824 [00:11<26:30,  4.88it/s, train_loss=1.35][A
-Iteration:   1%|          | 57/7824 [00:12<26:30,  4.88it/s, train_loss=1.4] [A
-Iteration:   1%|          | 58/7824 [00:12<26:24,  4.90it/s, train_loss=1.4][A
-Iteration:   1%|          | 58/7824 [00:12<26:24,  4.90it/s, train_loss=1.34][A
-Iteration:   1%|          | 59/7824 [00:12<26:21,  4.91it/s, train_loss=1.34][A
-Iteration:   1%|          | 59/7824 [00:12<26:21,  4.91it/s, train_loss=1.35][A
-Iteration:   1%|          | 60/7824 [00:12<26:21,  4.91it/s, train_loss=1.35][A
-Iteration:   1%|          | 60/7824 [00:12<26:21,  4.91it/s, train_loss=1.33][A
-Iteration:   1%|          | 61/7824 [00:12<26:24,  4.90it/s, train_loss=1.33][A
-Iteration:   1%|          | 61/7824 [00:12<26:24,  4.90it/s, train_loss=1.36][A
-Iteration:   1%|          | 62/7824 [00:12<26:20,  4.91it/s, train_loss=1.36][A
-Iteration:   1%|          | 62/7824 [00:13<26:20,  4.91it/s, train_loss=1.33][A
-Iteration:   1%|          | 63/7824 [00:13<26:19,  4.91it/s, train_loss=1.33][A
-Iteration:   1%|          | 63/7824 [00:13<26:19,  4.91it/s, train_loss=1.34][A
-Iteration:   1%|          | 64/7824 [00:13<26:17,  4.92it/s, train_loss=1.34][A
-Iteration:   1%|          | 64/7824 [00:13<26:17,  4.92it/s, train_loss=1.33][A
-Iteration:   1%|          | 65/7824 [00:13<26:22,  4.90it/s, train_loss=1.33][A
-Iteration:   1%|          | 65/7824 [00:13<26:22,  4.90it/s, train_loss=1.33][A
-Iteration:   1%|          | 66/7824 [00:13<26:20,  4.91it/s, train_loss=1.33][A
-Iteration:   1%|          | 66/7824 [00:13<26:20,  4.91it/s, train_loss=1.34][A
-Iteration:   1%|          | 67/7824 [00:13<26:17,  4.92it/s, train_loss=1.34][A
-Iteration:   1%|          | 67/7824 [00:14<26:17,  4.92it/s, train_loss=1.34][A
-Iteration:   1%|          | 68/7824 [00:14<26:15,  4.92it/s, train_loss=1.34][A
-Iteration:   1%|          | 68/7824 [00:14<26:15,  4.92it/s, train_loss=1.35][A
-Iteration:   1%|          | 69/7824 [00:14<26:26,  4.89it/s, train_loss=1.35][A
-Iteration:   1%|          | 69/7824 [00:14<26:26,  4.89it/s, train_loss=1.32][A
-Iteration:   1%|          | 70/7824 [00:14<26:22,  4.90it/s, train_loss=1.32][A
-Iteration:   1%|          | 70/7824 [00:14<26:22,  4.90it/s, train_loss=1.36][A
-Iteration:   1%|          | 71/7824 [00:14<26:20,  4.90it/s, train_loss=1.36][A
-Iteration:   1%|          | 71/7824 [00:14<26:20,  4.90it/s, train_loss=1.33][A
-Iteration:   1%|          | 72/7824 [00:14<26:37,  4.85it/s, train_loss=1.33][A
-Iteration:   1%|          | 72/7824 [00:15<26:37,  4.85it/s, train_loss=1.3] [A
-Iteration:   1%|          | 73/7824 [00:15<26:34,  4.86it/s, train_loss=1.3][A
-Iteration:   1%|          | 73/7824 [00:15<26:34,  4.86it/s, train_loss=1.33][A
-Iteration:   1%|          | 74/7824 [00:15<26:29,  4.87it/s, train_loss=1.33][A
-Iteration:   1%|          | 74/7824 [00:15<26:29,  4.87it/s, train_loss=1.35][A
-Iteration:   1%|          | 75/7824 [00:15<26:24,  4.89it/s, train_loss=1.35][A
-Iteration:   1%|          | 75/7824 [00:15<26:24,  4.89it/s, train_loss=1.31][A
-Iteration:   1%|          | 76/7824 [00:15<26:28,  4.88it/s, train_loss=1.31][A
-Iteration:   1%|          | 76/7824 [00:15<26:28,  4.88it/s, train_loss=1.32][A
-Iteration:   1%|          | 77/7824 [00:15<26:27,  4.88it/s, train_loss=1.32][A
-Iteration:   1%|          | 77/7824 [00:16<26:27,  4.88it/s, train_loss=1.33][A
-Iteration:   1%|          | 78/7824 [00:16<26:21,  4.90it/s, train_loss=1.33][A
-Iteration:   1%|          | 78/7824 [00:16<26:21,  4.90it/s, train_loss=1.29][A
-Iteration:   1%|          | 79/7824 [00:16<26:19,  4.90it/s, train_loss=1.29][A
-Iteration:   1%|          | 79/7824 [00:16<26:19,  4.90it/s, train_loss=1.32][A
-Iteration:   1%|          | 80/7824 [00:16<26:23,  4.89it/s, train_loss=1.32][A
-Iteration:   1%|          | 80/7824 [00:16<26:23,  4.89it/s, train_loss=1.31][A
-Iteration:   1%|          | 81/7824 [00:16<26:20,  4.90it/s, train_loss=1.31][A
-Iteration:   1%|          | 81/7824 [00:16<26:20,  4.90it/s, train_loss=1.29][A
-Iteration:   1%|          | 82/7824 [00:16<26:17,  4.91it/s, train_loss=1.29][A
-Iteration:   1%|          | 82/7824 [00:17<26:17,  4.91it/s, train_loss=1.28][A
-Iteration:   1%|          | 83/7824 [00:17<26:21,  4.89it/s, train_loss=1.28][A
-Iteration:   1%|          | 83/7824 [00:17<26:21,  4.89it/s, train_loss=1.31][A
-Iteration:   1%|          | 84/7824 [00:17<26:22,  4.89it/s, train_loss=1.31][A
-Iteration:   1%|          | 84/7824 [00:17<26:22,  4.89it/s, train_loss=1.26][A
-Iteration:   1%|          | 85/7824 [00:17<26:25,  4.88it/s, train_loss=1.26][A
-Iteration:   1%|          | 85/7824 [00:17<26:25,  4.88it/s, train_loss=1.27][A
-Iteration:   1%|          | 86/7824 [00:17<26:27,  4.87it/s, train_loss=1.27][A
-Iteration:   1%|          | 86/7824 [00:18<26:27,  4.87it/s, train_loss=1.25][A
-Iteration:   1%|          | 87/7824 [00:18<26:23,  4.89it/s, train_loss=1.25][A
-Iteration:   1%|          | 87/7824 [00:18<26:23,  4.89it/s, train_loss=1.3] [A
-Iteration:   1%|          | 88/7824 [00:18<26:20,  4.89it/s, train_loss=1.3][A
-Iteration:   1%|          | 88/7824 [00:18<26:20,  4.89it/s, train_loss=1.27][A
-Iteration:   1%|          | 89/7824 [00:18<26:25,  4.88it/s, train_loss=1.27][A
-Iteration:   1%|          | 89/7824 [00:18<26:25,  4.88it/s, train_loss=1.27][A
-Iteration:   1%|          | 90/7824 [00:18<26:24,  4.88it/s, train_loss=1.27][A
-Iteration:   1%|          | 90/7824 [00:18<26:24,  4.88it/s, train_loss=1.27][A
-Iteration:   1%|          | 91/7824 [00:18<26:26,  4.87it/s, train_loss=1.27][A
-Iteration:   1%|          | 91/7824 [00:19<26:26,  4.87it/s, train_loss=1.28][A
-Iteration:   1%|          | 92/7824 [00:19<26:22,  4.89it/s, train_loss=1.28][A
-Iteration:   1%|          | 92/7824 [00:19<26:22,  4.89it/s, train_loss=1.24][A
-Iteration:   1%|          | 93/7824 [00:19<26:18,  4.90it/s, train_loss=1.24][A
-Iteration:   1%|          | 93/7824 [00:19<26:18,  4.90it/s, train_loss=1.23][A
-Iteration:   1%|          | 94/7824 [00:19<26:16,  4.90it/s, train_loss=1.23][A
-Iteration:   1%|          | 94/7824 [00:19<26:16,  4.90it/s, train_loss=1.23][A
-Iteration:   1%|          | 95/7824 [00:19<26:23,  4.88it/s, train_loss=1.23][A
-Iteration:   1%|          | 95/7824 [00:19<26:23,  4.88it/s, train_loss=1.23][A
-Iteration:   1%|          | 96/7824 [00:19<26:19,  4.89it/s, train_loss=1.23][A
-Iteration:   1%|          | 96/7824 [00:20<26:19,  4.89it/s, train_loss=1.21][A
-Iteration:   1%|          | 97/7824 [00:20<26:20,  4.89it/s, train_loss=1.21][A
-Iteration:   1%|          | 97/7824 [00:20<26:20,  4.89it/s, train_loss=1.21][A
-Iteration:   1%|▏         | 98/7824 [00:20<26:21,  4.88it/s, train_loss=1.21][A
-Iteration:   1%|▏         | 98/7824 [00:20<26:21,  4.88it/s, train_loss=1.25][A
-Iteration:   1%|▏         | 99/7824 [00:20<26:24,  4.87it/s, train_loss=1.25][A
-Iteration:   1%|▏         | 99/7824 [00:20<26:24,  4.87it/s, train_loss=1.22][A
-Iteration:   1%|▏         | 100/7824 [00:20<26:28,  4.86it/s, train_loss=1.22][A
-Iteration:   1%|▏         | 100/7824 [00:20<26:28,  4.86it/s, train_loss=1.21][A
-Iteration:   1%|▏         | 101/7824 [00:20<26:23,  4.88it/s, train_loss=1.21][A
-Iteration:   1%|▏         | 101/7824 [00:21<26:23,  4.88it/s, train_loss=1.19][A
-Iteration:   1%|▏         | 102/7824 [00:21<26:23,  4.88it/s, train_loss=1.19][A
-Iteration:   1%|▏         | 102/7824 [00:21<26:23,  4.88it/s, train_loss=1.2] [A
-Iteration:   1%|▏         | 103/7824 [00:21<26:23,  4.88it/s, train_loss=1.2][A
-Iteration:   1%|▏         | 103/7824 [00:21<26:23,  4.88it/s, train_loss=1.22][A
-Iteration:   1%|▏         | 104/7824 [00:21<26:44,  4.81it/s, train_loss=1.22][A
-Iteration:   1%|▏         | 104/7824 [00:21<26:44,  4.81it/s, train_loss=1.23][A
-Iteration:   1%|▏         | 105/7824 [00:21<26:33,  4.84it/s, train_loss=1.23][A
-Iteration:   1%|▏         | 105/7824 [00:21<26:33,  4.84it/s, train_loss=1.19][A
-Iteration:   1%|▏         | 106/7824 [00:21<26:31,  4.85it/s, train_loss=1.19][A
-Iteration:   1%|▏         | 106/7824 [00:22<26:31,  4.85it/s, train_loss=1.19][A
-Iteration:   1%|▏         | 107/7824 [00:22<26:25,  4.87it/s, train_loss=1.19][A
-Iteration:   1%|▏         | 107/7824 [00:22<26:25,  4.87it/s, train_loss=1.2] [A
-Iteration:   1%|▏         | 108/7824 [00:22<26:25,  4.87it/s, train_loss=1.2][A
-Iteration:   1%|▏         | 108/7824 [00:22<26:25,  4.87it/s, train_loss=1.18][A
-Iteration:   1%|▏         | 109/7824 [00:22<26:23,  4.87it/s, train_loss=1.18][A
-Iteration:   1%|▏         | 109/7824 [00:22<26:23,  4.87it/s, train_loss=1.2] [A
-Iteration:   1%|▏         | 110/7824 [00:22<26:20,  4.88it/s, train_loss=1.2][A
-Iteration:   1%|▏         | 110/7824 [00:22<26:20,  4.88it/s, train_loss=1.19][A
-Iteration:   1%|▏         | 111/7824 [00:22<26:25,  4.86it/s, train_loss=1.19][A
-Iteration:   1%|▏         | 111/7824 [00:23<26:25,  4.86it/s, train_loss=1.13][A
-Iteration:   1%|▏         | 112/7824 [00:23<26:22,  4.87it/s, train_loss=1.13][A
-Iteration:   1%|▏         | 112/7824 [00:23<26:22,  4.87it/s, train_loss=1.14][A
-Iteration:   1%|▏         | 113/7824 [00:23<26:25,  4.86it/s, train_loss=1.14][A
-Iteration:   1%|▏         | 113/7824 [00:23<26:25,  4.86it/s, train_loss=1.13][A
-Iteration:   1%|▏         | 114/7824 [00:23<26:21,  4.88it/s, train_loss=1.13][A
-Iteration:   1%|▏         | 114/7824 [00:23<26:21,  4.88it/s, train_loss=1.13][A
-Iteration:   1%|▏         | 115/7824 [00:23<26:24,  4.87it/s, train_loss=1.13][A
-Iteration:   1%|▏         | 115/7824 [00:23<26:24,  4.87it/s, train_loss=1.14][A
-Iteration:   1%|▏         | 116/7824 [00:23<26:25,  4.86it/s, train_loss=1.14][A
-Iteration:   1%|▏         | 116/7824 [00:24<26:25,  4.86it/s, train_loss=1.11][A
-Iteration:   1%|▏         | 117/7824 [00:24<26:22,  4.87it/s, train_loss=1.11][A
-Iteration:   1%|▏         | 117/7824 [00:24<26:22,  4.87it/s, train_loss=1.13][A
-Iteration:   2%|▏         | 118/7824 [00:24<26:27,  4.85it/s, train_loss=1.13][A
-Iteration:   2%|▏         | 118/7824 [00:24<26:27,  4.85it/s, train_loss=1.15][A
-Iteration:   2%|▏         | 119/7824 [00:24<26:23,  4.87it/s, train_loss=1.15][A
-Iteration:   2%|▏         | 119/7824 [00:24<26:23,  4.87it/s, train_loss=1.1] [A
-Iteration:   2%|▏         | 120/7824 [00:24<26:26,  4.86it/s, train_loss=1.1][A
-Iteration:   2%|▏         | 120/7824 [00:24<26:26,  4.86it/s, train_loss=1.1][A
-Iteration:   2%|▏         | 121/7824 [00:24<26:21,  4.87it/s, train_loss=1.1][A
-Iteration:   2%|▏         | 121/7824 [00:25<26:21,  4.87it/s, train_loss=1.11][A
-Iteration:   2%|▏         | 122/7824 [00:25<26:18,  4.88it/s, train_loss=1.11][A
-Iteration:   2%|▏         | 122/7824 [00:25<26:18,  4.88it/s, train_loss=1.12][A
-Iteration:   2%|▏         | 123/7824 [00:25<26:22,  4.87it/s, train_loss=1.12][A
-Iteration:   2%|▏         | 123/7824 [00:25<26:22,  4.87it/s, train_loss=1.11][A
-Iteration:   2%|▏         | 124/7824 [00:25<26:25,  4.86it/s, train_loss=1.11][A
-Iteration:   2%|▏         | 124/7824 [00:25<26:25,  4.86it/s, train_loss=1.11][A
-Iteration:   2%|▏         | 125/7824 [00:25<26:23,  4.86it/s, train_loss=1.11][A
-Iteration:   2%|▏         | 125/7824 [00:26<26:23,  4.86it/s, train_loss=1.06][A
-Iteration:   2%|▏         | 126/7824 [00:26<26:19,  4.87it/s, train_loss=1.06][A
-Iteration:   2%|▏         | 126/7824 [00:26<26:19,  4.87it/s, train_loss=1.1] [A
-Iteration:   2%|▏         | 127/7824 [00:26<26:20,  4.87it/s, train_loss=1.1][A
-Iteration:   2%|▏         | 127/7824 [00:26<26:20,  4.87it/s, train_loss=1.09][A
-Iteration:   2%|▏         | 128/7824 [00:26<26:17,  4.88it/s, train_loss=1.09][A
-Iteration:   2%|▏         | 128/7824 [00:26<26:17,  4.88it/s, train_loss=1.08][A
-Iteration:   2%|▏         | 129/7824 [00:26<26:16,  4.88it/s, train_loss=1.08][A
-Iteration:   2%|▏         | 129/7824 [00:26<26:16,  4.88it/s, train_loss=1.11][A
-Iteration:   2%|▏         | 130/7824 [00:26<26:16,  4.88it/s, train_loss=1.11][A
-Iteration:   2%|▏         | 130/7824 [00:27<26:16,  4.88it/s, train_loss=1.06][A
-Iteration:   2%|▏         | 131/7824 [00:27<26:18,  4.87it/s, train_loss=1.06][A
-Iteration:   2%|▏         | 131/7824 [00:27<26:18,  4.87it/s, train_loss=1.06][A
-Iteration:   2%|▏         | 132/7824 [00:27<26:17,  4.87it/s, train_loss=1.06][A
-Iteration:   2%|▏         | 132/7824 [00:27<26:17,  4.87it/s, train_loss=1.07][A
-Iteration:   2%|▏         | 133/7824 [00:27<26:21,  4.86it/s, train_loss=1.07][A
-Iteration:   2%|▏         | 133/7824 [00:27<26:21,  4.86it/s, train_loss=1.03][A
-Iteration:   2%|▏         | 134/7824 [00:27<26:17,  4.87it/s, train_loss=1.03][A
-Iteration:   2%|▏         | 134/7824 [00:27<26:17,  4.87it/s, train_loss=1.06][A
-Iteration:   2%|▏         | 135/7824 [00:27<26:22,  4.86it/s, train_loss=1.06][A
-Iteration:   2%|▏         | 135/7824 [00:28<26:22,  4.86it/s, train_loss=1.03][A
-Iteration:   2%|▏         | 136/7824 [00:28<26:17,  4.87it/s, train_loss=1.03][A
-Iteration:   2%|▏         | 136/7824 [00:28<26:17,  4.87it/s, train_loss=1.05][A
-Iteration:   2%|▏         | 137/7824 [00:28<26:21,  4.86it/s, train_loss=1.05][A
-Iteration:   2%|▏         | 137/7824 [00:28<26:21,  4.86it/s, train_loss=1.05][A
-Iteration:   2%|▏         | 138/7824 [00:28<26:19,  4.87it/s, train_loss=1.05][A
-Iteration:   2%|▏         | 138/7824 [00:28<26:19,  4.87it/s, train_loss=1.05][A
-Iteration:   2%|▏         | 139/7824 [00:28<26:37,  4.81it/s, train_loss=1.05][A
-Iteration:   2%|▏         | 139/7824 [00:28<26:37,  4.81it/s, train_loss=1.02][A
-Iteration:   2%|▏         | 140/7824 [00:28<27:30,  4.65it/s, train_loss=1.02][A
-Iteration:   2%|▏         | 140/7824 [00:29<27:30,  4.65it/s, train_loss=1.02][A
-Iteration:   2%|▏         | 141/7824 [00:29<27:46,  4.61it/s, train_loss=1.02][A
-Iteration:   2%|▏         | 141/7824 [00:29<27:46,  4.61it/s, train_loss=1.02][A
-Iteration:   2%|▏         | 142/7824 [00:29<28:04,  4.56it/s, train_loss=1.02][A
-Iteration:   2%|▏         | 142/7824 [00:29<28:04,  4.56it/s, train_loss=0.996][A
-Iteration:   2%|▏         | 143/7824 [00:29<28:00,  4.57it/s, train_loss=0.996][A
-Iteration:   2%|▏         | 143/7824 [00:29<28:00,  4.57it/s, train_loss=1.01] [A
-Iteration:   2%|▏         | 144/7824 [00:29<28:04,  4.56it/s, train_loss=1.01][A
-Iteration:   2%|▏         | 144/7824 [00:30<28:04,  4.56it/s, train_loss=1.01][A
-Iteration:   2%|▏         | 145/7824 [00:30<28:08,  4.55it/s, train_loss=1.01][A
-Iteration:   2%|▏         | 145/7824 [00:30<28:08,  4.55it/s, train_loss=1.01][A
-Iteration:   2%|▏         | 146/7824 [00:30<28:10,  4.54it/s, train_loss=1.01][A
-Iteration:   2%|▏         | 146/7824 [00:30<28:10,  4.54it/s, train_loss=1]   [A
-Iteration:   2%|▏         | 147/7824 [00:30<28:12,  4.54it/s, train_loss=1][A
-Iteration:   2%|▏         | 147/7824 [00:30<28:12,  4.54it/s, train_loss=0.99][A
-Iteration:   2%|▏         | 148/7824 [00:30<28:09,  4.54it/s, train_loss=0.99][A
-Iteration:   2%|▏         | 148/7824 [00:30<28:09,  4.54it/s, train_loss=0.966][A
-Iteration:   2%|▏         | 149/7824 [00:30<28:08,  4.55it/s, train_loss=0.966][A
-Iteration:   2%|▏         | 149/7824 [00:31<28:08,  4.55it/s, train_loss=0.991][A
-Iteration:   2%|▏         | 150/7824 [00:31<28:04,  4.55it/s, train_loss=0.991][A
-Iteration:   2%|▏         | 150/7824 [00:31<28:04,  4.55it/s, train_loss=0.984][A
-Iteration:   2%|▏         | 151/7824 [00:31<28:06,  4.55it/s, train_loss=0.984][A
-Iteration:   2%|▏         | 151/7824 [00:31<28:06,  4.55it/s, train_loss=0.965][A
-Iteration:   2%|▏         | 152/7824 [00:31<28:08,  4.54it/s, train_loss=0.965][A
-Iteration:   2%|▏         | 152/7824 [00:31<28:08,  4.54it/s, train_loss=0.933][A
-Iteration:   2%|▏         | 153/7824 [00:31<28:12,  4.53it/s, train_loss=0.933][A
-Iteration:   2%|▏         | 153/7824 [00:32<28:12,  4.53it/s, train_loss=0.969][A
-Iteration:   2%|▏         | 154/7824 [00:32<28:12,  4.53it/s, train_loss=0.969][A
-Iteration:   2%|▏         | 154/7824 [00:32<28:12,  4.53it/s, train_loss=0.943][A
-Iteration:   2%|▏         | 155/7824 [00:32<28:10,  4.54it/s, train_loss=0.943][A
-Iteration:   2%|▏         | 155/7824 [00:32<28:10,  4.54it/s, train_loss=0.923][A
-Iteration:   2%|▏         | 156/7824 [00:32<28:22,  4.50it/s, train_loss=0.923][A
-Iteration:   2%|▏         | 156/7824 [00:32<28:22,  4.50it/s, train_loss=0.928][A
-Iteration:   2%|▏         | 157/7824 [00:32<28:11,  4.53it/s, train_loss=0.928][A
-Iteration:   2%|▏         | 157/7824 [00:32<28:11,  4.53it/s, train_loss=0.907][A
-Iteration:   2%|▏         | 158/7824 [00:32<28:05,  4.55it/s, train_loss=0.907][A
-Iteration:   2%|▏         | 158/7824 [00:33<28:05,  4.55it/s, train_loss=0.931][A
-Iteration:   2%|▏         | 159/7824 [00:33<27:54,  4.58it/s, train_loss=0.931][A
-Iteration:   2%|▏         | 159/7824 [00:33<27:54,  4.58it/s, train_loss=0.915][A
-Iteration:   2%|▏         | 160/7824 [00:33<27:59,  4.56it/s, train_loss=0.915][A
-Iteration:   2%|▏         | 160/7824 [00:33<27:59,  4.56it/s, train_loss=0.903][A
-Iteration:   2%|▏         | 161/7824 [00:33<28:04,  4.55it/s, train_loss=0.903][A
-Iteration:   2%|▏         | 161/7824 [00:33<28:04,  4.55it/s, train_loss=0.908][A
-Iteration:   2%|▏         | 162/7824 [00:33<28:28,  4.49it/s, train_loss=0.908][A
-Iteration:   2%|▏         | 162/7824 [00:33<28:28,  4.49it/s, train_loss=0.928][A
-Iteration:   2%|▏         | 163/7824 [00:33<28:02,  4.55it/s, train_loss=0.928][A
-Iteration:   2%|▏         | 163/7824 [00:34<28:02,  4.55it/s, train_loss=0.895][A
-Iteration:   2%|▏         | 164/7824 [00:34<27:31,  4.64it/s, train_loss=0.895][A
-Iteration:   2%|▏         | 164/7824 [00:34<27:31,  4.64it/s, train_loss=0.863][A
-Iteration:   2%|▏         | 165/7824 [00:34<27:06,  4.71it/s, train_loss=0.863][A
-Iteration:   2%|▏         | 165/7824 [00:34<27:06,  4.71it/s, train_loss=0.895][A
-Iteration:   2%|▏         | 166/7824 [00:34<26:57,  4.73it/s, train_loss=0.895][A
-Iteration:   2%|▏         | 166/7824 [00:34<26:57,  4.73it/s, train_loss=0.903][A
-Iteration:   2%|▏         | 167/7824 [00:34<26:43,  4.78it/s, train_loss=0.903][A
-Iteration:   2%|▏         | 167/7824 [00:35<26:43,  4.78it/s, train_loss=0.864][A
-Iteration:   2%|▏         | 168/7824 [00:35<26:37,  4.79it/s, train_loss=0.864][A
-Iteration:   2%|▏         | 168/7824 [00:35<26:37,  4.79it/s, train_loss=0.857][A
-Iteration:   2%|▏         | 169/7824 [00:35<26:29,  4.82it/s, train_loss=0.857][A
-Iteration:   2%|▏         | 169/7824 [00:35<26:29,  4.82it/s, train_loss=0.873][A
-Iteration:   2%|▏         | 170/7824 [00:35<26:29,  4.82it/s, train_loss=0.873][A
-Iteration:   2%|▏         | 170/7824 [00:35<26:29,  4.82it/s, train_loss=0.854][A
-Iteration:   2%|▏         | 171/7824 [00:35<26:24,  4.83it/s, train_loss=0.854][A
-Iteration:   2%|▏         | 171/7824 [00:35<26:24,  4.83it/s, train_loss=0.852][A
-Iteration:   2%|▏         | 172/7824 [00:35<26:27,  4.82it/s, train_loss=0.852][A
-Iteration:   2%|▏         | 172/7824 [00:36<26:27,  4.82it/s, train_loss=0.858][A
-Iteration:   2%|▏         | 173/7824 [00:36<26:22,  4.83it/s, train_loss=0.858][A
-Iteration:   2%|▏         | 173/7824 [00:36<26:22,  4.83it/s, train_loss=0.833][A
-Iteration:   2%|▏         | 174/7824 [00:36<26:23,  4.83it/s, train_loss=0.833][A
-Iteration:   2%|▏         | 174/7824 [00:36<26:23,  4.83it/s, train_loss=0.812][A
-Iteration:   2%|▏         | 175/7824 [00:36<26:17,  4.85it/s, train_loss=0.812][A
-Iteration:   2%|▏         | 175/7824 [00:36<26:17,  4.85it/s, train_loss=0.842][A
-Iteration:   2%|▏         | 176/7824 [00:36<26:20,  4.84it/s, train_loss=0.842][A
-Iteration:   2%|▏         | 176/7824 [00:36<26:20,  4.84it/s, train_loss=0.832][A
-Iteration:   2%|▏         | 177/7824 [00:36<26:17,  4.85it/s, train_loss=0.832][A
-Iteration:   2%|▏         | 177/7824 [00:37<26:17,  4.85it/s, train_loss=0.813][A
-Iteration:   2%|▏         | 178/7824 [00:37<26:19,  4.84it/s, train_loss=0.813][A
-Iteration:   2%|▏         | 178/7824 [00:37<26:19,  4.84it/s, train_loss=0.794][A
-Iteration:   2%|▏         | 179/7824 [00:37<26:15,  4.85it/s, train_loss=0.794][A
-Iteration:   2%|▏         | 179/7824 [00:37<26:15,  4.85it/s, train_loss=0.799][A
-Iteration:   2%|▏         | 180/7824 [00:37<26:18,  4.84it/s, train_loss=0.799][A
-Iteration:   2%|▏         | 180/7824 [00:37<26:18,  4.84it/s, train_loss=0.816][A
-Iteration:   2%|▏         | 181/7824 [00:37<26:14,  4.85it/s, train_loss=0.816][A
-Iteration:   2%|▏         | 181/7824 [00:37<26:14,  4.85it/s, train_loss=0.83] [A
-Iteration:   2%|▏         | 182/7824 [00:37<26:16,  4.85it/s, train_loss=0.83][A
-Iteration:   2%|▏         | 182/7824 [00:38<26:16,  4.85it/s, train_loss=0.803][A
-Iteration:   2%|▏         | 183/7824 [00:38<26:16,  4.85it/s, train_loss=0.803][A
-Iteration:   2%|▏         | 183/7824 [00:38<26:16,  4.85it/s, train_loss=0.779][A
-Iteration:   2%|▏         | 184/7824 [00:38<26:18,  4.84it/s, train_loss=0.779][A
-Iteration:   2%|▏         | 184/7824 [00:38<26:18,  4.84it/s, train_loss=0.774][A
-Iteration:   2%|▏         | 185/7824 [00:38<26:42,  4.77it/s, train_loss=0.774][A
-Iteration:   2%|▏         | 185/7824 [00:38<26:42,  4.77it/s, train_loss=0.756][A
-Iteration:   2%|▏         | 186/7824 [00:38<26:33,  4.79it/s, train_loss=0.756][A
-Iteration:   2%|▏         | 186/7824 [00:38<26:33,  4.79it/s, train_loss=0.772][A
-Iteration:   2%|▏         | 187/7824 [00:38<26:31,  4.80it/s, train_loss=0.772][A
-Iteration:   2%|▏         | 187/7824 [00:39<26:31,  4.80it/s, train_loss=0.767][A
-Iteration:   2%|▏         | 188/7824 [00:39<26:26,  4.81it/s, train_loss=0.767][A
-Iteration:   2%|▏         | 188/7824 [00:39<26:26,  4.81it/s, train_loss=0.761][A
-Iteration:   2%|▏         | 189/7824 [00:39<26:24,  4.82it/s, train_loss=0.761][A
-Iteration:   2%|▏         | 189/7824 [00:39<26:24,  4.82it/s, train_loss=0.719][A
-Iteration:   2%|▏         | 190/7824 [00:39<26:18,  4.84it/s, train_loss=0.719][A
-Iteration:   2%|▏         | 190/7824 [00:39<26:18,  4.84it/s, train_loss=0.744][A
-Iteration:   2%|▏         | 191/7824 [00:39<26:34,  4.79it/s, train_loss=0.744][A
-Iteration:   2%|▏         | 191/7824 [00:39<26:34,  4.79it/s, train_loss=0.719][A
-Iteration:   2%|▏         | 192/7824 [00:39<26:29,  4.80it/s, train_loss=0.719][A
-Iteration:   2%|▏         | 192/7824 [00:40<26:29,  4.80it/s, train_loss=0.763][A
-Iteration:   2%|▏         | 193/7824 [00:40<26:26,  4.81it/s, train_loss=0.763][A
-Iteration:   2%|▏         | 193/7824 [00:40<26:26,  4.81it/s, train_loss=0.708][A
-Iteration:   2%|▏         | 194/7824 [00:40<26:21,  4.83it/s, train_loss=0.708][A
-Iteration:   2%|▏         | 194/7824 [00:40<26:21,  4.83it/s, train_loss=0.725][A
-Iteration:   2%|▏         | 195/7824 [00:40<26:22,  4.82it/s, train_loss=0.725][A
-Iteration:   2%|▏         | 195/7824 [00:40<26:22,  4.82it/s, train_loss=0.7]  [A
-Iteration:   3%|▎         | 196/7824 [00:40<26:17,  4.84it/s, train_loss=0.7][A
-Iteration:   3%|▎         | 196/7824 [00:41<26:17,  4.84it/s, train_loss=0.731][A
-Iteration:   3%|▎         | 197/7824 [00:41<26:20,  4.83it/s, train_loss=0.731][A
-Iteration:   3%|▎         | 197/7824 [00:41<26:20,  4.83it/s, train_loss=0.712][A
-Iteration:   3%|▎         | 198/7824 [00:41<26:14,  4.84it/s, train_loss=0.712][A
-Iteration:   3%|▎         | 198/7824 [00:41<26:14,  4.84it/s, train_loss=0.69] [A
-Iteration:   3%|▎         | 199/7824 [00:41<26:17,  4.83it/s, train_loss=0.69][A
-Iteration:   3%|▎         | 199/7824 [00:41<26:17,  4.83it/s, train_loss=0.681][A
-Iteration:   3%|▎         | 200/7824 [00:41<26:23,  4.81it/s, train_loss=0.681][A
-Iteration:   3%|▎         | 200/7824 [00:41<26:23,  4.81it/s, train_loss=0.705][A
-Iteration:   3%|▎         | 201/7824 [00:41<26:17,  4.83it/s, train_loss=0.705][A
-Iteration:   3%|▎         | 201/7824 [00:42<26:17,  4.83it/s, train_loss=0.687][A
-Iteration:   3%|▎         | 202/7824 [00:42<26:15,  4.84it/s, train_loss=0.687][A
-Iteration:   3%|▎         | 202/7824 [00:42<26:15,  4.84it/s, train_loss=0.666][A
-Iteration:   3%|▎         | 203/7824 [00:42<26:12,  4.85it/s, train_loss=0.666][A
-Iteration:   3%|▎         | 203/7824 [00:42<26:12,  4.85it/s, train_loss=0.692][A
-Iteration:   3%|▎         | 204/7824 [00:42<26:11,  4.85it/s, train_loss=0.692][A
-Iteration:   3%|▎         | 204/7824 [00:42<26:11,  4.85it/s, train_loss=0.656][A
-Iteration:   3%|▎         | 205/7824 [00:42<26:10,  4.85it/s, train_loss=0.656][A
-Iteration:   3%|▎         | 205/7824 [00:42<26:10,  4.85it/s, train_loss=0.647][A
-Iteration:   3%|▎         | 206/7824 [00:42<26:11,  4.85it/s, train_loss=0.647][A
-Iteration:   3%|▎         | 206/7824 [00:43<26:11,  4.85it/s, train_loss=0.65] [A
-Iteration:   3%|▎         | 207/7824 [00:43<26:12,  4.84it/s, train_loss=0.65][A
-Iteration:   3%|▎         | 207/7824 [00:43<26:12,  4.84it/s, train_loss=0.646][A
-Iteration:   3%|▎         | 208/7824 [00:43<26:13,  4.84it/s, train_loss=0.646][A
-Iteration:   3%|▎         | 208/7824 [00:43<26:13,  4.84it/s, train_loss=0.628][A
-Iteration:   3%|▎         | 209/7824 [00:43<26:09,  4.85it/s, train_loss=0.628][A
-Iteration:   3%|▎         | 209/7824 [00:43<26:09,  4.85it/s, train_loss=0.61] [A
-Iteration:   3%|▎         | 210/7824 [00:43<26:17,  4.83it/s, train_loss=0.61][A
-Iteration:   3%|▎         | 210/7824 [00:43<26:17,  4.83it/s, train_loss=0.625][A
-Iteration:   3%|▎         | 211/7824 [00:43<26:33,  4.78it/s, train_loss=0.625][A
-Iteration:   3%|▎         | 211/7824 [00:44<26:33,  4.78it/s, train_loss=0.616][A
-Iteration:   3%|▎         | 212/7824 [00:44<26:30,  4.79it/s, train_loss=0.616][A
-Iteration:   3%|▎         | 212/7824 [00:44<26:30,  4.79it/s, train_loss=0.645][A
-Iteration:   3%|▎         | 213/7824 [00:44<26:22,  4.81it/s, train_loss=0.645][A
-Iteration:   3%|▎         | 213/7824 [00:44<26:22,  4.81it/s, train_loss=0.636][A
-Iteration:   3%|▎         | 214/7824 [00:44<26:22,  4.81it/s, train_loss=0.636][A
-Iteration:   3%|▎         | 214/7824 [00:44<26:22,  4.81it/s, train_loss=0.61] [A
-Iteration:   3%|▎         | 215/7824 [00:44<26:25,  4.80it/s, train_loss=0.61][A
-Iteration:   3%|▎         | 215/7824 [00:44<26:25,  4.80it/s, train_loss=0.631][A
-Iteration:   3%|▎         | 216/7824 [00:44<26:17,  4.82it/s, train_loss=0.631][A
-Iteration:   3%|▎         | 216/7824 [00:45<26:17,  4.82it/s, train_loss=0.58] [A
-Iteration:   3%|▎         | 217/7824 [00:45<26:19,  4.82it/s, train_loss=0.58][A
-Iteration:   3%|▎         | 217/7824 [00:45<26:19,  4.82it/s, train_loss=0.606][A
-Iteration:   3%|▎         | 218/7824 [00:45<26:13,  4.83it/s, train_loss=0.606][A
-Iteration:   3%|▎         | 218/7824 [00:45<26:13,  4.83it/s, train_loss=0.619][A
-Iteration:   3%|▎         | 219/7824 [00:45<26:15,  4.83it/s, train_loss=0.619][A
-Iteration:   3%|▎         | 219/7824 [00:45<26:15,  4.83it/s, train_loss=0.584][A
-Iteration:   3%|▎         | 220/7824 [00:45<26:34,  4.77it/s, train_loss=0.584][A
-Iteration:   3%|▎         | 220/7824 [00:46<26:34,  4.77it/s, train_loss=0.597][A
-Iteration:   3%|▎         | 221/7824 [00:46<26:28,  4.79it/s, train_loss=0.597][A
-Iteration:   3%|▎         | 221/7824 [00:46<26:28,  4.79it/s, train_loss=0.595][A
-Iteration:   3%|▎         | 222/7824 [00:46<26:19,  4.81it/s, train_loss=0.595][A
-Iteration:   3%|▎         | 222/7824 [00:46<26:19,  4.81it/s, train_loss=0.568][A
-Iteration:   3%|▎         | 223/7824 [00:46<26:18,  4.82it/s, train_loss=0.568][A
-Iteration:   3%|▎         | 223/7824 [00:46<26:18,  4.82it/s, train_loss=0.562][A
-Iteration:   3%|▎         | 224/7824 [00:46<26:15,  4.83it/s, train_loss=0.562][A
-Iteration:   3%|▎         | 224/7824 [00:46<26:15,  4.83it/s, train_loss=0.563][A
-Iteration:   3%|▎         | 225/7824 [00:46<26:12,  4.83it/s, train_loss=0.563][A
-Iteration:   3%|▎         | 225/7824 [00:47<26:12,  4.83it/s, train_loss=0.572][A
-Iteration:   3%|▎         | 226/7824 [00:47<26:09,  4.84it/s, train_loss=0.572][A
-Iteration:   3%|▎         | 226/7824 [00:47<26:09,  4.84it/s, train_loss=0.525][A
-Iteration:   3%|▎         | 227/7824 [00:47<26:21,  4.80it/s, train_loss=0.525][A
-Iteration:   3%|▎         | 227/7824 [00:47<26:21,  4.80it/s, train_loss=0.572][A
-Iteration:   3%|▎         | 228/7824 [00:47<26:15,  4.82it/s, train_loss=0.572][A
-Iteration:   3%|▎         | 228/7824 [00:47<26:15,  4.82it/s, train_loss=0.571][A
-Iteration:   3%|▎         | 229/7824 [00:47<26:21,  4.80it/s, train_loss=0.571][A
-Iteration:   3%|▎         | 229/7824 [00:47<26:21,  4.80it/s, train_loss=0.539][A
-Iteration:   3%|▎         | 230/7824 [00:47<26:15,  4.82it/s, train_loss=0.539][A
-Iteration:   3%|▎         | 230/7824 [00:48<26:15,  4.82it/s, train_loss=0.545][A
-Iteration:   3%|▎         | 231/7824 [00:48<26:14,  4.82it/s, train_loss=0.545][A
-Iteration:   3%|▎         | 231/7824 [00:48<26:14,  4.82it/s, train_loss=0.525][A
-Iteration:   3%|▎         | 232/7824 [00:48<26:08,  4.84it/s, train_loss=0.525][A
-Iteration:   3%|▎         | 232/7824 [00:48<26:08,  4.84it/s, train_loss=0.518][A
-Iteration:   3%|▎         | 233/7824 [00:48<26:12,  4.83it/s, train_loss=0.518][A
-Iteration:   3%|▎         | 233/7824 [00:48<26:12,  4.83it/s, train_loss=0.54] [A
-Iteration:   3%|▎         | 234/7824 [00:48<26:12,  4.83it/s, train_loss=0.54][A
-Iteration:   3%|▎         | 234/7824 [00:48<26:12,  4.83it/s, train_loss=0.497][A
-Iteration:   3%|▎         | 235/7824 [00:48<26:10,  4.83it/s, train_loss=0.497][A
-Iteration:   3%|▎         | 235/7824 [00:49<26:10,  4.83it/s, train_loss=0.537][A
-Iteration:   3%|▎         | 236/7824 [00:49<26:10,  4.83it/s, train_loss=0.537][A
-Iteration:   3%|▎         | 236/7824 [00:49<26:10,  4.83it/s, train_loss=0.51] [A
-Iteration:   3%|▎         | 237/7824 [00:49<26:06,  4.84it/s, train_loss=0.51][A
-Iteration:   3%|▎         | 237/7824 [00:49<26:06,  4.84it/s, train_loss=0.491][A
-Iteration:   3%|▎         | 238/7824 [00:49<26:08,  4.84it/s, train_loss=0.491][A
-Iteration:   3%|▎         | 238/7824 [00:49<26:08,  4.84it/s, train_loss=0.483][A
-Iteration:   3%|▎         | 239/7824 [00:49<26:06,  4.84it/s, train_loss=0.483][A
-Iteration:   3%|▎         | 239/7824 [00:49<26:06,  4.84it/s, train_loss=0.493][A
-Iteration:   3%|▎         | 240/7824 [00:49<26:09,  4.83it/s, train_loss=0.493][A
-Iteration:   3%|▎         | 240/7824 [00:50<26:09,  4.83it/s, train_loss=0.5]  [A
-Iteration:   3%|▎         | 241/7824 [00:50<26:12,  4.82it/s, train_loss=0.5][A
-Iteration:   3%|▎         | 241/7824 [00:50<26:12,  4.82it/s, train_loss=0.464][A
-Iteration:   3%|▎         | 242/7824 [00:50<26:22,  4.79it/s, train_loss=0.464][A
-Iteration:   3%|▎         | 242/7824 [00:50<26:22,  4.79it/s, train_loss=0.472][A
-Iteration:   3%|▎         | 243/7824 [00:50<26:15,  4.81it/s, train_loss=0.472][A
-Iteration:   3%|▎         | 243/7824 [00:50<26:15,  4.81it/s, train_loss=0.485][A
-Iteration:   3%|▎         | 244/7824 [00:50<26:15,  4.81it/s, train_loss=0.485][A
-Iteration:   3%|▎         | 244/7824 [00:50<26:15,  4.81it/s, train_loss=0.507][A
-Iteration:   3%|▎         | 245/7824 [00:50<26:09,  4.83it/s, train_loss=0.507][A
-Iteration:   3%|▎         | 245/7824 [00:51<26:09,  4.83it/s, train_loss=0.487][A
-Iteration:   3%|▎         | 246/7824 [00:51<26:13,  4.82it/s, train_loss=0.487][A
-Iteration:   3%|▎         | 246/7824 [00:51<26:13,  4.82it/s, train_loss=0.444][A
-Iteration:   3%|▎         | 247/7824 [00:51<26:13,  4.82it/s, train_loss=0.444][A
-Iteration:   3%|▎         | 247/7824 [00:51<26:13,  4.82it/s, train_loss=0.47] [A
-Iteration:   3%|▎         | 248/7824 [00:51<26:10,  4.83it/s, train_loss=0.47][A
-Iteration:   3%|▎         | 248/7824 [00:51<26:10,  4.83it/s, train_loss=0.449][A
-Iteration:   3%|▎         | 249/7824 [00:51<26:13,  4.81it/s, train_loss=0.449][A
-Iteration:   3%|▎         | 249/7824 [00:52<26:13,  4.81it/s, train_loss=0.418][A
-Iteration:   3%|▎         | 250/7824 [00:52<26:13,  4.81it/s, train_loss=0.418][A
-Iteration:   3%|▎         | 250/7824 [00:52<26:13,  4.81it/s, train_loss=0.434][A
-Iteration:   3%|▎         | 251/7824 [00:52<26:11,  4.82it/s, train_loss=0.434][A
-Iteration:   3%|▎         | 251/7824 [00:52<26:11,  4.82it/s, train_loss=0.446][A
-Iteration:   3%|▎         | 252/7824 [00:52<26:14,  4.81it/s, train_loss=0.446][A
-Iteration:   3%|▎         | 252/7824 [00:52<26:14,  4.81it/s, train_loss=0.426][A
-Iteration:   3%|▎         | 253/7824 [00:52<26:10,  4.82it/s, train_loss=0.426][A
-Iteration:   3%|▎         | 253/7824 [00:52<26:10,  4.82it/s, train_loss=0.45] [A
-Iteration:   3%|▎         | 254/7824 [00:52<26:10,  4.82it/s, train_loss=0.45][A
-Iteration:   3%|▎         | 254/7824 [00:53<26:10,  4.82it/s, train_loss=0.434][A
-Iteration:   3%|▎         | 255/7824 [00:53<26:14,  4.81it/s, train_loss=0.434][A
-Iteration:   3%|▎         | 255/7824 [00:53<26:14,  4.81it/s, train_loss=0.414][A
-Iteration:   3%|▎         | 256/7824 [00:53<26:10,  4.82it/s, train_loss=0.414][A
-Iteration:   3%|▎         | 256/7824 [00:53<26:10,  4.82it/s, train_loss=0.435][A
-Iteration:   3%|▎         | 257/7824 [00:53<26:08,  4.82it/s, train_loss=0.435][A
-Iteration:   3%|▎         | 257/7824 [00:53<26:08,  4.82it/s, train_loss=0.451][A
-Iteration:   3%|▎         | 258/7824 [00:53<26:08,  4.83it/s, train_loss=0.451][A
-Iteration:   3%|▎         | 258/7824 [00:53<26:08,  4.83it/s, train_loss=0.395][A
-Iteration:   3%|▎         | 259/7824 [00:53<26:22,  4.78it/s, train_loss=0.395][A
-Iteration:   3%|▎         | 259/7824 [00:54<26:22,  4.78it/s, train_loss=0.424][A
-Iteration:   3%|▎         | 260/7824 [00:54<26:13,  4.81it/s, train_loss=0.424][A
-Iteration:   3%|▎         | 260/7824 [00:54<26:13,  4.81it/s, train_loss=0.408][A
-Iteration:   3%|▎         | 261/7824 [00:54<26:14,  4.80it/s, train_loss=0.408][A
-Iteration:   3%|▎         | 261/7824 [00:54<26:14,  4.80it/s, train_loss=0.393][A
-Iteration:   3%|▎         | 262/7824 [00:54<26:15,  4.80it/s, train_loss=0.393][A
-Iteration:   3%|▎         | 262/7824 [00:54<26:15,  4.80it/s, train_loss=0.402][A
-Iteration:   3%|▎         | 263/7824 [00:54<26:09,  4.82it/s, train_loss=0.402][A
-Iteration:   3%|▎         | 263/7824 [00:54<26:09,  4.82it/s, train_loss=0.401][A
-Iteration:   3%|▎         | 264/7824 [00:54<26:12,  4.81it/s, train_loss=0.401][A
-Iteration:   3%|▎         | 264/7824 [00:55<26:12,  4.81it/s, train_loss=0.412][A
-Iteration:   3%|▎         | 265/7824 [00:55<26:10,  4.81it/s, train_loss=0.412][A
-Iteration:   3%|▎         | 265/7824 [00:55<26:10,  4.81it/s, train_loss=0.358][A
-Iteration:   3%|▎         | 266/7824 [00:55<26:08,  4.82it/s, train_loss=0.358][A
-Iteration:   3%|▎         | 266/7824 [00:55<26:08,  4.82it/s, train_loss=0.397][A
-Iteration:   3%|▎         | 267/7824 [00:55<26:09,  4.81it/s, train_loss=0.397][A
-Iteration:   3%|▎         | 267/7824 [00:55<26:09,  4.81it/s, train_loss=0.392][A
-Iteration:   3%|▎         | 268/7824 [00:55<26:10,  4.81it/s, train_loss=0.392][A
-Iteration:   3%|▎         | 268/7824 [00:55<26:10,  4.81it/s, train_loss=0.401][A
-Iteration:   3%|▎         | 269/7824 [00:55<26:07,  4.82it/s, train_loss=0.401][A
-Iteration:   3%|▎         | 269/7824 [00:56<26:07,  4.82it/s, train_loss=0.332][A
-Iteration:   3%|▎         | 270/7824 [00:56<26:10,  4.81it/s, train_loss=0.332][A
-Iteration:   3%|▎         | 270/7824 [00:56<26:10,  4.81it/s, train_loss=0.366][A
-Iteration:   3%|▎         | 271/7824 [00:56<26:05,  4.83it/s, train_loss=0.366][A
-Iteration:   3%|▎         | 271/7824 [00:56<26:05,  4.83it/s, train_loss=0.354][A
-Iteration:   3%|▎         | 272/7824 [00:56<26:06,  4.82it/s, train_loss=0.354][A
-Iteration:   3%|▎         | 272/7824 [00:56<26:06,  4.82it/s, train_loss=0.369][A
-Iteration:   3%|▎         | 273/7824 [00:56<26:04,  4.83it/s, train_loss=0.369][A
-Iteration:   3%|▎         | 273/7824 [00:57<26:04,  4.83it/s, train_loss=0.353][A
-Iteration:   4%|▎         | 274/7824 [00:57<26:03,  4.83it/s, train_loss=0.353][A
-Iteration:   4%|▎         | 274/7824 [00:57<26:03,  4.83it/s, train_loss=0.317][A
-Iteration:   4%|▎         | 275/7824 [00:57<26:05,  4.82it/s, train_loss=0.317][A
-Iteration:   4%|▎         | 275/7824 [00:57<26:05,  4.82it/s, train_loss=0.35] [A
-Iteration:   4%|▎         | 276/7824 [00:57<26:02,  4.83it/s, train_loss=0.35][A
-Iteration:   4%|▎         | 276/7824 [00:57<26:02,  4.83it/s, train_loss=0.322][A
-Iteration:   4%|▎         | 277/7824 [00:57<26:09,  4.81it/s, train_loss=0.322][A
-Iteration:   4%|▎         | 277/7824 [00:57<26:09,  4.81it/s, train_loss=0.325][A
-Iteration:   4%|▎         | 278/7824 [00:57<26:11,  4.80it/s, train_loss=0.325][A
-Iteration:   4%|▎         | 278/7824 [00:58<26:11,  4.80it/s, train_loss=0.336][A
-Iteration:   4%|▎         | 279/7824 [00:58<26:04,  4.82it/s, train_loss=0.336][A
-Iteration:   4%|▎         | 279/7824 [00:58<26:04,  4.82it/s, train_loss=0.348][A
-Iteration:   4%|▎         | 280/7824 [00:58<26:05,  4.82it/s, train_loss=0.348][A
-Iteration:   4%|▎         | 280/7824 [00:58<26:05,  4.82it/s, train_loss=0.304][A
-Iteration:   4%|▎         | 281/7824 [00:58<26:03,  4.82it/s, train_loss=0.304][A
-Iteration:   4%|▎         | 281/7824 [00:58<26:03,  4.82it/s, train_loss=0.393][A
-Iteration:   4%|▎         | 282/7824 [00:58<26:01,  4.83it/s, train_loss=0.393][A
-Iteration:   4%|▎         | 282/7824 [00:58<26:01,  4.83it/s, train_loss=0.312][A
-Iteration:   4%|▎         | 283/7824 [00:58<26:05,  4.82it/s, train_loss=0.312][A
-Iteration:   4%|▎         | 283/7824 [00:59<26:05,  4.82it/s, train_loss=0.339][A
-Iteration:   4%|▎         | 284/7824 [00:59<26:00,  4.83it/s, train_loss=0.339][A
-Iteration:   4%|▎         | 284/7824 [00:59<26:00,  4.83it/s, train_loss=0.326][A
-Iteration:   4%|▎         | 285/7824 [00:59<26:03,  4.82it/s, train_loss=0.326][A
-Iteration:   4%|▎         | 285/7824 [00:59<26:03,  4.82it/s, train_loss=0.295][A
-Iteration:   4%|▎         | 286/7824 [00:59<26:02,  4.82it/s, train_loss=0.295][A
-Iteration:   4%|▎         | 286/7824 [00:59<26:02,  4.82it/s, train_loss=0.337][A
-Iteration:   4%|▎         | 287/7824 [00:59<26:04,  4.82it/s, train_loss=0.337][A
-Iteration:   4%|▎         | 287/7824 [00:59<26:04,  4.82it/s, train_loss=0.297][A
-Iteration:   4%|▎         | 288/7824 [00:59<26:06,  4.81it/s, train_loss=0.297][A
-Iteration:   4%|▎         | 288/7824 [01:00<26:06,  4.81it/s, train_loss=0.311][A
-Iteration:   4%|▎         | 289/7824 [01:00<26:02,  4.82it/s, train_loss=0.311][A
-Iteration:   4%|▎         | 289/7824 [01:00<26:02,  4.82it/s, train_loss=0.26] [A
-Iteration:   4%|▎         | 290/7824 [01:00<26:04,  4.82it/s, train_loss=0.26][A
-Iteration:   4%|▎         | 290/7824 [01:00<26:04,  4.82it/s, train_loss=0.277][A
-Iteration:   4%|▎         | 291/7824 [01:00<26:07,  4.81it/s, train_loss=0.277][A
-Iteration:   4%|▎         | 291/7824 [01:00<26:07,  4.81it/s, train_loss=0.256][A
-Iteration:   4%|▎         | 292/7824 [01:00<26:05,  4.81it/s, train_loss=0.256][A
-Iteration:   4%|▎         | 292/7824 [01:00<26:05,  4.81it/s, train_loss=0.282][A
-Iteration:   4%|▎         | 293/7824 [01:00<26:01,  4.82it/s, train_loss=0.282][A
-Iteration:   4%|▎         | 293/7824 [01:01<26:01,  4.82it/s, train_loss=0.238][A
-Iteration:   4%|▍         | 294/7824 [01:01<26:02,  4.82it/s, train_loss=0.238][A
-Iteration:   4%|▍         | 294/7824 [01:01<26:02,  4.82it/s, train_loss=0.29] [A
-Iteration:   4%|▍         | 295/7824 [01:01<25:58,  4.83it/s, train_loss=0.29][A
-Iteration:   4%|▍         | 295/7824 [01:01<25:58,  4.83it/s, train_loss=0.251][A
-Iteration:   4%|▍         | 296/7824 [01:01<26:03,  4.82it/s, train_loss=0.251][A
-Iteration:   4%|▍         | 296/7824 [01:01<26:03,  4.82it/s, train_loss=0.269][A
-Iteration:   4%|▍         | 297/7824 [01:01<26:02,  4.82it/s, train_loss=0.269][A
-Iteration:   4%|▍         | 297/7824 [01:01<26:02,  4.82it/s, train_loss=0.26] [A
-Iteration:   4%|▍         | 298/7824 [01:01<25:59,  4.83it/s, train_loss=0.26][A
-Iteration:   4%|▍         | 298/7824 [01:02<25:59,  4.83it/s, train_loss=0.277][A
-Iteration:   4%|▍         | 299/7824 [01:02<26:01,  4.82it/s, train_loss=0.277][A
-Iteration:   4%|▍         | 299/7824 [01:02<26:01,  4.82it/s, train_loss=0.311][A
-Iteration:   4%|▍         | 300/7824 [01:02<26:00,  4.82it/s, train_loss=0.311][A
-Iteration:   4%|▍         | 300/7824 [01:02<26:00,  4.82it/s, train_loss=0.25] [A
-Iteration:   4%|▍         | 301/7824 [01:02<26:13,  4.78it/s, train_loss=0.25][A
-Iteration:   4%|▍         | 301/7824 [01:02<26:13,  4.78it/s, train_loss=0.272][A
-Iteration:   4%|▍         | 302/7824 [01:02<26:06,  4.80it/s, train_loss=0.272][A
-Iteration:   4%|▍         | 302/7824 [01:03<26:06,  4.80it/s, train_loss=0.26] [A
-Iteration:   4%|▍         | 303/7824 [01:03<26:09,  4.79it/s, train_loss=0.26][A
-Iteration:   4%|▍         | 303/7824 [01:03<26:09,  4.79it/s, train_loss=0.23][A
-Iteration:   4%|▍         | 304/7824 [01:03<26:06,  4.80it/s, train_loss=0.23][A
-Iteration:   4%|▍         | 304/7824 [01:03<26:06,  4.80it/s, train_loss=0.241][A
-Iteration:   4%|▍         | 305/7824 [01:03<26:02,  4.81it/s, train_loss=0.241][A
-Iteration:   4%|▍         | 305/7824 [01:03<26:02,  4.81it/s, train_loss=0.252][A
-Iteration:   4%|▍         | 306/7824 [01:03<26:05,  4.80it/s, train_loss=0.252][A
-Iteration:   4%|▍         | 306/7824 [01:03<26:05,  4.80it/s, train_loss=0.206][A
-Iteration:   4%|▍         | 307/7824 [01:03<26:01,  4.82it/s, train_loss=0.206][A
-Iteration:   4%|▍         | 307/7824 [01:04<26:01,  4.82it/s, train_loss=0.222][A
-Iteration:   4%|▍         | 308/7824 [01:04<25:58,  4.82it/s, train_loss=0.222][A
-Iteration:   4%|▍         | 308/7824 [01:04<25:58,  4.82it/s, train_loss=0.302][A
-Iteration:   4%|▍         | 309/7824 [01:04<25:58,  4.82it/s, train_loss=0.302][A
-Iteration:   4%|▍         | 309/7824 [01:04<25:58,  4.82it/s, train_loss=0.291][A
-Iteration:   4%|▍         | 310/7824 [01:04<25:56,  4.83it/s, train_loss=0.291][A
-Iteration:   4%|▍         | 310/7824 [01:04<25:56,  4.83it/s, train_loss=0.206][A
-Iteration:   4%|▍         | 311/7824 [01:04<26:00,  4.81it/s, train_loss=0.206][A
-Iteration:   4%|▍         | 311/7824 [01:04<26:00,  4.81it/s, train_loss=0.229][A
-Iteration:   4%|▍         | 312/7824 [01:04<25:57,  4.82it/s, train_loss=0.229][A
-Iteration:   4%|▍         | 312/7824 [01:05<25:57,  4.82it/s, train_loss=0.223][A
-Iteration:   4%|▍         | 313/7824 [01:05<25:54,  4.83it/s, train_loss=0.223][A
-Iteration:   4%|▍         | 313/7824 [01:05<25:54,  4.83it/s, train_loss=0.24] [A
-Iteration:   4%|▍         | 314/7824 [01:05<25:54,  4.83it/s, train_loss=0.24][A
-Iteration:   4%|▍         | 314/7824 [01:05<25:54,  4.83it/s, train_loss=0.2] [A
-Iteration:   4%|▍         | 315/7824 [01:05<25:54,  4.83it/s, train_loss=0.2][A
-Iteration:   4%|▍         | 315/7824 [01:05<25:54,  4.83it/s, train_loss=0.208][A
-Iteration:   4%|▍         | 316/7824 [01:05<26:00,  4.81it/s, train_loss=0.208][A
-Iteration:   4%|▍         | 316/7824 [01:05<26:00,  4.81it/s, train_loss=0.29] [A
-Iteration:   4%|▍         | 317/7824 [01:05<26:02,  4.80it/s, train_loss=0.29][A
-Iteration:   4%|▍         | 317/7824 [01:06<26:02,  4.80it/s, train_loss=0.203][A
-Iteration:   4%|▍         | 318/7824 [01:06<26:01,  4.81it/s, train_loss=0.203][A
-Iteration:   4%|▍         | 318/7824 [01:06<26:01,  4.81it/s, train_loss=0.176][A
-Iteration:   4%|▍         | 319/7824 [01:06<26:03,  4.80it/s, train_loss=0.176][A
-Iteration:   4%|▍         | 319/7824 [01:06<26:03,  4.80it/s, train_loss=0.179][A
-Iteration:   4%|▍         | 320/7824 [01:06<26:04,  4.80it/s, train_loss=0.179][A
-Iteration:   4%|▍         | 320/7824 [01:06<26:04,  4.80it/s, train_loss=0.231][A
-Iteration:   4%|▍         | 321/7824 [01:06<25:57,  4.82it/s, train_loss=0.231][A
-Iteration:   4%|▍         | 321/7824 [01:06<25:57,  4.82it/s, train_loss=0.234][A
-Iteration:   4%|▍         | 322/7824 [01:06<26:00,  4.81it/s, train_loss=0.234][A
-Iteration:   4%|▍         | 322/7824 [01:07<26:00,  4.81it/s, train_loss=0.211][A
-Iteration:   4%|▍         | 323/7824 [01:07<26:02,  4.80it/s, train_loss=0.211][A
-Iteration:   4%|▍         | 323/7824 [01:07<26:02,  4.80it/s, train_loss=0.187][A
-Iteration:   4%|▍         | 324/7824 [01:07<25:57,  4.81it/s, train_loss=0.187][A
-Iteration:   4%|▍         | 324/7824 [01:07<25:57,  4.81it/s, train_loss=0.177][A
-Iteration:   4%|▍         | 325/7824 [01:07<25:58,  4.81it/s, train_loss=0.177][A
-Iteration:   4%|▍         | 325/7824 [01:07<25:58,  4.81it/s, train_loss=0.179][A
-Iteration:   4%|▍         | 326/7824 [01:07<26:04,  4.79it/s, train_loss=0.179][A
-Iteration:   4%|▍         | 326/7824 [01:08<26:04,  4.79it/s, train_loss=0.199][A
-Iteration:   4%|▍         | 327/7824 [01:08<25:59,  4.81it/s, train_loss=0.199][A
-Iteration:   4%|▍         | 327/7824 [01:08<25:59,  4.81it/s, train_loss=0.18] [A
-Iteration:   4%|▍         | 328/7824 [01:08<25:57,  4.81it/s, train_loss=0.18][A
-Iteration:   4%|▍         | 328/7824 [01:08<25:57,  4.81it/s, train_loss=0.198][A
-Iteration:   4%|▍         | 329/7824 [01:08<25:58,  4.81it/s, train_loss=0.198][A
-Iteration:   4%|▍         | 329/7824 [01:08<25:58,  4.81it/s, train_loss=0.164][A
-Iteration:   4%|▍         | 330/7824 [01:08<25:54,  4.82it/s, train_loss=0.164][A
-Iteration:   4%|▍         | 330/7824 [01:08<25:54,  4.82it/s, train_loss=0.266][A
-Iteration:   4%|▍         | 331/7824 [01:08<26:00,  4.80it/s, train_loss=0.266][A
-Iteration:   4%|▍         | 331/7824 [01:09<26:00,  4.80it/s, train_loss=0.157][A
-Iteration:   4%|▍         | 332/7824 [01:09<26:03,  4.79it/s, train_loss=0.157][A
-Iteration:   4%|▍         | 332/7824 [01:09<26:03,  4.79it/s, train_loss=0.189][A
-Iteration:   4%|▍         | 333/7824 [01:09<26:02,  4.79it/s, train_loss=0.189][A
-Iteration:   4%|▍         | 333/7824 [01:09<26:02,  4.79it/s, train_loss=0.23] [A
-Iteration:   4%|▍         | 334/7824 [01:09<25:59,  4.80it/s, train_loss=0.23][A
-Iteration:   4%|▍         | 334/7824 [01:09<25:59,  4.80it/s, train_loss=0.162][A
-Iteration:   4%|▍         | 335/7824 [01:09<26:01,  4.80it/s, train_loss=0.162][A
-Iteration:   4%|▍         | 335/7824 [01:09<26:01,  4.80it/s, train_loss=0.276][A
-Iteration:   4%|▍         | 336/7824 [01:09<26:02,  4.79it/s, train_loss=0.276][A
-Iteration:   4%|▍         | 336/7824 [01:10<26:02,  4.79it/s, train_loss=0.148][A
-Iteration:   4%|▍         | 337/7824 [01:10<26:01,  4.80it/s, train_loss=0.148][A
-Iteration:   4%|▍         | 337/7824 [01:10<26:01,  4.80it/s, train_loss=0.192][A
-Iteration:   4%|▍         | 338/7824 [01:10<25:56,  4.81it/s, train_loss=0.192][A
-Iteration:   4%|▍         | 338/7824 [01:10<25:56,  4.81it/s, train_loss=0.17] [A
-Iteration:   4%|▍         | 339/7824 [01:10<25:59,  4.80it/s, train_loss=0.17][A
-Iteration:   4%|▍         | 339/7824 [01:10<25:59,  4.80it/s, train_loss=0.152][A
-Iteration:   4%|▍         | 340/7824 [01:10<25:56,  4.81it/s, train_loss=0.152][A
-Iteration:   4%|▍         | 340/7824 [01:10<25:56,  4.81it/s, train_loss=0.13] [A
-Iteration:   4%|▍         | 341/7824 [01:10<25:53,  4.82it/s, train_loss=0.13][A
-Iteration:   4%|▍         | 341/7824 [01:11<25:53,  4.82it/s, train_loss=0.156][A
-Iteration:   4%|▍         | 342/7824 [01:11<25:56,  4.81it/s, train_loss=0.156][A
-Iteration:   4%|▍         | 342/7824 [01:11<25:56,  4.81it/s, train_loss=0.215][A
-Iteration:   4%|▍         | 343/7824 [01:11<25:51,  4.82it/s, train_loss=0.215][A
-Iteration:   4%|▍         | 343/7824 [01:11<25:51,  4.82it/s, train_loss=0.15] [A
-Iteration:   4%|▍         | 344/7824 [01:11<25:53,  4.82it/s, train_loss=0.15][A
-Iteration:   4%|▍         | 344/7824 [01:11<25:53,  4.82it/s, train_loss=0.199][A
-Iteration:   4%|▍         | 345/7824 [01:11<26:00,  4.79it/s, train_loss=0.199][A
-Iteration:   4%|▍         | 345/7824 [01:11<26:00,  4.79it/s, train_loss=0.137][A
-Iteration:   4%|▍         | 346/7824 [01:11<26:01,  4.79it/s, train_loss=0.137][A
-Iteration:   4%|▍         | 346/7824 [01:12<26:01,  4.79it/s, train_loss=0.213][A
-Iteration:   4%|▍         | 347/7824 [01:12<25:54,  4.81it/s, train_loss=0.213][A
-Iteration:   4%|▍         | 347/7824 [01:12<25:54,  4.81it/s, train_loss=0.122][A
-Iteration:   4%|▍         | 348/7824 [01:12<25:55,  4.81it/s, train_loss=0.122][A
-Iteration:   4%|▍         | 348/7824 [01:12<25:55,  4.81it/s, train_loss=0.207][A
-Iteration:   4%|▍         | 349/7824 [01:12<25:55,  4.80it/s, train_loss=0.207][A
-Iteration:   4%|▍         | 349/7824 [01:12<25:55,  4.80it/s, train_loss=0.1]  [A
-Iteration:   4%|▍         | 350/7824 [01:12<25:58,  4.80it/s, train_loss=0.1][A
-Iteration:   4%|▍         | 350/7824 [01:13<25:58,  4.80it/s, train_loss=0.132][A
-Iteration:   4%|▍         | 351/7824 [01:13<25:54,  4.81it/s, train_loss=0.132][A
-Iteration:   4%|▍         | 351/7824 [01:13<25:54,  4.81it/s, train_loss=0.23] [A
-Iteration:   4%|▍         | 352/7824 [01:13<25:54,  4.81it/s, train_loss=0.23][A
-Iteration:   4%|▍         | 352/7824 [01:13<25:54,  4.81it/s, train_loss=0.12][A
-Iteration:   5%|▍         | 353/7824 [01:13<25:51,  4.82it/s, train_loss=0.12][A
-Iteration:   5%|▍         | 353/7824 [01:13<25:51,  4.82it/s, train_loss=0.135][A
-Iteration:   5%|▍         | 354/7824 [01:13<25:55,  4.80it/s, train_loss=0.135][A
-Iteration:   5%|▍         | 354/7824 [01:13<25:55,  4.80it/s, train_loss=0.182][A
-Iteration:   5%|▍         | 355/7824 [01:13<25:56,  4.80it/s, train_loss=0.182][A
-Iteration:   5%|▍         | 355/7824 [01:14<25:56,  4.80it/s, train_loss=0.192][A
-Iteration:   5%|▍         | 356/7824 [01:14<25:54,  4.80it/s, train_loss=0.192][A
-Iteration:   5%|▍         | 356/7824 [01:14<25:54,  4.80it/s, train_loss=0.155][A
-Iteration:   5%|▍         | 357/7824 [01:14<25:51,  4.81it/s, train_loss=0.155][A
-Iteration:   5%|▍         | 357/7824 [01:14<25:51,  4.81it/s, train_loss=0.132][A
-Iteration:   5%|▍         | 358/7824 [01:14<25:53,  4.81it/s, train_loss=0.132][A
-Iteration:   5%|▍         | 358/7824 [01:14<25:53,  4.81it/s, train_loss=0.129][A
-Iteration:   5%|▍         | 359/7824 [01:14<25:47,  4.82it/s, train_loss=0.129][A
-Iteration:   5%|▍         | 359/7824 [01:14<25:47,  4.82it/s, train_loss=0.186][A
-Iteration:   5%|▍         | 360/7824 [01:14<25:51,  4.81it/s, train_loss=0.186][A
-Iteration:   5%|▍         | 360/7824 [01:15<25:51,  4.81it/s, train_loss=0.185][A
-Iteration:   5%|▍         | 361/7824 [01:15<25:54,  4.80it/s, train_loss=0.185][A
-Iteration:   5%|▍         | 361/7824 [01:15<25:54,  4.80it/s, train_loss=0.114][A
-Iteration:   5%|▍         | 362/7824 [01:15<25:50,  4.81it/s, train_loss=0.114][A
-Iteration:   5%|▍         | 362/7824 [01:15<25:50,  4.81it/s, train_loss=0.152][A
-Iteration:   5%|▍         | 363/7824 [01:15<25:52,  4.81it/s, train_loss=0.152][A
-Iteration:   5%|▍         | 363/7824 [01:15<25:52,  4.81it/s, train_loss=0.261][A
-Iteration:   5%|▍         | 364/7824 [01:15<25:54,  4.80it/s, train_loss=0.261][A
-Iteration:   5%|▍         | 364/7824 [01:15<25:54,  4.80it/s, train_loss=0.183][A
-Iteration:   5%|▍         | 365/7824 [01:15<26:02,  4.77it/s, train_loss=0.183][A
-Iteration:   5%|▍         | 365/7824 [01:16<26:02,  4.77it/s, train_loss=0.164][A
-Iteration:   5%|▍         | 366/7824 [01:16<25:58,  4.78it/s, train_loss=0.164][A
-Iteration:   5%|▍         | 366/7824 [01:16<25:58,  4.78it/s, train_loss=0.169][A
-Iteration:   5%|▍         | 367/7824 [01:16<25:52,  4.80it/s, train_loss=0.169][A
-Iteration:   5%|▍         | 367/7824 [01:16<25:52,  4.80it/s, train_loss=0.123][A
-Iteration:   5%|▍         | 368/7824 [01:16<25:55,  4.79it/s, train_loss=0.123][A
-Iteration:   5%|▍         | 368/7824 [01:16<25:55,  4.79it/s, train_loss=0.322][A
-Iteration:   5%|▍         | 369/7824 [01:16<25:49,  4.81it/s, train_loss=0.322][A
-Iteration:   5%|▍         | 369/7824 [01:16<25:49,  4.81it/s, train_loss=0.121][A
-Iteration:   5%|▍         | 370/7824 [01:16<25:46,  4.82it/s, train_loss=0.121][A
-Iteration:   5%|▍         | 370/7824 [01:17<25:46,  4.82it/s, train_loss=0.158][A
-Iteration:   5%|▍         | 371/7824 [01:17<25:51,  4.80it/s, train_loss=0.158][A
-Iteration:   5%|▍         | 371/7824 [01:17<25:51,  4.80it/s, train_loss=0.131][A
-Iteration:   5%|▍         | 372/7824 [01:17<25:50,  4.80it/s, train_loss=0.131][A
-Iteration:   5%|▍         | 372/7824 [01:17<25:50,  4.80it/s, train_loss=0.151][A
-Iteration:   5%|▍         | 373/7824 [01:17<25:46,  4.82it/s, train_loss=0.151][A
-Iteration:   5%|▍         | 373/7824 [01:17<25:46,  4.82it/s, train_loss=0.138][A
-Iteration:   5%|▍         | 374/7824 [01:17<25:50,  4.80it/s, train_loss=0.138][A
-Iteration:   5%|▍         | 374/7824 [01:18<25:50,  4.80it/s, train_loss=0.123][A
-Iteration:   5%|▍         | 375/7824 [01:18<25:49,  4.81it/s, train_loss=0.123][A
-Iteration:   5%|▍         | 375/7824 [01:18<25:49,  4.81it/s, train_loss=0.0999][A
-Iteration:   5%|▍         | 376/7824 [01:18<25:46,  4.82it/s, train_loss=0.0999][A
-Iteration:   5%|▍         | 376/7824 [01:18<25:46,  4.82it/s, train_loss=0.226] [A
-Iteration:   5%|▍         | 377/7824 [01:18<25:44,  4.82it/s, train_loss=0.226][A
-Iteration:   5%|▍         | 377/7824 [01:18<25:44,  4.82it/s, train_loss=0.115][A
-Iteration:   5%|▍         | 378/7824 [01:18<25:41,  4.83it/s, train_loss=0.115][A
-Iteration:   5%|▍         | 378/7824 [01:18<25:41,  4.83it/s, train_loss=0.14] [A
-Iteration:   5%|▍         | 379/7824 [01:18<25:45,  4.82it/s, train_loss=0.14][A
-Iteration:   5%|▍         | 379/7824 [01:19<25:45,  4.82it/s, train_loss=0.153][A
-Iteration:   5%|▍         | 380/7824 [01:19<25:48,  4.81it/s, train_loss=0.153][A
-Iteration:   5%|▍         | 380/7824 [01:19<25:48,  4.81it/s, train_loss=0.202][A
-Iteration:   5%|▍         | 381/7824 [01:19<25:38,  4.84it/s, train_loss=0.202][A
-Iteration:   5%|▍         | 381/7824 [01:19<25:38,  4.84it/s, train_loss=0.184][A
-Iteration:   5%|▍         | 382/7824 [01:19<25:41,  4.83it/s, train_loss=0.184][A
-Iteration:   5%|▍         | 382/7824 [01:19<25:41,  4.83it/s, train_loss=0.197][A
-Iteration:   5%|▍         | 383/7824 [01:19<25:38,  4.84it/s, train_loss=0.197][A
-Iteration:   5%|▍         | 383/7824 [01:19<25:38,  4.84it/s, train_loss=0.159][A
-Iteration:   5%|▍         | 384/7824 [01:19<25:49,  4.80it/s, train_loss=0.159][A
-Iteration:   5%|▍         | 384/7824 [01:20<25:49,  4.80it/s, train_loss=0.117][A
-Iteration:   5%|▍         | 385/7824 [01:20<25:51,  4.80it/s, train_loss=0.117][A
-Iteration:   5%|▍         | 385/7824 [01:20<25:51,  4.80it/s, train_loss=0.122][A
-Iteration:   5%|▍         | 386/7824 [01:20<25:49,  4.80it/s, train_loss=0.122][A
-Iteration:   5%|▍         | 386/7824 [01:20<25:49,  4.80it/s, train_loss=0.149][A
-Iteration:   5%|▍         | 387/7824 [01:20<25:45,  4.81it/s, train_loss=0.149][A
-Iteration:   5%|▍         | 387/7824 [01:20<25:45,  4.81it/s, train_loss=0.0834][A
-Iteration:   5%|▍         | 388/7824 [01:20<25:48,  4.80it/s, train_loss=0.0834][A
-Iteration:   5%|▍         | 388/7824 [01:20<25:48,  4.80it/s, train_loss=0.0498][A
-Iteration:   5%|▍         | 389/7824 [01:20<25:47,  4.80it/s, train_loss=0.0498][A
-Iteration:   5%|▍         | 389/7824 [01:21<25:47,  4.80it/s, train_loss=0.126] [A
-Iteration:   5%|▍         | 390/7824 [01:21<25:43,  4.82it/s, train_loss=0.126][A
-Iteration:   5%|▍         | 390/7824 [01:21<25:43,  4.82it/s, train_loss=0.194][A
-Iteration:   5%|▍         | 391/7824 [01:21<25:40,  4.82it/s, train_loss=0.194][A
-Iteration:   5%|▍         | 391/7824 [01:21<25:40,  4.82it/s, train_loss=0.18] [A
-Iteration:   5%|▌         | 392/7824 [01:21<25:32,  4.85it/s, train_loss=0.18][A
-Iteration:   5%|▌         | 392/7824 [01:21<25:32,  4.85it/s, train_loss=0.119][A
-Iteration:   5%|▌         | 393/7824 [01:21<25:39,  4.83it/s, train_loss=0.119][A
-Iteration:   5%|▌         | 393/7824 [01:21<25:39,  4.83it/s, train_loss=0.125][A
-Iteration:   5%|▌         | 394/7824 [01:21<25:36,  4.84it/s, train_loss=0.125][A
-Iteration:   5%|▌         | 394/7824 [01:22<25:36,  4.84it/s, train_loss=0.205][A
-Iteration:   5%|▌         | 395/7824 [01:22<25:36,  4.84it/s, train_loss=0.205][A
-Iteration:   5%|▌         | 395/7824 [01:22<25:36,  4.84it/s, train_loss=0.145][A
-Iteration:   5%|▌         | 396/7824 [01:22<25:28,  4.86it/s, train_loss=0.145][A
-Iteration:   5%|▌         | 396/7824 [01:22<25:28,  4.86it/s, train_loss=0.124][A
-Iteration:   5%|▌         | 397/7824 [01:22<25:35,  4.84it/s, train_loss=0.124][A
-Iteration:   5%|▌         | 397/7824 [01:22<25:35,  4.84it/s, train_loss=0.221][A
-Iteration:   5%|▌         | 398/7824 [01:22<25:27,  4.86it/s, train_loss=0.221][A
-Iteration:   5%|▌         | 398/7824 [01:22<25:27,  4.86it/s, train_loss=0.195][A
-Iteration:   5%|▌         | 399/7824 [01:22<25:29,  4.85it/s, train_loss=0.195][A
-Iteration:   5%|▌         | 399/7824 [01:23<25:29,  4.85it/s, train_loss=0.195][A
-Iteration:   5%|▌         | 400/7824 [01:23<25:26,  4.86it/s, train_loss=0.195][A
-Iteration:   5%|▌         | 400/7824 [01:23<25:26,  4.86it/s, train_loss=0.132][A
-Iteration:   5%|▌         | 401/7824 [01:23<25:26,  4.86it/s, train_loss=0.132][A
-Iteration:   5%|▌         | 401/7824 [01:23<25:26,  4.86it/s, train_loss=0.103][A
-Iteration:   5%|▌         | 402/7824 [01:23<25:32,  4.84it/s, train_loss=0.103][A
-Iteration:   5%|▌         | 402/7824 [01:23<25:32,  4.84it/s, train_loss=0.258][A
-Iteration:   5%|▌         | 403/7824 [01:23<25:43,  4.81it/s, train_loss=0.258][A
-Iteration:   5%|▌         | 403/7824 [01:24<25:43,  4.81it/s, train_loss=0.234][A
-Iteration:   5%|▌         | 404/7824 [01:24<25:39,  4.82it/s, train_loss=0.234][A
-Iteration:   5%|▌         | 404/7824 [01:24<25:39,  4.82it/s, train_loss=0.174][A
-Iteration:   5%|▌         | 405/7824 [01:24<25:30,  4.85it/s, train_loss=0.174][A
-Iteration:   5%|▌         | 405/7824 [01:24<25:30,  4.85it/s, train_loss=0.238][A
-Iteration:   5%|▌         | 406/7824 [01:24<25:24,  4.86it/s, train_loss=0.238][A
-Iteration:   5%|▌         | 406/7824 [01:24<25:24,  4.86it/s, train_loss=0.162][A
-Iteration:   5%|▌         | 407/7824 [01:24<25:25,  4.86it/s, train_loss=0.162][A
-Iteration:   5%|▌         | 407/7824 [01:24<25:25,  4.86it/s, train_loss=0.106][A
-Iteration:   5%|▌         | 408/7824 [01:24<25:27,  4.85it/s, train_loss=0.106][A
-Iteration:   5%|▌         | 408/7824 [01:25<25:27,  4.85it/s, train_loss=0.184][A
-Iteration:   5%|▌         | 409/7824 [01:25<25:28,  4.85it/s, train_loss=0.184][A
-Iteration:   5%|▌         | 409/7824 [01:25<25:28,  4.85it/s, train_loss=0.23] [A
-Iteration:   5%|▌         | 410/7824 [01:25<25:23,  4.87it/s, train_loss=0.23][A
-Iteration:   5%|▌         | 410/7824 [01:25<25:23,  4.87it/s, train_loss=0.151][A
-Iteration:   5%|▌         | 411/7824 [01:25<25:18,  4.88it/s, train_loss=0.151][A
-Iteration:   5%|▌         | 411/7824 [01:25<25:18,  4.88it/s, train_loss=0.125][A
-Iteration:   5%|▌         | 412/7824 [01:25<25:20,  4.87it/s, train_loss=0.125][A
-Iteration:   5%|▌         | 412/7824 [01:25<25:20,  4.87it/s, train_loss=0.0923][A
-Iteration:   5%|▌         | 413/7824 [01:25<25:41,  4.81it/s, train_loss=0.0923][A
-Iteration:   5%|▌         | 413/7824 [01:26<25:41,  4.81it/s, train_loss=0.0643][A
-Iteration:   5%|▌         | 414/7824 [01:26<26:01,  4.74it/s, train_loss=0.0643][A
-Iteration:   5%|▌         | 414/7824 [01:26<26:01,  4.74it/s, train_loss=0.107] [A
-Iteration:   5%|▌         | 415/7824 [01:26<25:46,  4.79it/s, train_loss=0.107][A
-Iteration:   5%|▌         | 415/7824 [01:26<25:46,  4.79it/s, train_loss=0.118][A
-Iteration:   5%|▌         | 416/7824 [01:26<25:55,  4.76it/s, train_loss=0.118][A
-Iteration:   5%|▌         | 416/7824 [01:26<25:55,  4.76it/s, train_loss=0.0707][A
-Iteration:   5%|▌         | 417/7824 [01:26<25:49,  4.78it/s, train_loss=0.0707][A
-Iteration:   5%|▌         | 417/7824 [01:26<25:49,  4.78it/s, train_loss=0.126] [A
-Iteration:   5%|▌         | 418/7824 [01:26<25:37,  4.82it/s, train_loss=0.126][A
-Iteration:   5%|▌         | 418/7824 [01:27<25:37,  4.82it/s, train_loss=0.155][A
-Iteration:   5%|▌         | 419/7824 [01:27<25:40,  4.81it/s, train_loss=0.155][A
-Iteration:   5%|▌         | 419/7824 [01:27<25:40,  4.81it/s, train_loss=0.23] [A
-Iteration:   5%|▌         | 420/7824 [01:27<25:32,  4.83it/s, train_loss=0.23][A
-Iteration:   5%|▌         | 420/7824 [01:27<25:32,  4.83it/s, train_loss=0.173][A
-Iteration:   5%|▌         | 421/7824 [01:27<25:29,  4.84it/s, train_loss=0.173][A
-Iteration:   5%|▌         | 421/7824 [01:27<25:29,  4.84it/s, train_loss=0.157][A
-Iteration:   5%|▌         | 422/7824 [01:27<25:41,  4.80it/s, train_loss=0.157][A
-Iteration:   5%|▌         | 422/7824 [01:27<25:41,  4.80it/s, train_loss=0.15] [A
-Iteration:   5%|▌         | 423/7824 [01:27<25:33,  4.83it/s, train_loss=0.15][A
-Iteration:   5%|▌         | 423/7824 [01:28<25:33,  4.83it/s, train_loss=0.0708][A
-Iteration:   5%|▌         | 424/7824 [01:28<25:31,  4.83it/s, train_loss=0.0708][A
-Iteration:   5%|▌         | 424/7824 [01:28<25:31,  4.83it/s, train_loss=0.184] [A
-Iteration:   5%|▌         | 425/7824 [01:28<25:26,  4.85it/s, train_loss=0.184][A
-Iteration:   5%|▌         | 425/7824 [01:28<25:26,  4.85it/s, train_loss=0.18] [A
-Iteration:   5%|▌         | 426/7824 [01:28<25:21,  4.86it/s, train_loss=0.18][A
-Iteration:   5%|▌         | 426/7824 [01:28<25:21,  4.86it/s, train_loss=0.0586][A
-Iteration:   5%|▌         | 427/7824 [01:28<25:27,  4.84it/s, train_loss=0.0586][A
-Iteration:   5%|▌         | 427/7824 [01:28<25:27,  4.84it/s, train_loss=0.0715][A
-Iteration:   5%|▌         | 428/7824 [01:28<25:27,  4.84it/s, train_loss=0.0715][A
-Iteration:   5%|▌         | 428/7824 [01:29<25:27,  4.84it/s, train_loss=0.199] [A
-Iteration:   5%|▌         | 429/7824 [01:29<25:26,  4.85it/s, train_loss=0.199][A
-Iteration:   5%|▌         | 429/7824 [01:29<25:26,  4.85it/s, train_loss=0.0812][A
-Iteration:   5%|▌         | 430/7824 [01:29<25:20,  4.86it/s, train_loss=0.0812][A
-Iteration:   5%|▌         | 430/7824 [01:29<25:20,  4.86it/s, train_loss=0.183] [A
-Iteration:   6%|▌         | 431/7824 [01:29<25:25,  4.85it/s, train_loss=0.183][A
-Iteration:   6%|▌         | 431/7824 [01:29<25:25,  4.85it/s, train_loss=0.277][A
-Iteration:   6%|▌         | 432/7824 [01:29<25:27,  4.84it/s, train_loss=0.277][A
-Iteration:   6%|▌         | 432/7824 [01:30<25:27,  4.84it/s, train_loss=0.149][A
-Iteration:   6%|▌         | 433/7824 [01:30<25:27,  4.84it/s, train_loss=0.149][A
-Iteration:   6%|▌         | 433/7824 [01:30<25:27,  4.84it/s, train_loss=0.087][A
-Iteration:   6%|▌         | 434/7824 [01:30<25:21,  4.86it/s, train_loss=0.087][A
-Iteration:   6%|▌         | 434/7824 [01:30<25:21,  4.86it/s, train_loss=0.104][A
-Iteration:   6%|▌         | 435/7824 [01:30<25:19,  4.86it/s, train_loss=0.104][A
-Iteration:   6%|▌         | 435/7824 [01:30<25:19,  4.86it/s, train_loss=0.089][A
-Iteration:   6%|▌         | 436/7824 [01:30<25:15,  4.87it/s, train_loss=0.089][A
-Iteration:   6%|▌         | 436/7824 [01:30<25:15,  4.87it/s, train_loss=0.152][A
-Iteration:   6%|▌         | 437/7824 [01:30<25:13,  4.88it/s, train_loss=0.152][A
-Iteration:   6%|▌         | 437/7824 [01:31<25:13,  4.88it/s, train_loss=0.205][A
-Iteration:   6%|▌         | 438/7824 [01:31<25:16,  4.87it/s, train_loss=0.205][A
-Iteration:   6%|▌         | 438/7824 [01:31<25:16,  4.87it/s, train_loss=0.141][A
-Iteration:   6%|▌         | 439/7824 [01:31<25:14,  4.88it/s, train_loss=0.141][A
-Iteration:   6%|▌         | 439/7824 [01:31<25:14,  4.88it/s, train_loss=0.107][A
-Iteration:   6%|▌         | 440/7824 [01:31<25:22,  4.85it/s, train_loss=0.107][A
-Iteration:   6%|▌         | 440/7824 [01:31<25:22,  4.85it/s, train_loss=0.208][A
-Iteration:   6%|▌         | 441/7824 [01:31<25:16,  4.87it/s, train_loss=0.208][A
-Iteration:   6%|▌         | 441/7824 [01:31<25:16,  4.87it/s, train_loss=0.157][A
-Iteration:   6%|▌         | 442/7824 [01:31<25:16,  4.87it/s, train_loss=0.157][A
-Iteration:   6%|▌         | 442/7824 [01:32<25:16,  4.87it/s, train_loss=0.124][A
-Iteration:   6%|▌         | 443/7824 [01:32<25:17,  4.86it/s, train_loss=0.124][A
-Iteration:   6%|▌         | 443/7824 [01:32<25:17,  4.86it/s, train_loss=0.181][A
-Iteration:   6%|▌         | 444/7824 [01:32<25:14,  4.87it/s, train_loss=0.181][A
-Iteration:   6%|▌         | 444/7824 [01:32<25:14,  4.87it/s, train_loss=0.163][A
-Iteration:   6%|▌         | 445/7824 [01:32<25:19,  4.86it/s, train_loss=0.163][A
-Iteration:   6%|▌         | 445/7824 [01:32<25:19,  4.86it/s, train_loss=0.183][A
-Iteration:   6%|▌         | 446/7824 [01:32<25:15,  4.87it/s, train_loss=0.183][A
-Iteration:   6%|▌         | 446/7824 [01:32<25:15,  4.87it/s, train_loss=0.122][A
-Iteration:   6%|▌         | 447/7824 [01:32<25:15,  4.87it/s, train_loss=0.122][A
-Iteration:   6%|▌         | 447/7824 [01:33<25:15,  4.87it/s, train_loss=0.0883][A
-Iteration:   6%|▌         | 448/7824 [01:33<25:12,  4.88it/s, train_loss=0.0883][A
-Iteration:   6%|▌         | 448/7824 [01:33<25:12,  4.88it/s, train_loss=0.134] [A
-Iteration:   6%|▌         | 449/7824 [01:33<25:09,  4.88it/s, train_loss=0.134][A
-Iteration:   6%|▌         | 449/7824 [01:33<25:09,  4.88it/s, train_loss=0.125][A
-Iteration:   6%|▌         | 450/7824 [01:33<25:14,  4.87it/s, train_loss=0.125][A
-Iteration:   6%|▌         | 450/7824 [01:33<25:14,  4.87it/s, train_loss=0.0933][A
-Iteration:   6%|▌         | 451/7824 [01:33<25:11,  4.88it/s, train_loss=0.0933][A
-Iteration:   6%|▌         | 451/7824 [01:33<25:11,  4.88it/s, train_loss=0.0408][A
-Iteration:   6%|▌         | 452/7824 [01:33<25:37,  4.80it/s, train_loss=0.0408][A
-Iteration:   6%|▌         | 452/7824 [01:34<25:37,  4.80it/s, train_loss=0.147] [A
-Iteration:   6%|▌         | 453/7824 [01:34<25:28,  4.82it/s, train_loss=0.147][A
-Iteration:   6%|▌         | 453/7824 [01:34<25:28,  4.82it/s, train_loss=0.189][A
-Iteration:   6%|▌         | 454/7824 [01:34<25:38,  4.79it/s, train_loss=0.189][A
-Iteration:   6%|▌         | 454/7824 [01:34<25:38,  4.79it/s, train_loss=0.0709][A
-Iteration:   6%|▌         | 455/7824 [01:34<25:28,  4.82it/s, train_loss=0.0709][A
-Iteration:   6%|▌         | 455/7824 [01:34<25:28,  4.82it/s, train_loss=0.122] [A
-Iteration:   6%|▌         | 456/7824 [01:34<25:28,  4.82it/s, train_loss=0.122][A
-Iteration:   6%|▌         | 456/7824 [01:34<25:28,  4.82it/s, train_loss=0.0691][A
-Iteration:   6%|▌         | 457/7824 [01:34<25:20,  4.85it/s, train_loss=0.0691][A
-Iteration:   6%|▌         | 457/7824 [01:35<25:20,  4.85it/s, train_loss=0.101] [A
-Iteration:   6%|▌         | 458/7824 [01:35<25:16,  4.86it/s, train_loss=0.101][A
-Iteration:   6%|▌         | 458/7824 [01:35<25:16,  4.86it/s, train_loss=0.0765][A
-Iteration:   6%|▌         | 459/7824 [01:35<25:17,  4.85it/s, train_loss=0.0765][A
-Iteration:   6%|▌         | 459/7824 [01:35<25:17,  4.85it/s, train_loss=0.0267][A
-Iteration:   6%|▌         | 460/7824 [01:35<25:17,  4.85it/s, train_loss=0.0267][A
-Iteration:   6%|▌         | 460/7824 [01:35<25:17,  4.85it/s, train_loss=0.124] [A
-Iteration:   6%|▌         | 461/7824 [01:35<25:34,  4.80it/s, train_loss=0.124][A
-Iteration:   6%|▌         | 461/7824 [01:35<25:34,  4.80it/s, train_loss=0.139][A
-Iteration:   6%|▌         | 462/7824 [01:35<25:23,  4.83it/s, train_loss=0.139][A
-Iteration:   6%|▌         | 462/7824 [01:36<25:23,  4.83it/s, train_loss=0.231][A
-Iteration:   6%|▌         | 463/7824 [01:36<25:23,  4.83it/s, train_loss=0.231][A
-Iteration:   6%|▌         | 463/7824 [01:36<25:23,  4.83it/s, train_loss=0.177][A
-Iteration:   6%|▌         | 464/7824 [01:36<25:20,  4.84it/s, train_loss=0.177][A
-Iteration:   6%|▌         | 464/7824 [01:36<25:20,  4.84it/s, train_loss=0.0998][A
-Iteration:   6%|▌         | 465/7824 [01:36<25:14,  4.86it/s, train_loss=0.0998][A
-Iteration:   6%|▌         | 465/7824 [01:36<25:14,  4.86it/s, train_loss=0.158] [A
-Iteration:   6%|▌         | 466/7824 [01:36<25:16,  4.85it/s, train_loss=0.158][A
-Iteration:   6%|▌         | 466/7824 [01:37<25:16,  4.85it/s, train_loss=0.243][A
-Iteration:   6%|▌         | 467/7824 [01:37<25:18,  4.84it/s, train_loss=0.243][A
-Iteration:   6%|▌         | 467/7824 [01:37<25:18,  4.84it/s, train_loss=0.155][A
-Iteration:   6%|▌         | 468/7824 [01:37<25:19,  4.84it/s, train_loss=0.155][A
-Iteration:   6%|▌         | 468/7824 [01:37<25:19,  4.84it/s, train_loss=0.0956][A
-Iteration:   6%|▌         | 469/7824 [01:37<25:13,  4.86it/s, train_loss=0.0956][A
-Iteration:   6%|▌         | 469/7824 [01:37<25:13,  4.86it/s, train_loss=0.22]  [A
-Iteration:   6%|▌         | 470/7824 [01:37<25:17,  4.85it/s, train_loss=0.22][A
-Iteration:   6%|▌         | 470/7824 [01:37<25:17,  4.85it/s, train_loss=0.171][A
-Iteration:   6%|▌         | 471/7824 [01:37<25:12,  4.86it/s, train_loss=0.171][A
-Iteration:   6%|▌         | 471/7824 [01:38<25:12,  4.86it/s, train_loss=0.0785][A
-Iteration:   6%|▌         | 472/7824 [01:38<25:12,  4.86it/s, train_loss=0.0785][A
-Iteration:   6%|▌         | 472/7824 [01:38<25:12,  4.86it/s, train_loss=0.224] [A
-Iteration:   6%|▌         | 473/7824 [01:38<25:22,  4.83it/s, train_loss=0.224][A
-Iteration:   6%|▌         | 473/7824 [01:38<25:22,  4.83it/s, train_loss=0.123][A
-Iteration:   6%|▌         | 474/7824 [01:38<25:20,  4.83it/s, train_loss=0.123][A
-Iteration:   6%|▌         | 474/7824 [01:38<25:20,  4.83it/s, train_loss=0.176][A
-Iteration:   6%|▌         | 475/7824 [01:38<25:13,  4.86it/s, train_loss=0.176][A
-Iteration:   6%|▌         | 475/7824 [01:38<25:13,  4.86it/s, train_loss=0.0709][A
-Iteration:   6%|▌         | 476/7824 [01:38<25:12,  4.86it/s, train_loss=0.0709][A
-Iteration:   6%|▌         | 476/7824 [01:39<25:12,  4.86it/s, train_loss=0.0957][A
-Iteration:   6%|▌         | 477/7824 [01:39<25:08,  4.87it/s, train_loss=0.0957][A
-Iteration:   6%|▌         | 477/7824 [01:39<25:08,  4.87it/s, train_loss=0.105] [A
-Iteration:   6%|▌         | 478/7824 [01:39<25:17,  4.84it/s, train_loss=0.105][A
-Iteration:   6%|▌         | 478/7824 [01:39<25:17,  4.84it/s, train_loss=0.0933][A
-Iteration:   6%|▌         | 479/7824 [01:39<25:12,  4.86it/s, train_loss=0.0933][A
-Iteration:   6%|▌         | 479/7824 [01:39<25:12,  4.86it/s, train_loss=0.222] [A
-Iteration:   6%|▌         | 480/7824 [01:39<25:22,  4.82it/s, train_loss=0.222][A
-Iteration:   6%|▌         | 480/7824 [01:39<25:22,  4.82it/s, train_loss=0.0722][A
-Iteration:   6%|▌         | 481/7824 [01:39<25:14,  4.85it/s, train_loss=0.0722][A
-Iteration:   6%|▌         | 481/7824 [01:40<25:14,  4.85it/s, train_loss=0.139] [A
-Iteration:   6%|▌         | 482/7824 [01:40<25:10,  4.86it/s, train_loss=0.139][A
-Iteration:   6%|▌         | 482/7824 [01:40<25:10,  4.86it/s, train_loss=0.16] [A
-Iteration:   6%|▌         | 483/7824 [01:40<25:11,  4.86it/s, train_loss=0.16][A
-Iteration:   6%|▌         | 483/7824 [01:40<25:11,  4.86it/s, train_loss=0.129][A
-Iteration:   6%|▌         | 484/7824 [01:40<25:11,  4.86it/s, train_loss=0.129][A
-Iteration:   6%|▌         | 484/7824 [01:40<25:11,  4.86it/s, train_loss=0.119][A
-Iteration:   6%|▌         | 485/7824 [01:40<25:27,  4.81it/s, train_loss=0.119][A
-Iteration:   6%|▌         | 485/7824 [01:40<25:27,  4.81it/s, train_loss=0.177][A
-Iteration:   6%|▌         | 486/7824 [01:40<25:18,  4.83it/s, train_loss=0.177][A
-Iteration:   6%|▌         | 486/7824 [01:41<25:18,  4.83it/s, train_loss=0.0893][A
-Iteration:   6%|▌         | 487/7824 [01:41<25:09,  4.86it/s, train_loss=0.0893][A
-Iteration:   6%|▌         | 487/7824 [01:41<25:09,  4.86it/s, train_loss=0.158] [A
-Iteration:   6%|▌         | 488/7824 [01:41<25:08,  4.86it/s, train_loss=0.158][A
-Iteration:   6%|▌         | 488/7824 [01:41<25:08,  4.86it/s, train_loss=0.157][A
-Iteration:   6%|▋         | 489/7824 [01:41<25:08,  4.86it/s, train_loss=0.157][A
-Iteration:   6%|▋         | 489/7824 [01:41<25:08,  4.86it/s, train_loss=0.105][A
-Iteration:   6%|▋         | 490/7824 [01:41<25:05,  4.87it/s, train_loss=0.105][A
-Iteration:   6%|▋         | 490/7824 [01:41<25:05,  4.87it/s, train_loss=0.105][A
-Iteration:   6%|▋         | 491/7824 [01:41<25:08,  4.86it/s, train_loss=0.105][A
-Iteration:   6%|▋         | 491/7824 [01:42<25:08,  4.86it/s, train_loss=0.143][A
-Iteration:   6%|▋         | 492/7824 [01:42<25:04,  4.87it/s, train_loss=0.143][A
-Iteration:   6%|▋         | 492/7824 [01:42<25:04,  4.87it/s, train_loss=0.214][A
-Iteration:   6%|▋         | 493/7824 [01:42<25:06,  4.87it/s, train_loss=0.214][A
-Iteration:   6%|▋         | 493/7824 [01:42<25:06,  4.87it/s, train_loss=0.158][A
-Iteration:   6%|▋         | 494/7824 [01:42<25:03,  4.88it/s, train_loss=0.158][A
-Iteration:   6%|▋         | 494/7824 [01:42<25:03,  4.88it/s, train_loss=0.0706][A
-Iteration:   6%|▋         | 495/7824 [01:42<25:02,  4.88it/s, train_loss=0.0706][A
-Iteration:   6%|▋         | 495/7824 [01:42<25:02,  4.88it/s, train_loss=0.225] [A
-Iteration:   6%|▋         | 496/7824 [01:42<25:12,  4.85it/s, train_loss=0.225][A
-Iteration:   6%|▋         | 496/7824 [01:43<25:12,  4.85it/s, train_loss=0.0909][A
-Iteration:   6%|▋         | 497/7824 [01:43<25:15,  4.84it/s, train_loss=0.0909][A
-Iteration:   6%|▋         | 497/7824 [01:43<25:15,  4.84it/s, train_loss=0.134] [A
-Iteration:   6%|▋         | 498/7824 [01:43<25:08,  4.86it/s, train_loss=0.134][A
-Iteration:   6%|▋         | 498/7824 [01:43<25:08,  4.86it/s, train_loss=0.194][A
-Iteration:   6%|▋         | 499/7824 [01:43<25:09,  4.85it/s, train_loss=0.194][A
-Iteration:   6%|▋         | 499/7824 [01:43<25:09,  4.85it/s, train_loss=0.144][A
-Iteration:   6%|▋         | 500/7824 [01:43<25:07,  4.86it/s, train_loss=0.144][A
-Iteration:   6%|▋         | 500/7824 [01:44<25:07,  4.86it/s, train_loss=0.279][A
-Iteration:   6%|▋         | 501/7824 [01:44<25:08,  4.85it/s, train_loss=0.279][A
-Iteration:   6%|▋         | 501/7824 [01:44<25:08,  4.85it/s, train_loss=0.162][A
-Iteration:   6%|▋         | 502/7824 [01:44<25:07,  4.86it/s, train_loss=0.162][A
-Iteration:   6%|▋         | 502/7824 [01:44<25:07,  4.86it/s, train_loss=0.303][A
-Iteration:   6%|▋         | 503/7824 [01:44<25:19,  4.82it/s, train_loss=0.303][A
-Iteration:   6%|▋         | 503/7824 [01:44<25:19,  4.82it/s, train_loss=0.0701][A
-Iteration:   6%|▋         | 504/7824 [01:44<25:09,  4.85it/s, train_loss=0.0701][A
-Iteration:   6%|▋         | 504/7824 [01:44<25:09,  4.85it/s, train_loss=0.143] [A
-Iteration:   6%|▋         | 505/7824 [01:44<25:08,  4.85it/s, train_loss=0.143][A
-Iteration:   6%|▋         | 505/7824 [01:45<25:08,  4.85it/s, train_loss=0.134][A
-Iteration:   6%|▋         | 506/7824 [01:45<25:05,  4.86it/s, train_loss=0.134][A
-Iteration:   6%|▋         | 506/7824 [01:45<25:05,  4.86it/s, train_loss=0.109][A
-Iteration:   6%|▋         | 507/7824 [01:45<25:03,  4.87it/s, train_loss=0.109][A
-Iteration:   6%|▋         | 507/7824 [01:45<25:03,  4.87it/s, train_loss=0.0951][A
-Iteration:   6%|▋         | 508/7824 [01:45<25:05,  4.86it/s, train_loss=0.0951][A
-Iteration:   6%|▋         | 508/7824 [01:45<25:05,  4.86it/s, train_loss=0.0836][A
-Iteration:   7%|▋         | 509/7824 [01:45<25:02,  4.87it/s, train_loss=0.0836][A
-Iteration:   7%|▋         | 509/7824 [01:45<25:02,  4.87it/s, train_loss=0.0987][A
-Iteration:   7%|▋         | 510/7824 [01:45<25:06,  4.85it/s, train_loss=0.0987][A
-Iteration:   7%|▋         | 510/7824 [01:46<25:06,  4.85it/s, train_loss=0.128] [A
-Iteration:   7%|▋         | 511/7824 [01:46<25:02,  4.87it/s, train_loss=0.128][A
-Iteration:   7%|▋         | 511/7824 [01:46<25:02,  4.87it/s, train_loss=0.105][A
-Iteration:   7%|▋         | 512/7824 [01:46<25:01,  4.87it/s, train_loss=0.105][A
-Iteration:   7%|▋         | 512/7824 [01:46<25:01,  4.87it/s, train_loss=0.104][A
-Iteration:   7%|▋         | 513/7824 [01:46<25:03,  4.86it/s, train_loss=0.104][A
-Iteration:   7%|▋         | 513/7824 [01:46<25:03,  4.86it/s, train_loss=0.155][A
-Iteration:   7%|▋         | 514/7824 [01:46<24:57,  4.88it/s, train_loss=0.155][A
-Iteration:   7%|▋         | 514/7824 [01:46<24:57,  4.88it/s, train_loss=0.262][A
-Iteration:   7%|▋         | 515/7824 [01:46<25:07,  4.85it/s, train_loss=0.262][A
-Iteration:   7%|▋         | 515/7824 [01:47<25:07,  4.85it/s, train_loss=0.118][A
-Iteration:   7%|▋         | 516/7824 [01:47<25:02,  4.86it/s, train_loss=0.118][A
-Iteration:   7%|▋         | 516/7824 [01:47<25:02,  4.86it/s, train_loss=0.208][A
-Iteration:   7%|▋         | 517/7824 [01:47<25:05,  4.85it/s, train_loss=0.208][A
-Iteration:   7%|▋         | 517/7824 [01:47<25:05,  4.85it/s, train_loss=0.13] [A
-Iteration:   7%|▋         | 518/7824 [01:47<25:01,  4.86it/s, train_loss=0.13][A
-Iteration:   7%|▋         | 518/7824 [01:47<25:01,  4.86it/s, train_loss=0.241][A
-Iteration:   7%|▋         | 519/7824 [01:47<25:18,  4.81it/s, train_loss=0.241][A
-Iteration:   7%|▋         | 519/7824 [01:47<25:18,  4.81it/s, train_loss=0.168][A
-Iteration:   7%|▋         | 520/7824 [01:47<25:15,  4.82it/s, train_loss=0.168][A
-Iteration:   7%|▋         | 520/7824 [01:48<25:15,  4.82it/s, train_loss=0.0498][A
-Iteration:   7%|▋         | 521/7824 [01:48<25:08,  4.84it/s, train_loss=0.0498][A
-Iteration:   7%|▋         | 521/7824 [01:48<25:08,  4.84it/s, train_loss=0.102] [A
-Iteration:   7%|▋         | 522/7824 [01:48<25:11,  4.83it/s, train_loss=0.102][A
-Iteration:   7%|▋         | 522/7824 [01:48<25:11,  4.83it/s, train_loss=0.0507][A
-Iteration:   7%|▋         | 523/7824 [01:48<25:03,  4.85it/s, train_loss=0.0507][A
-Iteration:   7%|▋         | 523/7824 [01:48<25:03,  4.85it/s, train_loss=0.103] [A
-Iteration:   7%|▋         | 524/7824 [01:48<25:00,  4.86it/s, train_loss=0.103][A
-Iteration:   7%|▋         | 524/7824 [01:48<25:00,  4.86it/s, train_loss=0.193][A
-Iteration:   7%|▋         | 525/7824 [01:48<25:01,  4.86it/s, train_loss=0.193][A
-Iteration:   7%|▋         | 525/7824 [01:49<25:01,  4.86it/s, train_loss=0.141][A
-Iteration:   7%|▋         | 526/7824 [01:49<24:56,  4.88it/s, train_loss=0.141][A
-Iteration:   7%|▋         | 526/7824 [01:49<24:56,  4.88it/s, train_loss=0.165][A
-Iteration:   7%|▋         | 527/7824 [01:49<24:59,  4.87it/s, train_loss=0.165][A
-Iteration:   7%|▋         | 527/7824 [01:49<24:59,  4.87it/s, train_loss=0.162][A
-Iteration:   7%|▋         | 528/7824 [01:49<24:58,  4.87it/s, train_loss=0.162][A
-Iteration:   7%|▋         | 528/7824 [01:49<24:58,  4.87it/s, train_loss=0.199][A
-Iteration:   7%|▋         | 529/7824 [01:49<25:03,  4.85it/s, train_loss=0.199][A
-Iteration:   7%|▋         | 529/7824 [01:49<25:03,  4.85it/s, train_loss=0.128][A
-Iteration:   7%|▋         | 530/7824 [01:49<24:59,  4.86it/s, train_loss=0.128][A
-Iteration:   7%|▋         | 530/7824 [01:50<24:59,  4.86it/s, train_loss=0.0477][A
-Iteration:   7%|▋         | 531/7824 [01:50<24:59,  4.86it/s, train_loss=0.0477][A
-Iteration:   7%|▋         | 531/7824 [01:50<24:59,  4.86it/s, train_loss=0.243] [A
-Iteration:   7%|▋         | 532/7824 [01:50<25:05,  4.84it/s, train_loss=0.243][A
-Iteration:   7%|▋         | 532/7824 [01:50<25:05,  4.84it/s, train_loss=0.105][A
-Iteration:   7%|▋         | 533/7824 [01:50<25:07,  4.84it/s, train_loss=0.105][A
-Iteration:   7%|▋         | 533/7824 [01:50<25:07,  4.84it/s, train_loss=0.0825][A
-Iteration:   7%|▋         | 534/7824 [01:50<25:01,  4.85it/s, train_loss=0.0825][A
-Iteration:   7%|▋         | 534/7824 [01:51<25:01,  4.85it/s, train_loss=0.151] [A
-Iteration:   7%|▋         | 535/7824 [01:51<25:03,  4.85it/s, train_loss=0.151][A
-Iteration:   7%|▋         | 535/7824 [01:51<25:03,  4.85it/s, train_loss=0.16] [A
-Iteration:   7%|▋         | 536/7824 [01:51<24:58,  4.86it/s, train_loss=0.16][A
-Iteration:   7%|▋         | 536/7824 [01:51<24:58,  4.86it/s, train_loss=0.0737][A
-Iteration:   7%|▋         | 537/7824 [01:51<24:55,  4.87it/s, train_loss=0.0737][A
-Iteration:   7%|▋         | 537/7824 [01:51<24:55,  4.87it/s, train_loss=0.151] [A
-Iteration:   7%|▋         | 538/7824 [01:51<24:58,  4.86it/s, train_loss=0.151][A
-Iteration:   7%|▋         | 538/7824 [01:51<24:58,  4.86it/s, train_loss=0.0799][A
-Iteration:   7%|▋         | 539/7824 [01:51<24:55,  4.87it/s, train_loss=0.0799][A
-Iteration:   7%|▋         | 539/7824 [01:52<24:55,  4.87it/s, train_loss=0.128] [A
-Iteration:   7%|▋         | 540/7824 [01:52<24:58,  4.86it/s, train_loss=0.128][A
-Iteration:   7%|▋         | 540/7824 [01:52<24:58,  4.86it/s, train_loss=0.108][A
-Iteration:   7%|▋         | 541/7824 [01:52<24:55,  4.87it/s, train_loss=0.108][A
-Iteration:   7%|▋         | 541/7824 [01:52<24:55,  4.87it/s, train_loss=0.114][A
-Iteration:   7%|▋         | 542/7824 [01:52<24:55,  4.87it/s, train_loss=0.114][A
-Iteration:   7%|▋         | 542/7824 [01:52<24:55,  4.87it/s, train_loss=0.0674][A
-Iteration:   7%|▋         | 543/7824 [01:52<24:56,  4.87it/s, train_loss=0.0674][A
-Iteration:   7%|▋         | 543/7824 [01:52<24:56,  4.87it/s, train_loss=0.111] [A
-Iteration:   7%|▋         | 544/7824 [01:52<24:53,  4.87it/s, train_loss=0.111][A
-Iteration:   7%|▋         | 544/7824 [01:53<24:53,  4.87it/s, train_loss=0.126][A
-Iteration:   7%|▋         | 545/7824 [01:53<24:56,  4.86it/s, train_loss=0.126][A
-Iteration:   7%|▋         | 545/7824 [01:53<24:56,  4.86it/s, train_loss=0.162][A
-Iteration:   7%|▋         | 546/7824 [01:53<24:55,  4.87it/s, train_loss=0.162][A
-Iteration:   7%|▋         | 546/7824 [01:53<24:55,  4.87it/s, train_loss=0.116][A
-Iteration:   7%|▋         | 547/7824 [01:53<24:58,  4.85it/s, train_loss=0.116][A
-Iteration:   7%|▋         | 547/7824 [01:53<24:58,  4.85it/s, train_loss=0.0785][A
-Iteration:   7%|▋         | 548/7824 [01:53<24:55,  4.86it/s, train_loss=0.0785][A
-Iteration:   7%|▋         | 548/7824 [01:53<24:55,  4.86it/s, train_loss=0.105] [A
-Iteration:   7%|▋         | 549/7824 [01:53<24:56,  4.86it/s, train_loss=0.105][A
-Iteration:   7%|▋         | 549/7824 [01:54<24:56,  4.86it/s, train_loss=0.124][A
-Iteration:   7%|▋         | 550/7824 [01:54<25:00,  4.85it/s, train_loss=0.124][A
-Iteration:   7%|▋         | 550/7824 [01:54<25:00,  4.85it/s, train_loss=0.0563][A
-Iteration:   7%|▋         | 551/7824 [01:54<25:01,  4.84it/s, train_loss=0.0563][A
-Iteration:   7%|▋         | 551/7824 [01:54<25:01,  4.84it/s, train_loss=0.253] [A
-Iteration:   7%|▋         | 552/7824 [01:54<25:03,  4.84it/s, train_loss=0.253][A
-Iteration:   7%|▋         | 552/7824 [01:54<25:03,  4.84it/s, train_loss=0.0708][A
-Iteration:   7%|▋         | 553/7824 [01:54<25:02,  4.84it/s, train_loss=0.0708][A
-Iteration:   7%|▋         | 553/7824 [01:54<25:02,  4.84it/s, train_loss=0.171] [A
-Iteration:   7%|▋         | 554/7824 [01:54<25:03,  4.84it/s, train_loss=0.171][A
-Iteration:   7%|▋         | 554/7824 [01:55<25:03,  4.84it/s, train_loss=0.0983][A
-Iteration:   7%|▋         | 555/7824 [01:55<25:01,  4.84it/s, train_loss=0.0983][A
-Iteration:   7%|▋         | 555/7824 [01:55<25:01,  4.84it/s, train_loss=0.123] [A
-Iteration:   7%|▋         | 556/7824 [01:55<24:57,  4.85it/s, train_loss=0.123][A
-Iteration:   7%|▋         | 556/7824 [01:55<24:57,  4.85it/s, train_loss=0.101][A
-Iteration:   7%|▋         | 557/7824 [01:55<24:58,  4.85it/s, train_loss=0.101][A
-Iteration:   7%|▋         | 557/7824 [01:55<24:58,  4.85it/s, train_loss=0.159][A
-Iteration:   7%|▋         | 558/7824 [01:55<25:00,  4.84it/s, train_loss=0.159][A
-Iteration:   7%|▋         | 558/7824 [01:55<25:00,  4.84it/s, train_loss=0.0998][A
-Iteration:   7%|▋         | 559/7824 [01:55<24:56,  4.85it/s, train_loss=0.0998][A
-Iteration:   7%|▋         | 559/7824 [01:56<24:56,  4.85it/s, train_loss=0.171] [A
-Iteration:   7%|▋         | 560/7824 [01:56<24:52,  4.87it/s, train_loss=0.171][A
-Iteration:   7%|▋         | 560/7824 [01:56<24:52,  4.87it/s, train_loss=0.11] [A
-Iteration:   7%|▋         | 561/7824 [01:56<24:53,  4.86it/s, train_loss=0.11][A
-Iteration:   7%|▋         | 561/7824 [01:56<24:53,  4.86it/s, train_loss=0.102][A
-Iteration:   7%|▋         | 562/7824 [01:56<24:51,  4.87it/s, train_loss=0.102][A
-Iteration:   7%|▋         | 562/7824 [01:56<24:51,  4.87it/s, train_loss=0.0433][A
-Iteration:   7%|▋         | 563/7824 [01:56<24:49,  4.87it/s, train_loss=0.0433][A
-Iteration:   7%|▋         | 563/7824 [01:56<24:49,  4.87it/s, train_loss=0.193] [A
-Iteration:   7%|▋         | 564/7824 [01:56<24:52,  4.86it/s, train_loss=0.193][A
-Iteration:   7%|▋         | 564/7824 [01:57<24:52,  4.86it/s, train_loss=0.129][A
-Iteration:   7%|▋         | 565/7824 [01:57<24:47,  4.88it/s, train_loss=0.129][A
-Iteration:   7%|▋         | 565/7824 [01:57<24:47,  4.88it/s, train_loss=0.069][A
-Iteration:   7%|▋         | 566/7824 [01:57<25:10,  4.81it/s, train_loss=0.069][A
-Iteration:   7%|▋         | 566/7824 [01:57<25:10,  4.81it/s, train_loss=0.0981][A
-Iteration:   7%|▋         | 567/7824 [01:57<25:22,  4.77it/s, train_loss=0.0981][A
-Iteration:   7%|▋         | 567/7824 [01:57<25:22,  4.77it/s, train_loss=0.129] [A
-Iteration:   7%|▋         | 568/7824 [01:57<25:11,  4.80it/s, train_loss=0.129][A
-Iteration:   7%|▋         | 568/7824 [01:58<25:11,  4.80it/s, train_loss=0.176][A
-Iteration:   7%|▋         | 569/7824 [01:58<25:05,  4.82it/s, train_loss=0.176][A
-Iteration:   7%|▋         | 569/7824 [01:58<25:05,  4.82it/s, train_loss=0.385][A
-Iteration:   7%|▋         | 570/7824 [01:58<25:07,  4.81it/s, train_loss=0.385][A
-Iteration:   7%|▋         | 570/7824 [01:58<25:07,  4.81it/s, train_loss=0.107][A
-Iteration:   7%|▋         | 571/7824 [01:58<25:07,  4.81it/s, train_loss=0.107][A
-Iteration:   7%|▋         | 571/7824 [01:58<25:07,  4.81it/s, train_loss=0.105][A
-Iteration:   7%|▋         | 572/7824 [01:58<24:59,  4.84it/s, train_loss=0.105][A
-Iteration:   7%|▋         | 572/7824 [01:58<24:59,  4.84it/s, train_loss=0.144][A
-Iteration:   7%|▋         | 573/7824 [01:58<25:00,  4.83it/s, train_loss=0.144][A
-Iteration:   7%|▋         | 573/7824 [01:59<25:00,  4.83it/s, train_loss=0.139][A
-Iteration:   7%|▋         | 574/7824 [01:59<24:56,  4.84it/s, train_loss=0.139][A
-Iteration:   7%|▋         | 574/7824 [01:59<24:56,  4.84it/s, train_loss=0.113][A
-Iteration:   7%|▋         | 575/7824 [01:59<25:01,  4.83it/s, train_loss=0.113][A
-Iteration:   7%|▋         | 575/7824 [01:59<25:01,  4.83it/s, train_loss=0.0504][A
-Iteration:   7%|▋         | 576/7824 [01:59<24:55,  4.85it/s, train_loss=0.0504][A
-Iteration:   7%|▋         | 576/7824 [01:59<24:55,  4.85it/s, train_loss=0.0948][A
-Iteration:   7%|▋         | 577/7824 [01:59<25:02,  4.82it/s, train_loss=0.0948][A
-Iteration:   7%|▋         | 577/7824 [01:59<25:02,  4.82it/s, train_loss=0.0915][A
-Iteration:   7%|▋         | 578/7824 [01:59<25:01,  4.83it/s, train_loss=0.0915][A
-Iteration:   7%|▋         | 578/7824 [02:00<25:01,  4.83it/s, train_loss=0.141] [A
-Iteration:   7%|▋         | 579/7824 [02:00<25:01,  4.83it/s, train_loss=0.141][A
-Iteration:   7%|▋         | 579/7824 [02:00<25:01,  4.83it/s, train_loss=0.0946][A
-Iteration:   7%|▋         | 580/7824 [02:00<25:02,  4.82it/s, train_loss=0.0946][A
-Iteration:   7%|▋         | 580/7824 [02:00<25:02,  4.82it/s, train_loss=0.0514][A
-Iteration:   7%|▋         | 581/7824 [02:00<24:54,  4.85it/s, train_loss=0.0514][A
-Iteration:   7%|▋         | 581/7824 [02:00<24:54,  4.85it/s, train_loss=0.125] [A
-Iteration:   7%|▋         | 582/7824 [02:00<24:57,  4.84it/s, train_loss=0.125][A
-Iteration:   7%|▋         | 582/7824 [02:00<24:57,  4.84it/s, train_loss=0.159][A
-Iteration:   7%|▋         | 583/7824 [02:00<24:53,  4.85it/s, train_loss=0.159][A
-Iteration:   7%|▋         | 583/7824 [02:01<24:53,  4.85it/s, train_loss=0.255][A
-Iteration:   7%|▋         | 584/7824 [02:01<25:03,  4.82it/s, train_loss=0.255][A
-Iteration:   7%|▋         | 584/7824 [02:01<25:03,  4.82it/s, train_loss=0.146][A
-Iteration:   7%|▋         | 585/7824 [02:01<25:01,  4.82it/s, train_loss=0.146][A
-Iteration:   7%|▋         | 585/7824 [02:01<25:01,  4.82it/s, train_loss=0.109][A
-Iteration:   7%|▋         | 586/7824 [02:01<25:28,  4.74it/s, train_loss=0.109][A
-Iteration:   7%|▋         | 586/7824 [02:01<25:28,  4.74it/s, train_loss=0.173][A
-Iteration:   8%|▊         | 587/7824 [02:01<26:06,  4.62it/s, train_loss=0.173][A
-Iteration:   8%|▊         | 587/7824 [02:02<26:06,  4.62it/s, train_loss=0.0753][A
-Iteration:   8%|▊         | 588/7824 [02:02<26:14,  4.60it/s, train_loss=0.0753][A
-Iteration:   8%|▊         | 588/7824 [02:02<26:14,  4.60it/s, train_loss=0.0816][A
-Iteration:   8%|▊         | 589/7824 [02:02<26:14,  4.60it/s, train_loss=0.0816][A
-Iteration:   8%|▊         | 589/7824 [02:02<26:14,  4.60it/s, train_loss=0.152] [A
-Iteration:   8%|▊         | 590/7824 [02:02<26:18,  4.58it/s, train_loss=0.152][A
-Iteration:   8%|▊         | 590/7824 [02:02<26:18,  4.58it/s, train_loss=0.116][A
-Iteration:   8%|▊         | 591/7824 [02:02<26:18,  4.58it/s, train_loss=0.116][A
-Iteration:   8%|▊         | 591/7824 [02:02<26:18,  4.58it/s, train_loss=0.196][A
-Iteration:   8%|▊         | 592/7824 [02:02<26:16,  4.59it/s, train_loss=0.196][A
-Iteration:   8%|▊         | 592/7824 [02:03<26:16,  4.59it/s, train_loss=0.0825][A
-Iteration:   8%|▊         | 593/7824 [02:03<26:22,  4.57it/s, train_loss=0.0825][A
-Iteration:   8%|▊         | 593/7824 [02:03<26:22,  4.57it/s, train_loss=0.125] [A
-Iteration:   8%|▊         | 594/7824 [02:03<26:22,  4.57it/s, train_loss=0.125][A
-Iteration:   8%|▊         | 594/7824 [02:03<26:22,  4.57it/s, train_loss=0.0707][A
-Iteration:   8%|▊         | 595/7824 [02:03<26:24,  4.56it/s, train_loss=0.0707][A
-Iteration:   8%|▊         | 595/7824 [02:03<26:24,  4.56it/s, train_loss=0.0884][A
-Iteration:   8%|▊         | 596/7824 [02:03<26:20,  4.57it/s, train_loss=0.0884][A
-Iteration:   8%|▊         | 596/7824 [02:03<26:20,  4.57it/s, train_loss=0.143] [A
-Iteration:   8%|▊         | 597/7824 [02:03<26:22,  4.57it/s, train_loss=0.143][A
-Iteration:   8%|▊         | 597/7824 [02:04<26:22,  4.57it/s, train_loss=0.0906][A
-Iteration:   8%|▊         | 598/7824 [02:04<26:21,  4.57it/s, train_loss=0.0906][A
-Iteration:   8%|▊         | 598/7824 [02:04<26:21,  4.57it/s, train_loss=0.151] [A
-Iteration:   8%|▊         | 599/7824 [02:04<26:19,  4.57it/s, train_loss=0.151][A
-Iteration:   8%|▊         | 599/7824 [02:04<26:19,  4.57it/s, train_loss=0.0825][A
-Iteration:   8%|▊         | 600/7824 [02:04<26:18,  4.58it/s, train_loss=0.0825][A
-Iteration:   8%|▊         | 600/7824 [02:04<26:18,  4.58it/s, train_loss=0.208] [A
-Iteration:   8%|▊         | 601/7824 [02:04<26:30,  4.54it/s, train_loss=0.208][A
-Iteration:   8%|▊         | 601/7824 [02:05<26:30,  4.54it/s, train_loss=0.116][A
-Iteration:   8%|▊         | 602/7824 [02:05<26:23,  4.56it/s, train_loss=0.116][A
-Iteration:   8%|▊         | 602/7824 [02:05<26:23,  4.56it/s, train_loss=0.131][A
-Iteration:   8%|▊         | 603/7824 [02:05<26:24,  4.56it/s, train_loss=0.131][A
-Iteration:   8%|▊         | 603/7824 [02:05<26:24,  4.56it/s, train_loss=0.098][A
-Iteration:   8%|▊         | 604/7824 [02:05<26:18,  4.57it/s, train_loss=0.098][A
-Iteration:   8%|▊         | 604/7824 [02:05<26:18,  4.57it/s, train_loss=0.143][A
-Iteration:   8%|▊         | 605/7824 [02:05<26:16,  4.58it/s, train_loss=0.143][A
-Iteration:   8%|▊         | 605/7824 [02:05<26:16,  4.58it/s, train_loss=0.217][A
-Iteration:   8%|▊         | 606/7824 [02:05<26:27,  4.55it/s, train_loss=0.217][A
-Iteration:   8%|▊         | 606/7824 [02:06<26:27,  4.55it/s, train_loss=0.0457][A
-Iteration:   8%|▊         | 607/7824 [02:06<26:20,  4.56it/s, train_loss=0.0457][A
-Iteration:   8%|▊         | 607/7824 [02:06<26:20,  4.56it/s, train_loss=0.046] [A
-Iteration:   8%|▊         | 608/7824 [02:06<26:23,  4.56it/s, train_loss=0.046][A
-Iteration:   8%|▊         | 608/7824 [02:06<26:23,  4.56it/s, train_loss=0.116][A
-Iteration:   8%|▊         | 609/7824 [02:06<26:16,  4.58it/s, train_loss=0.116][A
-Iteration:   8%|▊         | 609/7824 [02:06<26:16,  4.58it/s, train_loss=0.135][A
-Iteration:   8%|▊         | 610/7824 [02:06<26:18,  4.57it/s, train_loss=0.135][A
-Iteration:   8%|▊         | 610/7824 [02:07<26:18,  4.57it/s, train_loss=0.0916][A
-Iteration:   8%|▊         | 611/7824 [02:07<26:18,  4.57it/s, train_loss=0.0916][A
-Iteration:   8%|▊         | 611/7824 [02:07<26:18,  4.57it/s, train_loss=0.0644][A
-Iteration:   8%|▊         | 612/7824 [02:07<26:15,  4.58it/s, train_loss=0.0644][A
-Iteration:   8%|▊         | 612/7824 [02:07<26:15,  4.58it/s, train_loss=0.0852][A
-Iteration:   8%|▊         | 613/7824 [02:07<26:27,  4.54it/s, train_loss=0.0852][A
-Iteration:   8%|▊         | 613/7824 [02:07<26:27,  4.54it/s, train_loss=0.0771][A
-Iteration:   8%|▊         | 614/7824 [02:07<26:22,  4.56it/s, train_loss=0.0771][A
-Iteration:   8%|▊         | 614/7824 [02:07<26:22,  4.56it/s, train_loss=0.212] [A
-Iteration:   8%|▊         | 615/7824 [02:07<26:29,  4.53it/s, train_loss=0.212][A
-Iteration:   8%|▊         | 615/7824 [02:08<26:29,  4.53it/s, train_loss=0.184][A
-Iteration:   8%|▊         | 616/7824 [02:08<26:20,  4.56it/s, train_loss=0.184][A
-Iteration:   8%|▊         | 616/7824 [02:08<26:20,  4.56it/s, train_loss=0.18] [A
-Iteration:   8%|▊         | 617/7824 [02:08<26:23,  4.55it/s, train_loss=0.18][A
-Iteration:   8%|▊         | 617/7824 [02:08<26:23,  4.55it/s, train_loss=0.198][A
-Iteration:   8%|▊         | 618/7824 [02:08<26:21,  4.56it/s, train_loss=0.198][A
-Iteration:   8%|▊         | 618/7824 [02:08<26:21,  4.56it/s, train_loss=0.0598][A
-Iteration:   8%|▊         | 619/7824 [02:08<26:17,  4.57it/s, train_loss=0.0598][A
-Iteration:   8%|▊         | 619/7824 [02:09<26:17,  4.57it/s, train_loss=0.249] [A
-Iteration:   8%|▊         | 620/7824 [02:09<26:21,  4.55it/s, train_loss=0.249][A
-Iteration:   8%|▊         | 620/7824 [02:09<26:21,  4.55it/s, train_loss=0.157][A
-Iteration:   8%|▊         | 621/7824 [02:09<26:19,  4.56it/s, train_loss=0.157][A
-Iteration:   8%|▊         | 621/7824 [02:09<26:19,  4.56it/s, train_loss=0.118][A
-Iteration:   8%|▊         | 622/7824 [02:09<26:18,  4.56it/s, train_loss=0.118][A
-Iteration:   8%|▊         | 622/7824 [02:09<26:18,  4.56it/s, train_loss=0.182][A
-Iteration:   8%|▊         | 623/7824 [02:09<26:16,  4.57it/s, train_loss=0.182][A
-Iteration:   8%|▊         | 623/7824 [02:09<26:16,  4.57it/s, train_loss=0.105][A
-Iteration:   8%|▊         | 624/7824 [02:09<26:11,  4.58it/s, train_loss=0.105][A
-Iteration:   8%|▊         | 624/7824 [02:10<26:11,  4.58it/s, train_loss=0.125][A
-Iteration:   8%|▊         | 625/7824 [02:10<26:12,  4.58it/s, train_loss=0.125][A
-Iteration:   8%|▊         | 625/7824 [02:10<26:12,  4.58it/s, train_loss=0.116][A
-Iteration:   8%|▊         | 626/7824 [02:10<26:08,  4.59it/s, train_loss=0.116][A
-Iteration:   8%|▊         | 626/7824 [02:10<26:08,  4.59it/s, train_loss=0.0539][A
-Iteration:   8%|▊         | 627/7824 [02:10<26:07,  4.59it/s, train_loss=0.0539][A
-Iteration:   8%|▊         | 627/7824 [02:10<26:07,  4.59it/s, train_loss=0.102] [A
-Iteration:   8%|▊         | 628/7824 [02:10<26:06,  4.59it/s, train_loss=0.102][A
-Iteration:   8%|▊         | 628/7824 [02:10<26:06,  4.59it/s, train_loss=0.133][A
-Iteration:   8%|▊         | 629/7824 [02:10<26:02,  4.60it/s, train_loss=0.133][A
-Iteration:   8%|▊         | 629/7824 [02:11<26:02,  4.60it/s, train_loss=0.202][A
-Iteration:   8%|▊         | 630/7824 [02:11<26:10,  4.58it/s, train_loss=0.202][A
-Iteration:   8%|▊         | 630/7824 [02:11<26:10,  4.58it/s, train_loss=0.0677][A
-Iteration:   8%|▊         | 631/7824 [02:11<26:16,  4.56it/s, train_loss=0.0677][A
-Iteration:   8%|▊         | 631/7824 [02:11<26:16,  4.56it/s, train_loss=0.0899][A
-Iteration:   8%|▊         | 632/7824 [02:11<26:13,  4.57it/s, train_loss=0.0899][A
-Iteration:   8%|▊         | 632/7824 [02:11<26:13,  4.57it/s, train_loss=0.1]   [A
-Iteration:   8%|▊         | 633/7824 [02:11<26:11,  4.57it/s, train_loss=0.1][A
-Iteration:   8%|▊         | 633/7824 [02:12<26:11,  4.57it/s, train_loss=0.0838][A
-Iteration:   8%|▊         | 634/7824 [02:12<26:07,  4.59it/s, train_loss=0.0838][A
-Iteration:   8%|▊         | 634/7824 [02:12<26:07,  4.59it/s, train_loss=0.0883][A
-Iteration:   8%|▊         | 635/7824 [02:12<26:06,  4.59it/s, train_loss=0.0883][A
-Iteration:   8%|▊         | 635/7824 [02:12<26:06,  4.59it/s, train_loss=0.0868][A
-Iteration:   8%|▊         | 636/7824 [02:12<26:15,  4.56it/s, train_loss=0.0868][A
-Iteration:   8%|▊         | 636/7824 [02:12<26:15,  4.56it/s, train_loss=0.0815][A
-Iteration:   8%|▊         | 637/7824 [02:12<26:11,  4.57it/s, train_loss=0.0815][A
-Iteration:   8%|▊         | 637/7824 [02:12<26:11,  4.57it/s, train_loss=0.0815][A
-Iteration:   8%|▊         | 638/7824 [02:12<26:13,  4.57it/s, train_loss=0.0815][A
-Iteration:   8%|▊         | 638/7824 [02:13<26:13,  4.57it/s, train_loss=0.132] [A
-Iteration:   8%|▊         | 639/7824 [02:13<26:07,  4.58it/s, train_loss=0.132][A
-Iteration:   8%|▊         | 639/7824 [02:13<26:07,  4.58it/s, train_loss=0.035][A
-Iteration:   8%|▊         | 640/7824 [02:13<26:09,  4.58it/s, train_loss=0.035][A
-Iteration:   8%|▊         | 640/7824 [02:13<26:09,  4.58it/s, train_loss=0.105][A
-Iteration:   8%|▊         | 641/7824 [02:13<26:05,  4.59it/s, train_loss=0.105][A
-Iteration:   8%|▊         | 641/7824 [02:13<26:05,  4.59it/s, train_loss=0.0806][A
-Iteration:   8%|▊         | 642/7824 [02:13<26:09,  4.58it/s, train_loss=0.0806][A
-Iteration:   8%|▊         | 642/7824 [02:14<26:09,  4.58it/s, train_loss=0.13]  [A
-Iteration:   8%|▊         | 643/7824 [02:14<26:06,  4.58it/s, train_loss=0.13][A
-Iteration:   8%|▊         | 643/7824 [02:14<26:06,  4.58it/s, train_loss=0.0965][A
-Iteration:   8%|▊         | 644/7824 [02:14<26:05,  4.59it/s, train_loss=0.0965][A
-Iteration:   8%|▊         | 644/7824 [02:14<26:05,  4.59it/s, train_loss=0.0634][A
-Iteration:   8%|▊         | 645/7824 [02:14<26:04,  4.59it/s, train_loss=0.0634][A
-Iteration:   8%|▊         | 645/7824 [02:14<26:04,  4.59it/s, train_loss=0.138] [A
-Iteration:   8%|▊         | 646/7824 [02:14<26:01,  4.60it/s, train_loss=0.138][A
-Iteration:   8%|▊         | 646/7824 [02:14<26:01,  4.60it/s, train_loss=0.199][A
-Iteration:   8%|▊         | 647/7824 [02:14<26:08,  4.58it/s, train_loss=0.199][A
-Iteration:   8%|▊         | 647/7824 [02:15<26:08,  4.58it/s, train_loss=0.203][A
-Iteration:   8%|▊         | 648/7824 [02:15<26:18,  4.55it/s, train_loss=0.203][A
-Iteration:   8%|▊         | 648/7824 [02:15<26:18,  4.55it/s, train_loss=0.113][A
-Iteration:   8%|▊         | 649/7824 [02:15<26:25,  4.53it/s, train_loss=0.113][A
-Iteration:   8%|▊         | 649/7824 [02:15<26:25,  4.53it/s, train_loss=0.13] [A
-Iteration:   8%|▊         | 650/7824 [02:15<26:17,  4.55it/s, train_loss=0.13][A
-Iteration:   8%|▊         | 650/7824 [02:15<26:17,  4.55it/s, train_loss=0.103][A
-Iteration:   8%|▊         | 651/7824 [02:15<26:15,  4.55it/s, train_loss=0.103][A
-Iteration:   8%|▊         | 651/7824 [02:16<26:15,  4.55it/s, train_loss=0.0745][A
-Iteration:   8%|▊         | 652/7824 [02:16<26:30,  4.51it/s, train_loss=0.0745][A
-Iteration:   8%|▊         | 652/7824 [02:16<26:30,  4.51it/s, train_loss=0.105] [A
-Iteration:   8%|▊         | 653/7824 [02:16<26:18,  4.54it/s, train_loss=0.105][A
-Iteration:   8%|▊         | 653/7824 [02:16<26:18,  4.54it/s, train_loss=0.14] [A
-Iteration:   8%|▊         | 654/7824 [02:16<26:18,  4.54it/s, train_loss=0.14][A
-Iteration:   8%|▊         | 654/7824 [02:16<26:18,  4.54it/s, train_loss=0.0856][A
-Iteration:   8%|▊         | 655/7824 [02:16<26:09,  4.57it/s, train_loss=0.0856][A
-Iteration:   8%|▊         | 655/7824 [02:16<26:09,  4.57it/s, train_loss=0.182] [A
-Iteration:   8%|▊         | 656/7824 [02:16<26:06,  4.57it/s, train_loss=0.182][A
-Iteration:   8%|▊         | 656/7824 [02:17<26:06,  4.57it/s, train_loss=0.111][A
-Iteration:   8%|▊         | 657/7824 [02:17<26:04,  4.58it/s, train_loss=0.111][A
-Iteration:   8%|▊         | 657/7824 [02:17<26:04,  4.58it/s, train_loss=0.164][A
-Iteration:   8%|▊         | 658/7824 [02:17<26:00,  4.59it/s, train_loss=0.164][A
-Iteration:   8%|▊         | 658/7824 [02:17<26:00,  4.59it/s, train_loss=0.105][A
-Iteration:   8%|▊         | 659/7824 [02:17<26:03,  4.58it/s, train_loss=0.105][A
-Iteration:   8%|▊         | 659/7824 [02:17<26:03,  4.58it/s, train_loss=0.181][A
-Iteration:   8%|▊         | 660/7824 [02:17<26:01,  4.59it/s, train_loss=0.181][A
-Iteration:   8%|▊         | 660/7824 [02:17<26:01,  4.59it/s, train_loss=0.192][A
-Iteration:   8%|▊         | 661/7824 [02:17<25:56,  4.60it/s, train_loss=0.192][A
-Iteration:   8%|▊         | 661/7824 [02:18<25:56,  4.60it/s, train_loss=0.13] [A
-Iteration:   8%|▊         | 662/7824 [02:18<26:02,  4.58it/s, train_loss=0.13][A
-Iteration:   8%|▊         | 662/7824 [02:18<26:02,  4.58it/s, train_loss=0.114][A
-Iteration:   8%|▊         | 663/7824 [02:18<26:07,  4.57it/s, train_loss=0.114][A
-Iteration:   8%|▊         | 663/7824 [02:18<26:07,  4.57it/s, train_loss=0.204][A
-Iteration:   8%|▊         | 664/7824 [02:18<26:09,  4.56it/s, train_loss=0.204][A
-Iteration:   8%|▊         | 664/7824 [02:18<26:09,  4.56it/s, train_loss=0.0992][A
-Iteration:   8%|▊         | 665/7824 [02:18<26:01,  4.59it/s, train_loss=0.0992][A
-Iteration:   8%|▊         | 665/7824 [02:19<26:01,  4.59it/s, train_loss=0.162] [A
-Iteration:   9%|▊         | 666/7824 [02:19<26:17,  4.54it/s, train_loss=0.162][A
-Iteration:   9%|▊         | 666/7824 [02:19<26:17,  4.54it/s, train_loss=0.158][A
-Iteration:   9%|▊         | 667/7824 [02:19<26:08,  4.56it/s, train_loss=0.158][A
-Iteration:   9%|▊         | 667/7824 [02:19<26:08,  4.56it/s, train_loss=0.124][A
-Iteration:   9%|▊         | 668/7824 [02:19<26:20,  4.53it/s, train_loss=0.124][A
-Iteration:   9%|▊         | 668/7824 [02:19<26:20,  4.53it/s, train_loss=0.235][A
-Iteration:   9%|▊         | 669/7824 [02:19<26:21,  4.53it/s, train_loss=0.235][A
-Iteration:   9%|▊         | 669/7824 [02:19<26:21,  4.53it/s, train_loss=0.0921][A
-Iteration:   9%|▊         | 670/7824 [02:19<26:12,  4.55it/s, train_loss=0.0921][A
-Iteration:   9%|▊         | 670/7824 [02:20<26:12,  4.55it/s, train_loss=0.0936][A
-Iteration:   9%|▊         | 671/7824 [02:20<26:04,  4.57it/s, train_loss=0.0936][A
-Iteration:   9%|▊         | 671/7824 [02:20<26:04,  4.57it/s, train_loss=0.167] [A
-Iteration:   9%|▊         | 672/7824 [02:20<26:00,  4.58it/s, train_loss=0.167][A
-Iteration:   9%|▊         | 672/7824 [02:20<26:00,  4.58it/s, train_loss=0.127][A
-Iteration:   9%|▊         | 673/7824 [02:20<26:06,  4.57it/s, train_loss=0.127][A
-Iteration:   9%|▊         | 673/7824 [02:20<26:06,  4.57it/s, train_loss=0.0876][A
-Iteration:   9%|▊         | 674/7824 [02:20<26:05,  4.57it/s, train_loss=0.0876][A
-Iteration:   9%|▊         | 674/7824 [02:21<26:05,  4.57it/s, train_loss=0.0906][A
-Iteration:   9%|▊         | 675/7824 [02:21<25:59,  4.58it/s, train_loss=0.0906][A
-Iteration:   9%|▊         | 675/7824 [02:21<25:59,  4.58it/s, train_loss=0.126] [A
-Iteration:   9%|▊         | 676/7824 [02:21<26:04,  4.57it/s, train_loss=0.126][A
-Iteration:   9%|▊         | 676/7824 [02:21<26:04,  4.57it/s, train_loss=0.186][A
-Iteration:   9%|▊         | 677/7824 [02:21<25:59,  4.58it/s, train_loss=0.186][A
-Iteration:   9%|▊         | 677/7824 [02:21<25:59,  4.58it/s, train_loss=0.138][A
-Iteration:   9%|▊         | 678/7824 [02:21<25:57,  4.59it/s, train_loss=0.138][A
-Iteration:   9%|▊         | 678/7824 [02:21<25:57,  4.59it/s, train_loss=0.0894][A
-Iteration:   9%|▊         | 679/7824 [02:21<25:56,  4.59it/s, train_loss=0.0894][A
-Iteration:   9%|▊         | 679/7824 [02:22<25:56,  4.59it/s, train_loss=0.274] [A
-Iteration:   9%|▊         | 680/7824 [02:22<26:04,  4.57it/s, train_loss=0.274][A
-Iteration:   9%|▊         | 680/7824 [02:22<26:04,  4.57it/s, train_loss=0.157][A
-Iteration:   9%|▊         | 681/7824 [02:22<26:08,  4.55it/s, train_loss=0.157][A
-Iteration:   9%|▊         | 681/7824 [02:22<26:08,  4.55it/s, train_loss=0.28] [A
-Iteration:   9%|▊         | 682/7824 [02:22<26:05,  4.56it/s, train_loss=0.28][A
-Iteration:   9%|▊         | 682/7824 [02:22<26:05,  4.56it/s, train_loss=0.192][A
-Iteration:   9%|▊         | 683/7824 [02:22<26:00,  4.58it/s, train_loss=0.192][A
-Iteration:   9%|▊         | 683/7824 [02:23<26:00,  4.58it/s, train_loss=0.0704][A
-Iteration:   9%|▊         | 684/7824 [02:23<26:02,  4.57it/s, train_loss=0.0704][A
-Iteration:   9%|▊         | 684/7824 [02:23<26:02,  4.57it/s, train_loss=0.2]   [A
-Iteration:   9%|▉         | 685/7824 [02:23<26:00,  4.57it/s, train_loss=0.2][A
-Iteration:   9%|▉         | 685/7824 [02:23<26:00,  4.57it/s, train_loss=0.121][A
-Iteration:   9%|▉         | 686/7824 [02:23<25:55,  4.59it/s, train_loss=0.121][A
-Iteration:   9%|▉         | 686/7824 [02:23<25:55,  4.59it/s, train_loss=0.0556][A
-Iteration:   9%|▉         | 687/7824 [02:23<26:08,  4.55it/s, train_loss=0.0556][A
-Iteration:   9%|▉         | 687/7824 [02:23<26:08,  4.55it/s, train_loss=0.215] [A
-Iteration:   9%|▉         | 688/7824 [02:23<26:10,  4.54it/s, train_loss=0.215][A
-Iteration:   9%|▉         | 688/7824 [02:24<26:10,  4.54it/s, train_loss=0.115][A
-Iteration:   9%|▉         | 689/7824 [02:24<26:03,  4.56it/s, train_loss=0.115][A
-Iteration:   9%|▉         | 689/7824 [02:24<26:03,  4.56it/s, train_loss=0.218][A
-Iteration:   9%|▉         | 690/7824 [02:24<26:15,  4.53it/s, train_loss=0.218][A
-Iteration:   9%|▉         | 690/7824 [02:24<26:15,  4.53it/s, train_loss=0.0854][A
-Iteration:   9%|▉         | 691/7824 [02:24<26:11,  4.54it/s, train_loss=0.0854][A
-Iteration:   9%|▉         | 691/7824 [02:24<26:11,  4.54it/s, train_loss=0.128] [A
-Iteration:   9%|▉         | 692/7824 [02:24<26:22,  4.51it/s, train_loss=0.128][A
-Iteration:   9%|▉         | 692/7824 [02:25<26:22,  4.51it/s, train_loss=0.136][A
-Iteration:   9%|▉         | 693/7824 [02:25<26:09,  4.54it/s, train_loss=0.136][A
-Iteration:   9%|▉         | 693/7824 [02:25<26:09,  4.54it/s, train_loss=0.207][A
-Iteration:   9%|▉         | 694/7824 [02:25<26:05,  4.56it/s, train_loss=0.207][A
-Iteration:   9%|▉         | 694/7824 [02:25<26:05,  4.56it/s, train_loss=0.126][A
-Iteration:   9%|▉         | 695/7824 [02:25<26:05,  4.55it/s, train_loss=0.126][A
-Iteration:   9%|▉         | 695/7824 [02:25<26:05,  4.55it/s, train_loss=0.0772][A
-Iteration:   9%|▉         | 696/7824 [02:25<25:58,  4.57it/s, train_loss=0.0772][A
-Iteration:   9%|▉         | 696/7824 [02:25<25:58,  4.57it/s, train_loss=0.0568][A
-Iteration:   9%|▉         | 697/7824 [02:25<25:59,  4.57it/s, train_loss=0.0568][A
-Iteration:   9%|▉         | 697/7824 [02:26<25:59,  4.57it/s, train_loss=0.16]  [A
-Iteration:   9%|▉         | 698/7824 [02:26<25:50,  4.60it/s, train_loss=0.16][A
-Iteration:   9%|▉         | 698/7824 [02:26<25:50,  4.60it/s, train_loss=0.158][A
-Iteration:   9%|▉         | 699/7824 [02:26<25:55,  4.58it/s, train_loss=0.158][A
-Iteration:   9%|▉         | 699/7824 [02:26<25:55,  4.58it/s, train_loss=0.216][A
-Iteration:   9%|▉         | 700/7824 [02:26<26:01,  4.56it/s, train_loss=0.216][A
-Iteration:   9%|▉         | 700/7824 [02:26<26:01,  4.56it/s, train_loss=0.163][A
-Iteration:   9%|▉         | 701/7824 [02:26<26:00,  4.56it/s, train_loss=0.163][A
-Iteration:   9%|▉         | 701/7824 [02:26<26:00,  4.56it/s, train_loss=0.106][A
-Iteration:   9%|▉         | 702/7824 [02:26<25:59,  4.57it/s, train_loss=0.106][A
-Iteration:   9%|▉         | 702/7824 [02:27<25:59,  4.57it/s, train_loss=0.211][A
-Iteration:   9%|▉         | 703/7824 [02:27<26:00,  4.56it/s, train_loss=0.211][A
-Iteration:   9%|▉         | 703/7824 [02:27<26:00,  4.56it/s, train_loss=0.0911][A
-Iteration:   9%|▉         | 704/7824 [02:27<26:07,  4.54it/s, train_loss=0.0911][A
-Iteration:   9%|▉         | 704/7824 [02:27<26:07,  4.54it/s, train_loss=0.217] [A
-Iteration:   9%|▉         | 705/7824 [02:27<26:08,  4.54it/s, train_loss=0.217][A
-Iteration:   9%|▉         | 705/7824 [02:27<26:08,  4.54it/s, train_loss=0.0757][A
-Iteration:   9%|▉         | 706/7824 [02:27<26:14,  4.52it/s, train_loss=0.0757][A
-Iteration:   9%|▉         | 706/7824 [02:28<26:14,  4.52it/s, train_loss=0.0938][A
-Iteration:   9%|▉         | 707/7824 [02:28<26:03,  4.55it/s, train_loss=0.0938][A
-Iteration:   9%|▉         | 707/7824 [02:28<26:03,  4.55it/s, train_loss=0.106] [A
-Iteration:   9%|▉         | 708/7824 [02:28<26:02,  4.56it/s, train_loss=0.106][A
-Iteration:   9%|▉         | 708/7824 [02:28<26:02,  4.56it/s, train_loss=0.107][A
-Iteration:   9%|▉         | 709/7824 [02:28<25:58,  4.57it/s, train_loss=0.107][A
-Iteration:   9%|▉         | 709/7824 [02:28<25:58,  4.57it/s, train_loss=0.0936][A
-Iteration:   9%|▉         | 710/7824 [02:28<25:50,  4.59it/s, train_loss=0.0936][A
-Iteration:   9%|▉         | 710/7824 [02:28<25:50,  4.59it/s, train_loss=0.0896][A
-Iteration:   9%|▉         | 711/7824 [02:28<25:54,  4.58it/s, train_loss=0.0896][A
-Iteration:   9%|▉         | 711/7824 [02:29<25:54,  4.58it/s, train_loss=0.092] [A
-Iteration:   9%|▉         | 712/7824 [02:29<25:54,  4.58it/s, train_loss=0.092][A
-Iteration:   9%|▉         | 712/7824 [02:29<25:54,  4.58it/s, train_loss=0.162][A
-Iteration:   9%|▉         | 713/7824 [02:29<25:56,  4.57it/s, train_loss=0.162][A
-Iteration:   9%|▉         | 713/7824 [02:29<25:56,  4.57it/s, train_loss=0.0689][A
-Iteration:   9%|▉         | 714/7824 [02:29<25:50,  4.59it/s, train_loss=0.0689][A
-Iteration:   9%|▉         | 714/7824 [02:29<25:50,  4.59it/s, train_loss=0.115] [A
-Iteration:   9%|▉         | 715/7824 [02:29<25:50,  4.58it/s, train_loss=0.115][A
-Iteration:   9%|▉         | 715/7824 [02:30<25:50,  4.58it/s, train_loss=0.127][A
-Iteration:   9%|▉         | 716/7824 [02:30<25:46,  4.60it/s, train_loss=0.127][A
-Iteration:   9%|▉         | 716/7824 [02:30<25:46,  4.60it/s, train_loss=0.0571][A
-Iteration:   9%|▉         | 717/7824 [02:30<25:49,  4.59it/s, train_loss=0.0571][A
-Iteration:   9%|▉         | 717/7824 [02:30<25:49,  4.59it/s, train_loss=0.213] [A
-Iteration:   9%|▉         | 718/7824 [02:30<25:47,  4.59it/s, train_loss=0.213][A
-Iteration:   9%|▉         | 718/7824 [02:30<25:47,  4.59it/s, train_loss=0.262][A
-Iteration:   9%|▉         | 719/7824 [02:30<25:54,  4.57it/s, train_loss=0.262][A
-Iteration:   9%|▉         | 719/7824 [02:30<25:54,  4.57it/s, train_loss=0.108][A
-Iteration:   9%|▉         | 720/7824 [02:30<25:48,  4.59it/s, train_loss=0.108][A
-Iteration:   9%|▉         | 720/7824 [02:31<25:48,  4.59it/s, train_loss=0.155][A
-Iteration:   9%|▉         | 721/7824 [02:31<25:53,  4.57it/s, train_loss=0.155][A
-Iteration:   9%|▉         | 721/7824 [02:31<25:53,  4.57it/s, train_loss=0.146][A
-Iteration:   9%|▉         | 722/7824 [02:31<25:43,  4.60it/s, train_loss=0.146][A
-Iteration:   9%|▉         | 722/7824 [02:31<25:43,  4.60it/s, train_loss=0.145][A
-Iteration:   9%|▉         | 723/7824 [02:31<25:48,  4.59it/s, train_loss=0.145][A
-Iteration:   9%|▉         | 723/7824 [02:31<25:48,  4.59it/s, train_loss=0.0882][A
-Iteration:   9%|▉         | 724/7824 [02:31<25:48,  4.58it/s, train_loss=0.0882][A
-Iteration:   9%|▉         | 724/7824 [02:32<25:48,  4.58it/s, train_loss=0.106] [A
-Iteration:   9%|▉         | 725/7824 [02:32<25:42,  4.60it/s, train_loss=0.106][A
-Iteration:   9%|▉         | 725/7824 [02:32<25:42,  4.60it/s, train_loss=0.118][A
-Iteration:   9%|▉         | 726/7824 [02:32<25:44,  4.59it/s, train_loss=0.118][A
-Iteration:   9%|▉         | 726/7824 [02:32<25:44,  4.59it/s, train_loss=0.093][A
-Iteration:   9%|▉         | 727/7824 [02:32<25:48,  4.58it/s, train_loss=0.093][A
-Iteration:   9%|▉         | 727/7824 [02:32<25:48,  4.58it/s, train_loss=0.0748][A
-Iteration:   9%|▉         | 728/7824 [02:32<25:43,  4.60it/s, train_loss=0.0748][A
-Iteration:   9%|▉         | 728/7824 [02:32<25:43,  4.60it/s, train_loss=0.0728][A
-Iteration:   9%|▉         | 729/7824 [02:32<25:45,  4.59it/s, train_loss=0.0728][A
-Iteration:   9%|▉         | 729/7824 [02:33<25:45,  4.59it/s, train_loss=0.231] [A
-Iteration:   9%|▉         | 730/7824 [02:33<25:52,  4.57it/s, train_loss=0.231][A
-Iteration:   9%|▉         | 730/7824 [02:33<25:52,  4.57it/s, train_loss=0.138][A
-Iteration:   9%|▉         | 731/7824 [02:33<26:00,  4.55it/s, train_loss=0.138][A
-Iteration:   9%|▉         | 731/7824 [02:33<26:00,  4.55it/s, train_loss=0.116][A
-Iteration:   9%|▉         | 732/7824 [02:33<25:54,  4.56it/s, train_loss=0.116][A
-Iteration:   9%|▉         | 732/7824 [02:33<25:54,  4.56it/s, train_loss=0.0641][A
-Iteration:   9%|▉         | 733/7824 [02:33<25:49,  4.58it/s, train_loss=0.0641][A
-Iteration:   9%|▉         | 733/7824 [02:33<25:49,  4.58it/s, train_loss=0.188] [A
-Iteration:   9%|▉         | 734/7824 [02:33<25:51,  4.57it/s, train_loss=0.188][A
-Iteration:   9%|▉         | 734/7824 [02:34<25:51,  4.57it/s, train_loss=0.222][A
-Iteration:   9%|▉         | 735/7824 [02:34<25:57,  4.55it/s, train_loss=0.222][A
-Iteration:   9%|▉         | 735/7824 [02:34<25:57,  4.55it/s, train_loss=0.085][A
-Iteration:   9%|▉         | 736/7824 [02:34<25:53,  4.56it/s, train_loss=0.085][A
-Iteration:   9%|▉         | 736/7824 [02:34<25:53,  4.56it/s, train_loss=0.121][A
-Iteration:   9%|▉         | 737/7824 [02:34<25:53,  4.56it/s, train_loss=0.121][A
-Iteration:   9%|▉         | 737/7824 [02:34<25:53,  4.56it/s, train_loss=0.121][A
-Iteration:   9%|▉         | 738/7824 [02:34<25:51,  4.57it/s, train_loss=0.121][A
-Iteration:   9%|▉         | 738/7824 [02:35<25:51,  4.57it/s, train_loss=0.113][A
-Iteration:   9%|▉         | 739/7824 [02:35<25:53,  4.56it/s, train_loss=0.113][A
-Iteration:   9%|▉         | 739/7824 [02:35<25:53,  4.56it/s, train_loss=0.267][A
-Iteration:   9%|▉         | 740/7824 [02:35<26:02,  4.53it/s, train_loss=0.267][A
-Iteration:   9%|▉         | 740/7824 [02:35<26:02,  4.53it/s, train_loss=0.095][A
-Iteration:   9%|▉         | 741/7824 [02:35<25:59,  4.54it/s, train_loss=0.095][A
-Iteration:   9%|▉         | 741/7824 [02:35<25:59,  4.54it/s, train_loss=0.107][A
-Iteration:   9%|▉         | 742/7824 [02:35<25:55,  4.55it/s, train_loss=0.107][A
-Iteration:   9%|▉         | 742/7824 [02:35<25:55,  4.55it/s, train_loss=0.158][A
-Iteration:   9%|▉         | 743/7824 [02:35<25:46,  4.58it/s, train_loss=0.158][A
-Iteration:   9%|▉         | 743/7824 [02:36<25:46,  4.58it/s, train_loss=0.164][A
-Iteration:  10%|▉         | 744/7824 [02:36<25:46,  4.58it/s, train_loss=0.164][A
-Iteration:  10%|▉         | 744/7824 [02:36<25:46,  4.58it/s, train_loss=0.123][A
-Iteration:  10%|▉         | 745/7824 [02:36<25:50,  4.57it/s, train_loss=0.123][A
-Iteration:  10%|▉         | 745/7824 [02:36<25:50,  4.57it/s, train_loss=0.14] [A
-Iteration:  10%|▉         | 746/7824 [02:36<25:45,  4.58it/s, train_loss=0.14][A
-Iteration:  10%|▉         | 746/7824 [02:36<25:45,  4.58it/s, train_loss=0.0487][A
-Iteration:  10%|▉         | 747/7824 [02:36<25:41,  4.59it/s, train_loss=0.0487][A
-Iteration:  10%|▉         | 747/7824 [02:37<25:41,  4.59it/s, train_loss=0.114] [A
-Iteration:  10%|▉         | 748/7824 [02:37<25:53,  4.55it/s, train_loss=0.114][A
-Iteration:  10%|▉         | 748/7824 [02:37<25:53,  4.55it/s, train_loss=0.0845][A
-Iteration:  10%|▉         | 749/7824 [02:37<25:52,  4.56it/s, train_loss=0.0845][A
-Iteration:  10%|▉         | 749/7824 [02:37<25:52,  4.56it/s, train_loss=0.0933][A
-Iteration:  10%|▉         | 750/7824 [02:37<25:48,  4.57it/s, train_loss=0.0933][A
-Iteration:  10%|▉         | 750/7824 [02:37<25:48,  4.57it/s, train_loss=0.28]  [A
-Iteration:  10%|▉         | 751/7824 [02:37<25:52,  4.55it/s, train_loss=0.28][A
-Iteration:  10%|▉         | 751/7824 [02:37<25:52,  4.55it/s, train_loss=0.0664][A
-Iteration:  10%|▉         | 752/7824 [02:37<25:46,  4.57it/s, train_loss=0.0664][A
-Iteration:  10%|▉         | 752/7824 [02:38<25:46,  4.57it/s, train_loss=0.146] [A
-Iteration:  10%|▉         | 753/7824 [02:38<25:46,  4.57it/s, train_loss=0.146][A
-Iteration:  10%|▉         | 753/7824 [02:38<25:46,  4.57it/s, train_loss=0.0713][A
-Iteration:  10%|▉         | 754/7824 [02:38<25:40,  4.59it/s, train_loss=0.0713][A
-Iteration:  10%|▉         | 754/7824 [02:38<25:40,  4.59it/s, train_loss=0.11]  [A
-Iteration:  10%|▉         | 755/7824 [02:38<25:44,  4.58it/s, train_loss=0.11][A
-Iteration:  10%|▉         | 755/7824 [02:38<25:44,  4.58it/s, train_loss=0.0498][A
-Iteration:  10%|▉         | 756/7824 [02:38<25:44,  4.58it/s, train_loss=0.0498][A
-Iteration:  10%|▉         | 756/7824 [02:39<25:44,  4.58it/s, train_loss=0.197] [A
-Iteration:  10%|▉         | 757/7824 [02:39<25:41,  4.58it/s, train_loss=0.197][A
-Iteration:  10%|▉         | 757/7824 [02:39<25:41,  4.58it/s, train_loss=0.266][A
-Iteration:  10%|▉         | 758/7824 [02:39<25:48,  4.56it/s, train_loss=0.266][A
-Iteration:  10%|▉         | 758/7824 [02:39<25:48,  4.56it/s, train_loss=0.0549][A
-Iteration:  10%|▉         | 759/7824 [02:39<25:58,  4.53it/s, train_loss=0.0549][A
-Iteration:  10%|▉         | 759/7824 [02:39<25:58,  4.53it/s, train_loss=0.161] [A
-Iteration:  10%|▉         | 760/7824 [02:39<25:51,  4.55it/s, train_loss=0.161][A
-Iteration:  10%|▉         | 760/7824 [02:39<25:51,  4.55it/s, train_loss=0.183][A
-Iteration:  10%|▉         | 761/7824 [02:39<25:51,  4.55it/s, train_loss=0.183][A
-Iteration:  10%|▉         | 761/7824 [02:40<25:51,  4.55it/s, train_loss=0.0479][A
-Iteration:  10%|▉         | 762/7824 [02:40<25:56,  4.54it/s, train_loss=0.0479][A
-Iteration:  10%|▉         | 762/7824 [02:40<25:56,  4.54it/s, train_loss=0.106] [A
-Iteration:  10%|▉         | 763/7824 [02:40<25:54,  4.54it/s, train_loss=0.106][A
-Iteration:  10%|▉         | 763/7824 [02:40<25:54,  4.54it/s, train_loss=0.0381][A
-Iteration:  10%|▉         | 764/7824 [02:40<25:50,  4.55it/s, train_loss=0.0381][A
-Iteration:  10%|▉         | 764/7824 [02:40<25:50,  4.55it/s, train_loss=0.324] [A
-Iteration:  10%|▉         | 765/7824 [02:40<25:54,  4.54it/s, train_loss=0.324][A
-Iteration:  10%|▉         | 765/7824 [02:40<25:54,  4.54it/s, train_loss=0.136][A
-Iteration:  10%|▉         | 766/7824 [02:40<25:47,  4.56it/s, train_loss=0.136][A
-Iteration:  10%|▉         | 766/7824 [02:41<25:47,  4.56it/s, train_loss=0.103][A
-Iteration:  10%|▉         | 767/7824 [02:41<25:48,  4.56it/s, train_loss=0.103][A
-Iteration:  10%|▉         | 767/7824 [02:41<25:48,  4.56it/s, train_loss=0.0968][A
-Iteration:  10%|▉         | 768/7824 [02:41<25:48,  4.56it/s, train_loss=0.0968][A
-Iteration:  10%|▉         | 768/7824 [02:41<25:48,  4.56it/s, train_loss=0.138] [A
-Iteration:  10%|▉         | 769/7824 [02:41<25:44,  4.57it/s, train_loss=0.138][A
-Iteration:  10%|▉         | 769/7824 [02:41<25:44,  4.57it/s, train_loss=0.137][A
-Iteration:  10%|▉         | 770/7824 [02:41<25:40,  4.58it/s, train_loss=0.137][A
-Iteration:  10%|▉         | 770/7824 [02:42<25:40,  4.58it/s, train_loss=0.14] [A
-Iteration:  10%|▉         | 771/7824 [02:42<25:54,  4.54it/s, train_loss=0.14][A
-Iteration:  10%|▉         | 771/7824 [02:42<25:54,  4.54it/s, train_loss=0.112][A
-Iteration:  10%|▉         | 772/7824 [02:42<25:52,  4.54it/s, train_loss=0.112][A
-Iteration:  10%|▉         | 772/7824 [02:42<25:52,  4.54it/s, train_loss=0.0844][A
-Iteration:  10%|▉         | 773/7824 [02:42<25:45,  4.56it/s, train_loss=0.0844][A
-Iteration:  10%|▉         | 773/7824 [02:42<25:45,  4.56it/s, train_loss=0.051] [A
-Iteration:  10%|▉         | 774/7824 [02:42<25:44,  4.57it/s, train_loss=0.051][A
-Iteration:  10%|▉         | 774/7824 [02:42<25:44,  4.57it/s, train_loss=0.0676][A
-Iteration:  10%|▉         | 775/7824 [02:42<25:39,  4.58it/s, train_loss=0.0676][A
-Iteration:  10%|▉         | 775/7824 [02:43<25:39,  4.58it/s, train_loss=0.0888][A
-Iteration:  10%|▉         | 776/7824 [02:43<25:49,  4.55it/s, train_loss=0.0888][A
-Iteration:  10%|▉         | 776/7824 [02:43<25:49,  4.55it/s, train_loss=0.285] [A
-Iteration:  10%|▉         | 777/7824 [02:43<26:04,  4.50it/s, train_loss=0.285][A
-Iteration:  10%|▉         | 777/7824 [02:43<26:04,  4.50it/s, train_loss=0.123][A
-Iteration:  10%|▉         | 778/7824 [02:43<25:53,  4.54it/s, train_loss=0.123][A
-Iteration:  10%|▉         | 778/7824 [02:43<25:53,  4.54it/s, train_loss=0.103][A
-Iteration:  10%|▉         | 779/7824 [02:43<25:44,  4.56it/s, train_loss=0.103][A
-Iteration:  10%|▉         | 779/7824 [02:44<25:44,  4.56it/s, train_loss=0.0877][A
-Iteration:  10%|▉         | 780/7824 [02:44<25:46,  4.56it/s, train_loss=0.0877][A
-Iteration:  10%|▉         | 780/7824 [02:44<25:46,  4.56it/s, train_loss=0.0813][A
-Iteration:  10%|▉         | 781/7824 [02:44<25:42,  4.57it/s, train_loss=0.0813][A
-Iteration:  10%|▉         | 781/7824 [02:44<25:42,  4.57it/s, train_loss=0.113] [A
-Iteration:  10%|▉         | 782/7824 [02:44<25:39,  4.57it/s, train_loss=0.113][A
-Iteration:  10%|▉         | 782/7824 [02:44<25:39,  4.57it/s, train_loss=0.103][A
-Iteration:  10%|█         | 783/7824 [02:44<25:39,  4.57it/s, train_loss=0.103][A
-Iteration:  10%|█         | 783/7824 [02:44<25:39,  4.57it/s, train_loss=0.056][A
-Iteration:  10%|█         | 784/7824 [02:44<25:40,  4.57it/s, train_loss=0.056][A
-Iteration:  10%|█         | 784/7824 [02:45<25:40,  4.57it/s, train_loss=0.127][A
-Iteration:  10%|█         | 785/7824 [02:45<25:39,  4.57it/s, train_loss=0.127][A
-Iteration:  10%|█         | 785/7824 [02:45<25:39,  4.57it/s, train_loss=0.0725][A
-Iteration:  10%|█         | 786/7824 [02:45<25:40,  4.57it/s, train_loss=0.0725][A
-Iteration:  10%|█         | 786/7824 [02:45<25:40,  4.57it/s, train_loss=0.214] [A
-Iteration:  10%|█         | 787/7824 [02:45<25:48,  4.54it/s, train_loss=0.214][A
-Iteration:  10%|█         | 787/7824 [02:45<25:48,  4.54it/s, train_loss=0.0912][A
-Iteration:  10%|█         | 788/7824 [02:45<25:40,  4.57it/s, train_loss=0.0912][A
-Iteration:  10%|█         | 788/7824 [02:46<25:40,  4.57it/s, train_loss=0.125] [A
-Iteration:  10%|█         | 789/7824 [02:46<25:36,  4.58it/s, train_loss=0.125][A
-Iteration:  10%|█         | 789/7824 [02:46<25:36,  4.58it/s, train_loss=0.149][A
-Iteration:  10%|█         | 790/7824 [02:46<25:31,  4.59it/s, train_loss=0.149][A
-Iteration:  10%|█         | 790/7824 [02:46<25:31,  4.59it/s, train_loss=0.115][A
-Iteration:  10%|█         | 791/7824 [02:46<25:34,  4.58it/s, train_loss=0.115][A
-Iteration:  10%|█         | 791/7824 [02:46<25:34,  4.58it/s, train_loss=0.152][A
-Iteration:  10%|█         | 792/7824 [02:46<25:32,  4.59it/s, train_loss=0.152][A
-Iteration:  10%|█         | 792/7824 [02:46<25:32,  4.59it/s, train_loss=0.144][A
-Iteration:  10%|█         | 793/7824 [02:46<25:59,  4.51it/s, train_loss=0.144][A
-Iteration:  10%|█         | 793/7824 [02:47<25:59,  4.51it/s, train_loss=0.249][A
-Iteration:  10%|█         | 794/7824 [02:47<26:08,  4.48it/s, train_loss=0.249][A
-Iteration:  10%|█         | 794/7824 [02:47<26:08,  4.48it/s, train_loss=0.316][A
-Iteration:  10%|█         | 795/7824 [02:47<25:49,  4.54it/s, train_loss=0.316][A
-Iteration:  10%|█         | 795/7824 [02:47<25:49,  4.54it/s, train_loss=0.141][A
-Iteration:  10%|█         | 796/7824 [02:47<25:39,  4.56it/s, train_loss=0.141][A
-Iteration:  10%|█         | 796/7824 [02:47<25:39,  4.56it/s, train_loss=0.137][A
-Iteration:  10%|█         | 797/7824 [02:47<25:18,  4.63it/s, train_loss=0.137][A
-Iteration:  10%|█         | 797/7824 [02:47<25:18,  4.63it/s, train_loss=0.0428][A
-Iteration:  10%|█         | 798/7824 [02:47<25:14,  4.64it/s, train_loss=0.0428][A
-Iteration:  10%|█         | 798/7824 [02:48<25:14,  4.64it/s, train_loss=0.0705][A
-Iteration:  10%|█         | 799/7824 [02:48<25:06,  4.66it/s, train_loss=0.0705][A
-Iteration:  10%|█         | 799/7824 [02:48<25:06,  4.66it/s, train_loss=0.17]  [A
-Iteration:  10%|█         | 800/7824 [02:48<25:05,  4.67it/s, train_loss=0.17][A
-Iteration:  10%|█         | 800/7824 [02:48<25:05,  4.67it/s, train_loss=0.082][A
-Iteration:  10%|█         | 801/7824 [02:48<24:55,  4.69it/s, train_loss=0.082][A
-Iteration:  10%|█         | 801/7824 [02:48<24:55,  4.69it/s, train_loss=0.0772][A
-Iteration:  10%|█         | 802/7824 [02:48<24:50,  4.71it/s, train_loss=0.0772][A
-Iteration:  10%|█         | 802/7824 [02:49<24:50,  4.71it/s, train_loss=0.118] [A
-Iteration:  10%|█         | 803/7824 [02:49<24:43,  4.73it/s, train_loss=0.118][A
-Iteration:  10%|█         | 803/7824 [02:49<24:43,  4.73it/s, train_loss=0.0968][A
-Iteration:  10%|█         | 804/7824 [02:49<24:44,  4.73it/s, train_loss=0.0968][A
-Iteration:  10%|█         | 804/7824 [02:49<24:44,  4.73it/s, train_loss=0.145] [A
-Iteration:  10%|█         | 805/7824 [02:49<24:48,  4.72it/s, train_loss=0.145][A
-Iteration:  10%|█         | 805/7824 [02:49<24:48,  4.72it/s, train_loss=0.273][A
-Iteration:  10%|█         | 806/7824 [02:49<24:48,  4.72it/s, train_loss=0.273][A
-Iteration:  10%|█         | 806/7824 [02:49<24:48,  4.72it/s, train_loss=0.203][A
-Iteration:  10%|█         | 807/7824 [02:49<24:49,  4.71it/s, train_loss=0.203][A
-Iteration:  10%|█         | 807/7824 [02:50<24:49,  4.71it/s, train_loss=0.105][A
-Iteration:  10%|█         | 808/7824 [02:50<24:45,  4.72it/s, train_loss=0.105][A
-Iteration:  10%|█         | 808/7824 [02:50<24:45,  4.72it/s, train_loss=0.127][A
-Iteration:  10%|█         | 809/7824 [02:50<24:48,  4.71it/s, train_loss=0.127][A
-Iteration:  10%|█         | 809/7824 [02:50<24:48,  4.71it/s, train_loss=0.071][A
-Iteration:  10%|█         | 810/7824 [02:50<24:48,  4.71it/s, train_loss=0.071][A
-Iteration:  10%|█         | 810/7824 [02:50<24:48,  4.71it/s, train_loss=0.118][A
-Iteration:  10%|█         | 811/7824 [02:50<24:53,  4.70it/s, train_loss=0.118][A
-Iteration:  10%|█         | 811/7824 [02:50<24:53,  4.70it/s, train_loss=0.0443][A
-Iteration:  10%|█         | 812/7824 [02:50<24:53,  4.69it/s, train_loss=0.0443][A
-Iteration:  10%|█         | 812/7824 [02:51<24:53,  4.69it/s, train_loss=0.242] [A
-Iteration:  10%|█         | 813/7824 [02:51<24:52,  4.70it/s, train_loss=0.242][A
-Iteration:  10%|█         | 813/7824 [02:51<24:52,  4.70it/s, train_loss=0.148][A
-Iteration:  10%|█         | 814/7824 [02:51<24:51,  4.70it/s, train_loss=0.148][A
-Iteration:  10%|█         | 814/7824 [02:51<24:51,  4.70it/s, train_loss=0.152][A
-Iteration:  10%|█         | 815/7824 [02:51<24:58,  4.68it/s, train_loss=0.152][A
-Iteration:  10%|█         | 815/7824 [02:51<24:58,  4.68it/s, train_loss=0.196][A
-Iteration:  10%|█         | 816/7824 [02:51<24:47,  4.71it/s, train_loss=0.196][A
-Iteration:  10%|█         | 816/7824 [02:52<24:47,  4.71it/s, train_loss=0.112][A
-Iteration:  10%|█         | 817/7824 [02:52<24:53,  4.69it/s, train_loss=0.112][A
-Iteration:  10%|█         | 817/7824 [02:52<24:53,  4.69it/s, train_loss=0.136][A
-Iteration:  10%|█         | 818/7824 [02:52<24:49,  4.70it/s, train_loss=0.136][A
-Iteration:  10%|█         | 818/7824 [02:52<24:49,  4.70it/s, train_loss=0.144][A
-Iteration:  10%|█         | 819/7824 [02:52<24:44,  4.72it/s, train_loss=0.144][A
-Iteration:  10%|█         | 819/7824 [02:52<24:44,  4.72it/s, train_loss=0.136][A
-Iteration:  10%|█         | 820/7824 [02:52<24:38,  4.74it/s, train_loss=0.136][A
-Iteration:  10%|█         | 820/7824 [02:52<24:38,  4.74it/s, train_loss=0.126][A
-Iteration:  10%|█         | 821/7824 [02:52<24:43,  4.72it/s, train_loss=0.126][A
-Iteration:  10%|█         | 821/7824 [02:53<24:43,  4.72it/s, train_loss=0.148][A
-Iteration:  11%|█         | 822/7824 [02:53<24:47,  4.71it/s, train_loss=0.148][A
-Iteration:  11%|█         | 822/7824 [02:53<24:47,  4.71it/s, train_loss=0.199][A
-Iteration:  11%|█         | 823/7824 [02:53<24:50,  4.70it/s, train_loss=0.199][A
-Iteration:  11%|█         | 823/7824 [02:53<24:50,  4.70it/s, train_loss=0.149][A
-Iteration:  11%|█         | 824/7824 [02:53<24:51,  4.69it/s, train_loss=0.149][A
-Iteration:  11%|█         | 824/7824 [02:53<24:51,  4.69it/s, train_loss=0.105][A
-Iteration:  11%|█         | 825/7824 [02:53<24:52,  4.69it/s, train_loss=0.105][A
-Iteration:  11%|█         | 825/7824 [02:53<24:52,  4.69it/s, train_loss=0.124][A
-Iteration:  11%|█         | 826/7824 [02:53<24:49,  4.70it/s, train_loss=0.124][A
-Iteration:  11%|█         | 826/7824 [02:54<24:49,  4.70it/s, train_loss=0.146][A
-Iteration:  11%|█         | 827/7824 [02:54<24:49,  4.70it/s, train_loss=0.146][A
-Iteration:  11%|█         | 827/7824 [02:54<24:49,  4.70it/s, train_loss=0.0796][A
-Iteration:  11%|█         | 828/7824 [02:54<24:52,  4.69it/s, train_loss=0.0796][A
-Iteration:  11%|█         | 828/7824 [02:54<24:52,  4.69it/s, train_loss=0.121] [A
-Iteration:  11%|█         | 829/7824 [02:54<24:55,  4.68it/s, train_loss=0.121][A
-Iteration:  11%|█         | 829/7824 [02:54<24:55,  4.68it/s, train_loss=0.0587][A
-Iteration:  11%|█         | 830/7824 [02:54<24:44,  4.71it/s, train_loss=0.0587][A
-Iteration:  11%|█         | 830/7824 [02:55<24:44,  4.71it/s, train_loss=0.162] [A
-Iteration:  11%|█         | 831/7824 [02:55<24:48,  4.70it/s, train_loss=0.162][A
-Iteration:  11%|█         | 831/7824 [02:55<24:48,  4.70it/s, train_loss=0.17] [A
-Iteration:  11%|█         | 832/7824 [02:55<24:48,  4.70it/s, train_loss=0.17][A
-Iteration:  11%|█         | 832/7824 [02:55<24:48,  4.70it/s, train_loss=0.153][A
-Iteration:  11%|█         | 833/7824 [02:55<24:46,  4.70it/s, train_loss=0.153][A
-Iteration:  11%|█         | 833/7824 [02:55<24:46,  4.70it/s, train_loss=0.143][A
-Iteration:  11%|█         | 834/7824 [02:55<24:54,  4.68it/s, train_loss=0.143][A
-Iteration:  11%|█         | 834/7824 [02:55<24:54,  4.68it/s, train_loss=0.12] [A
-Iteration:  11%|█         | 835/7824 [02:55<24:55,  4.67it/s, train_loss=0.12][A
-Iteration:  11%|█         | 835/7824 [02:56<24:55,  4.67it/s, train_loss=0.116][A
-Iteration:  11%|█         | 836/7824 [02:56<24:39,  4.72it/s, train_loss=0.116][A
-Iteration:  11%|█         | 836/7824 [02:56<24:39,  4.72it/s, train_loss=0.122][A
-Iteration:  11%|█         | 837/7824 [02:56<24:45,  4.70it/s, train_loss=0.122][A
-Iteration:  11%|█         | 837/7824 [02:56<24:45,  4.70it/s, train_loss=0.284][A
-Iteration:  11%|█         | 838/7824 [02:56<24:54,  4.68it/s, train_loss=0.284][A
-Iteration:  11%|█         | 838/7824 [02:56<24:54,  4.68it/s, train_loss=0.052][A
-Iteration:  11%|█         | 839/7824 [02:56<24:52,  4.68it/s, train_loss=0.052][A
-Iteration:  11%|█         | 839/7824 [02:56<24:52,  4.68it/s, train_loss=0.0851][A
-Iteration:  11%|█         | 840/7824 [02:56<24:50,  4.69it/s, train_loss=0.0851][A
-Iteration:  11%|█         | 840/7824 [02:57<24:50,  4.69it/s, train_loss=0.123] [A
-Iteration:  11%|█         | 841/7824 [02:57<24:53,  4.68it/s, train_loss=0.123][A
-Iteration:  11%|█         | 841/7824 [02:57<24:53,  4.68it/s, train_loss=0.0951][A
-Iteration:  11%|█         | 842/7824 [02:57<24:43,  4.71it/s, train_loss=0.0951][A
-Iteration:  11%|█         | 842/7824 [02:57<24:43,  4.71it/s, train_loss=0.0844][A
-Iteration:  11%|█         | 843/7824 [02:57<24:45,  4.70it/s, train_loss=0.0844][A
-Iteration:  11%|█         | 843/7824 [02:57<24:45,  4.70it/s, train_loss=0.0427][A
-Iteration:  11%|█         | 844/7824 [02:57<24:38,  4.72it/s, train_loss=0.0427][A
-Iteration:  11%|█         | 844/7824 [02:57<24:38,  4.72it/s, train_loss=0.123] [A
-Iteration:  11%|█         | 845/7824 [02:57<24:41,  4.71it/s, train_loss=0.123][A
-Iteration:  11%|█         | 845/7824 [02:58<24:41,  4.71it/s, train_loss=0.0957][A
-Iteration:  11%|█         | 846/7824 [02:58<24:47,  4.69it/s, train_loss=0.0957][A
-Iteration:  11%|█         | 846/7824 [02:58<24:47,  4.69it/s, train_loss=0.159] [A
-Iteration:  11%|█         | 847/7824 [02:58<24:50,  4.68it/s, train_loss=0.159][A
-Iteration:  11%|█         | 847/7824 [02:58<24:50,  4.68it/s, train_loss=0.0694][A
-Iteration:  11%|█         | 848/7824 [02:58<24:49,  4.68it/s, train_loss=0.0694][A
-Iteration:  11%|█         | 848/7824 [02:58<24:49,  4.68it/s, train_loss=0.154] [A
-Iteration:  11%|█         | 849/7824 [02:58<24:48,  4.68it/s, train_loss=0.154][A
-Iteration:  11%|█         | 849/7824 [02:59<24:48,  4.68it/s, train_loss=0.0831][A
-Iteration:  11%|█         | 850/7824 [02:59<24:50,  4.68it/s, train_loss=0.0831][A
-Iteration:  11%|█         | 850/7824 [02:59<24:50,  4.68it/s, train_loss=0.133] [A
-Iteration:  11%|█         | 851/7824 [02:59<24:40,  4.71it/s, train_loss=0.133][A
-Iteration:  11%|█         | 851/7824 [02:59<24:40,  4.71it/s, train_loss=0.104][A
-Iteration:  11%|█         | 852/7824 [02:59<24:46,  4.69it/s, train_loss=0.104][A
-Iteration:  11%|█         | 852/7824 [02:59<24:46,  4.69it/s, train_loss=0.0843][A
-Iteration:  11%|█         | 853/7824 [02:59<24:47,  4.69it/s, train_loss=0.0843][A
-Iteration:  11%|█         | 853/7824 [02:59<24:47,  4.69it/s, train_loss=0.1]   [A
-Iteration:  11%|█         | 854/7824 [02:59<24:44,  4.70it/s, train_loss=0.1][A
-Iteration:  11%|█         | 854/7824 [03:00<24:44,  4.70it/s, train_loss=0.138][A
-Iteration:  11%|█         | 855/7824 [03:00<24:44,  4.70it/s, train_loss=0.138][A
-Iteration:  11%|█         | 855/7824 [03:00<24:44,  4.70it/s, train_loss=0.041][A
-Iteration:  11%|█         | 856/7824 [03:00<24:45,  4.69it/s, train_loss=0.041][A
-Iteration:  11%|█         | 856/7824 [03:00<24:45,  4.69it/s, train_loss=0.119][A
-Iteration:  11%|█         | 857/7824 [03:00<24:48,  4.68it/s, train_loss=0.119][A
-Iteration:  11%|█         | 857/7824 [03:00<24:48,  4.68it/s, train_loss=0.0628][A
-Iteration:  11%|█         | 858/7824 [03:00<24:38,  4.71it/s, train_loss=0.0628][A
-Iteration:  11%|█         | 858/7824 [03:00<24:38,  4.71it/s, train_loss=0.232] [A
-Iteration:  11%|█         | 859/7824 [03:00<24:47,  4.68it/s, train_loss=0.232][A
-Iteration:  11%|█         | 859/7824 [03:01<24:47,  4.68it/s, train_loss=0.0492][A
-Iteration:  11%|█         | 860/7824 [03:01<24:47,  4.68it/s, train_loss=0.0492][A
-Iteration:  11%|█         | 860/7824 [03:01<24:47,  4.68it/s, train_loss=0.0922][A
-Iteration:  11%|█         | 861/7824 [03:01<24:50,  4.67it/s, train_loss=0.0922][A
-Iteration:  11%|█         | 861/7824 [03:01<24:50,  4.67it/s, train_loss=0.163] [A
-Iteration:  11%|█         | 862/7824 [03:01<24:47,  4.68it/s, train_loss=0.163][A
-Iteration:  11%|█         | 862/7824 [03:01<24:47,  4.68it/s, train_loss=0.0978][A
-Iteration:  11%|█         | 863/7824 [03:01<24:38,  4.71it/s, train_loss=0.0978][A
-Iteration:  11%|█         | 863/7824 [03:02<24:38,  4.71it/s, train_loss=0.178] [A
-Iteration:  11%|█         | 864/7824 [03:02<24:40,  4.70it/s, train_loss=0.178][A
-Iteration:  11%|█         | 864/7824 [03:02<24:40,  4.70it/s, train_loss=0.0703][A
-Iteration:  11%|█         | 865/7824 [03:02<24:40,  4.70it/s, train_loss=0.0703][A
-Iteration:  11%|█         | 865/7824 [03:02<24:40,  4.70it/s, train_loss=0.179] [A
-Iteration:  11%|█         | 866/7824 [03:02<24:46,  4.68it/s, train_loss=0.179][A
-Iteration:  11%|█         | 866/7824 [03:02<24:46,  4.68it/s, train_loss=0.168][A
-Iteration:  11%|█         | 867/7824 [03:02<24:44,  4.69it/s, train_loss=0.168][A
-Iteration:  11%|█         | 867/7824 [03:02<24:44,  4.69it/s, train_loss=0.108][A
-Iteration:  11%|█         | 868/7824 [03:02<24:42,  4.69it/s, train_loss=0.108][A
-Iteration:  11%|█         | 868/7824 [03:03<24:42,  4.69it/s, train_loss=0.165][A
-Iteration:  11%|█         | 869/7824 [03:03<24:41,  4.69it/s, train_loss=0.165][A
-Iteration:  11%|█         | 869/7824 [03:03<24:41,  4.69it/s, train_loss=0.0824][A
-Iteration:  11%|█         | 870/7824 [03:03<24:47,  4.67it/s, train_loss=0.0824][A
-Iteration:  11%|█         | 870/7824 [03:03<24:47,  4.67it/s, train_loss=0.0763][A
-Iteration:  11%|█         | 871/7824 [03:03<24:46,  4.68it/s, train_loss=0.0763][A
-Iteration:  11%|█         | 871/7824 [03:03<24:46,  4.68it/s, train_loss=0.159] [A
-Iteration:  11%|█         | 872/7824 [03:03<24:45,  4.68it/s, train_loss=0.159][A
-Iteration:  11%|█         | 872/7824 [03:03<24:45,  4.68it/s, train_loss=0.0985][A
-Iteration:  11%|█         | 873/7824 [03:03<24:41,  4.69it/s, train_loss=0.0985][A
-Iteration:  11%|█         | 873/7824 [03:04<24:41,  4.69it/s, train_loss=0.0984][A
-Iteration:  11%|█         | 874/7824 [03:04<24:43,  4.68it/s, train_loss=0.0984][A
-Iteration:  11%|█         | 874/7824 [03:04<24:43,  4.68it/s, train_loss=0.215] [A
-Iteration:  11%|█         | 875/7824 [03:04<24:52,  4.65it/s, train_loss=0.215][A
-Iteration:  11%|█         | 875/7824 [03:04<24:52,  4.65it/s, train_loss=0.181][A
-Iteration:  11%|█         | 876/7824 [03:04<24:47,  4.67it/s, train_loss=0.181][A
-Iteration:  11%|█         | 876/7824 [03:04<24:47,  4.67it/s, train_loss=0.0335][A
-Iteration:  11%|█         | 877/7824 [03:04<24:39,  4.70it/s, train_loss=0.0335][A
-Iteration:  11%|█         | 877/7824 [03:05<24:39,  4.70it/s, train_loss=0.0621][A
-Iteration:  11%|█         | 878/7824 [03:05<24:37,  4.70it/s, train_loss=0.0621][A
-Iteration:  11%|█         | 878/7824 [03:05<24:37,  4.70it/s, train_loss=0.103] [A
-Iteration:  11%|█         | 879/7824 [03:05<24:41,  4.69it/s, train_loss=0.103][A
-Iteration:  11%|█         | 879/7824 [03:05<24:41,  4.69it/s, train_loss=0.14] [A
-Iteration:  11%|█         | 880/7824 [03:05<24:43,  4.68it/s, train_loss=0.14][A
-Iteration:  11%|█         | 880/7824 [03:05<24:43,  4.68it/s, train_loss=0.164][A
-Iteration:  11%|█▏        | 881/7824 [03:05<24:48,  4.66it/s, train_loss=0.164][A
-Iteration:  11%|█▏        | 881/7824 [03:05<24:48,  4.66it/s, train_loss=0.0871][A
-Iteration:  11%|█▏        | 882/7824 [03:05<24:50,  4.66it/s, train_loss=0.0871][A
-Iteration:  11%|█▏        | 882/7824 [03:06<24:50,  4.66it/s, train_loss=0.111] [A
-Iteration:  11%|█▏        | 883/7824 [03:06<24:39,  4.69it/s, train_loss=0.111][A
-Iteration:  11%|█▏        | 883/7824 [03:06<24:39,  4.69it/s, train_loss=0.206][A
-Iteration:  11%|█▏        | 884/7824 [03:06<24:46,  4.67it/s, train_loss=0.206][A
-Iteration:  11%|█▏        | 884/7824 [03:06<24:46,  4.67it/s, train_loss=0.11] [A
-Iteration:  11%|█▏        | 885/7824 [03:06<24:46,  4.67it/s, train_loss=0.11][A
-Iteration:  11%|█▏        | 885/7824 [03:06<24:46,  4.67it/s, train_loss=0.219][A
-Iteration:  11%|█▏        | 886/7824 [03:06<24:54,  4.64it/s, train_loss=0.219][A
-Iteration:  11%|█▏        | 886/7824 [03:06<24:54,  4.64it/s, train_loss=0.103][A
-Iteration:  11%|█▏        | 887/7824 [03:06<24:46,  4.67it/s, train_loss=0.103][A
-Iteration:  11%|█▏        | 887/7824 [03:07<24:46,  4.67it/s, train_loss=0.223][A
-Iteration:  11%|█▏        | 888/7824 [03:07<24:43,  4.67it/s, train_loss=0.223][A
-Iteration:  11%|█▏        | 888/7824 [03:07<24:43,  4.67it/s, train_loss=0.0865][A
-Iteration:  11%|█▏        | 889/7824 [03:07<24:46,  4.66it/s, train_loss=0.0865][A
-Iteration:  11%|█▏        | 889/7824 [03:07<24:46,  4.66it/s, train_loss=0.146] [A
-Iteration:  11%|█▏        | 890/7824 [03:07<24:45,  4.67it/s, train_loss=0.146][A
-Iteration:  11%|█▏        | 890/7824 [03:07<24:45,  4.67it/s, train_loss=0.165][A
-Iteration:  11%|█▏        | 891/7824 [03:07<24:40,  4.68it/s, train_loss=0.165][A
-Iteration:  11%|█▏        | 891/7824 [03:08<24:40,  4.68it/s, train_loss=0.0835][A
-Iteration:  11%|█▏        | 892/7824 [03:08<24:43,  4.67it/s, train_loss=0.0835][A
-Iteration:  11%|█▏        | 892/7824 [03:08<24:43,  4.67it/s, train_loss=0.166] [A
-Iteration:  11%|█▏        | 893/7824 [03:08<24:45,  4.67it/s, train_loss=0.166][A
-Iteration:  11%|█▏        | 893/7824 [03:08<24:45,  4.67it/s, train_loss=0.129][A
-Iteration:  11%|█▏        | 894/7824 [03:08<24:41,  4.68it/s, train_loss=0.129][A
-Iteration:  11%|█▏        | 894/7824 [03:08<24:41,  4.68it/s, train_loss=0.0715][A
-Iteration:  11%|█▏        | 895/7824 [03:08<24:38,  4.69it/s, train_loss=0.0715][A
-Iteration:  11%|█▏        | 895/7824 [03:08<24:38,  4.69it/s, train_loss=0.144] [A
-Iteration:  11%|█▏        | 896/7824 [03:08<24:34,  4.70it/s, train_loss=0.144][A
-Iteration:  11%|█▏        | 896/7824 [03:09<24:34,  4.70it/s, train_loss=0.184][A
-Iteration:  11%|█▏        | 897/7824 [03:09<24:35,  4.70it/s, train_loss=0.184][A
-Iteration:  11%|█▏        | 897/7824 [03:09<24:35,  4.70it/s, train_loss=0.11] [A
-Iteration:  11%|█▏        | 898/7824 [03:09<24:29,  4.71it/s, train_loss=0.11][A
-Iteration:  11%|█▏        | 898/7824 [03:09<24:29,  4.71it/s, train_loss=0.195][A
-Iteration:  11%|█▏        | 899/7824 [03:09<24:34,  4.70it/s, train_loss=0.195][A
-Iteration:  11%|█▏        | 899/7824 [03:09<24:34,  4.70it/s, train_loss=0.188][A
-Iteration:  12%|█▏        | 900/7824 [03:09<24:35,  4.69it/s, train_loss=0.188][A
-Iteration:  12%|█▏        | 900/7824 [03:09<24:35,  4.69it/s, train_loss=0.217][A
-Iteration:  12%|█▏        | 901/7824 [03:09<24:40,  4.68it/s, train_loss=0.217][A
-Iteration:  12%|█▏        | 901/7824 [03:10<24:40,  4.68it/s, train_loss=0.123][A
-Iteration:  12%|█▏        | 902/7824 [03:10<24:41,  4.67it/s, train_loss=0.123][A
-Iteration:  12%|█▏        | 902/7824 [03:10<24:41,  4.67it/s, train_loss=0.18] [A
-Iteration:  12%|█▏        | 903/7824 [03:10<24:43,  4.67it/s, train_loss=0.18][A
-Iteration:  12%|█▏        | 903/7824 [03:10<24:43,  4.67it/s, train_loss=0.11][A
-Iteration:  12%|█▏        | 904/7824 [03:10<24:34,  4.69it/s, train_loss=0.11][A
-Iteration:  12%|█▏        | 904/7824 [03:10<24:34,  4.69it/s, train_loss=0.27][A
-Iteration:  12%|█▏        | 905/7824 [03:10<24:45,  4.66it/s, train_loss=0.27][A
-Iteration:  12%|█▏        | 905/7824 [03:11<24:45,  4.66it/s, train_loss=0.208][A
-Iteration:  12%|█▏        | 906/7824 [03:11<24:45,  4.66it/s, train_loss=0.208][A
-Iteration:  12%|█▏        | 906/7824 [03:11<24:45,  4.66it/s, train_loss=0.134][A
-Iteration:  12%|█▏        | 907/7824 [03:11<24:40,  4.67it/s, train_loss=0.134][A
-Iteration:  12%|█▏        | 907/7824 [03:11<24:40,  4.67it/s, train_loss=0.167][A
-Iteration:  12%|█▏        | 908/7824 [03:11<24:37,  4.68it/s, train_loss=0.167][A
-Iteration:  12%|█▏        | 908/7824 [03:11<24:37,  4.68it/s, train_loss=0.147][A
-Iteration:  12%|█▏        | 909/7824 [03:11<24:33,  4.69it/s, train_loss=0.147][A
-Iteration:  12%|█▏        | 909/7824 [03:11<24:33,  4.69it/s, train_loss=0.0975][A
-Iteration:  12%|█▏        | 910/7824 [03:11<24:28,  4.71it/s, train_loss=0.0975][A
-Iteration:  12%|█▏        | 910/7824 [03:12<24:28,  4.71it/s, train_loss=0.1]   [A
-Iteration:  12%|█▏        | 911/7824 [03:12<24:23,  4.72it/s, train_loss=0.1][A
-Iteration:  12%|█▏        | 911/7824 [03:12<24:23,  4.72it/s, train_loss=0.13][A
-Iteration:  12%|█▏        | 912/7824 [03:12<24:28,  4.71it/s, train_loss=0.13][A
-Iteration:  12%|█▏        | 912/7824 [03:12<24:28,  4.71it/s, train_loss=0.0607][A
-Iteration:  12%|█▏        | 913/7824 [03:12<24:34,  4.69it/s, train_loss=0.0607][A
-Iteration:  12%|█▏        | 913/7824 [03:12<24:34,  4.69it/s, train_loss=0.086] [A
-Iteration:  12%|█▏        | 914/7824 [03:12<24:32,  4.69it/s, train_loss=0.086][A
-Iteration:  12%|█▏        | 914/7824 [03:12<24:32,  4.69it/s, train_loss=0.143][A
-Iteration:  12%|█▏        | 915/7824 [03:12<24:24,  4.72it/s, train_loss=0.143][A
-Iteration:  12%|█▏        | 915/7824 [03:13<24:24,  4.72it/s, train_loss=0.129][A
-Iteration:  12%|█▏        | 916/7824 [03:13<24:27,  4.71it/s, train_loss=0.129][A
-Iteration:  12%|█▏        | 916/7824 [03:13<24:27,  4.71it/s, train_loss=0.135][A
-Iteration:  12%|█▏        | 917/7824 [03:13<24:28,  4.70it/s, train_loss=0.135][A
-Iteration:  12%|█▏        | 917/7824 [03:13<24:28,  4.70it/s, train_loss=0.069][A
-Iteration:  12%|█▏        | 918/7824 [03:13<24:30,  4.70it/s, train_loss=0.069][A
-Iteration:  12%|█▏        | 918/7824 [03:13<24:30,  4.70it/s, train_loss=0.273][A
-Iteration:  12%|█▏        | 919/7824 [03:13<24:41,  4.66it/s, train_loss=0.273][A
-Iteration:  12%|█▏        | 919/7824 [03:13<24:41,  4.66it/s, train_loss=0.119][A
-Iteration:  12%|█▏        | 920/7824 [03:13<24:32,  4.69it/s, train_loss=0.119][A
-Iteration:  12%|█▏        | 920/7824 [03:14<24:32,  4.69it/s, train_loss=0.0792][A
-Iteration:  12%|█▏        | 921/7824 [03:14<24:28,  4.70it/s, train_loss=0.0792][A
-Iteration:  12%|█▏        | 921/7824 [03:14<24:28,  4.70it/s, train_loss=0.081] [A
-Iteration:  12%|█▏        | 922/7824 [03:14<24:33,  4.68it/s, train_loss=0.081][A
-Iteration:  12%|█▏        | 922/7824 [03:14<24:33,  4.68it/s, train_loss=0.192][A
-Iteration:  12%|█▏        | 923/7824 [03:14<24:34,  4.68it/s, train_loss=0.192][A
-Iteration:  12%|█▏        | 923/7824 [03:14<24:34,  4.68it/s, train_loss=0.138][A
-Iteration:  12%|█▏        | 924/7824 [03:14<24:24,  4.71it/s, train_loss=0.138][A
-Iteration:  12%|█▏        | 924/7824 [03:15<24:24,  4.71it/s, train_loss=0.17] [A
-Iteration:  12%|█▏        | 925/7824 [03:15<24:27,  4.70it/s, train_loss=0.17][A
-Iteration:  12%|█▏        | 925/7824 [03:15<24:27,  4.70it/s, train_loss=0.154][A
-Iteration:  12%|█▏        | 926/7824 [03:15<24:29,  4.69it/s, train_loss=0.154][A
-Iteration:  12%|█▏        | 926/7824 [03:15<24:29,  4.69it/s, train_loss=0.106][A
-Iteration:  12%|█▏        | 927/7824 [03:15<24:28,  4.70it/s, train_loss=0.106][A
-Iteration:  12%|█▏        | 927/7824 [03:15<24:28,  4.70it/s, train_loss=0.0924][A
-Iteration:  12%|█▏        | 928/7824 [03:15<24:22,  4.71it/s, train_loss=0.0924][A
-Iteration:  12%|█▏        | 928/7824 [03:15<24:22,  4.71it/s, train_loss=0.133] [A
-Iteration:  12%|█▏        | 929/7824 [03:15<24:23,  4.71it/s, train_loss=0.133][A
-Iteration:  12%|█▏        | 929/7824 [03:16<24:23,  4.71it/s, train_loss=0.168][A
-Iteration:  12%|█▏        | 930/7824 [03:16<24:27,  4.70it/s, train_loss=0.168][A
-Iteration:  12%|█▏        | 930/7824 [03:16<24:27,  4.70it/s, train_loss=0.128][A
-Iteration:  12%|█▏        | 931/7824 [03:16<24:31,  4.68it/s, train_loss=0.128][A
-Iteration:  12%|█▏        | 931/7824 [03:16<24:31,  4.68it/s, train_loss=0.0955][A
-Iteration:  12%|█▏        | 932/7824 [03:16<24:25,  4.70it/s, train_loss=0.0955][A
-Iteration:  12%|█▏        | 932/7824 [03:16<24:25,  4.70it/s, train_loss=0.114] [A
-Iteration:  12%|█▏        | 933/7824 [03:16<24:15,  4.73it/s, train_loss=0.114][A
-Iteration:  12%|█▏        | 933/7824 [03:16<24:15,  4.73it/s, train_loss=0.103][A
-Iteration:  12%|█▏        | 934/7824 [03:16<24:24,  4.70it/s, train_loss=0.103][A
-Iteration:  12%|█▏        | 934/7824 [03:17<24:24,  4.70it/s, train_loss=0.0799][A
-Iteration:  12%|█▏        | 935/7824 [03:17<24:28,  4.69it/s, train_loss=0.0799][A
-Iteration:  12%|█▏        | 935/7824 [03:17<24:28,  4.69it/s, train_loss=0.0933][A
-Iteration:  12%|█▏        | 936/7824 [03:17<24:38,  4.66it/s, train_loss=0.0933][A
-Iteration:  12%|█▏        | 936/7824 [03:17<24:38,  4.66it/s, train_loss=0.14]  [A
-Iteration:  12%|█▏        | 937/7824 [03:17<24:36,  4.66it/s, train_loss=0.14][A
-Iteration:  12%|█▏        | 937/7824 [03:17<24:36,  4.66it/s, train_loss=0.146][A
-Iteration:  12%|█▏        | 938/7824 [03:17<24:41,  4.65it/s, train_loss=0.146][A
-Iteration:  12%|█▏        | 938/7824 [03:18<24:41,  4.65it/s, train_loss=0.235][A
-Iteration:  12%|█▏        | 939/7824 [03:18<24:47,  4.63it/s, train_loss=0.235][A
-Iteration:  12%|█▏        | 939/7824 [03:18<24:47,  4.63it/s, train_loss=0.0943][A
-Iteration:  12%|█▏        | 940/7824 [03:18<24:43,  4.64it/s, train_loss=0.0943][A
-Iteration:  12%|█▏        | 940/7824 [03:18<24:43,  4.64it/s, train_loss=0.119] [A
-Iteration:  12%|█▏        | 941/7824 [03:18<24:40,  4.65it/s, train_loss=0.119][A
-Iteration:  12%|█▏        | 941/7824 [03:18<24:40,  4.65it/s, train_loss=0.0662][A
-Iteration:  12%|█▏        | 942/7824 [03:18<24:37,  4.66it/s, train_loss=0.0662][A
-Iteration:  12%|█▏        | 942/7824 [03:18<24:37,  4.66it/s, train_loss=0.164] [A
-Iteration:  12%|█▏        | 943/7824 [03:18<24:31,  4.68it/s, train_loss=0.164][A
-Iteration:  12%|█▏        | 943/7824 [03:19<24:31,  4.68it/s, train_loss=0.0836][A
-Iteration:  12%|█▏        | 944/7824 [03:19<24:39,  4.65it/s, train_loss=0.0836][A
-Iteration:  12%|█▏        | 944/7824 [03:19<24:39,  4.65it/s, train_loss=0.0445][A
-Iteration:  12%|█▏        | 945/7824 [03:19<24:35,  4.66it/s, train_loss=0.0445][A
-Iteration:  12%|█▏        | 945/7824 [03:19<24:35,  4.66it/s, train_loss=0.117] [A
-Iteration:  12%|█▏        | 946/7824 [03:19<24:41,  4.64it/s, train_loss=0.117][A
-Iteration:  12%|█▏        | 946/7824 [03:19<24:41,  4.64it/s, train_loss=0.167][A
-Iteration:  12%|█▏        | 947/7824 [03:19<24:36,  4.66it/s, train_loss=0.167][A
-Iteration:  12%|█▏        | 947/7824 [03:19<24:36,  4.66it/s, train_loss=0.16] [A
-Iteration:  12%|█▏        | 948/7824 [03:19<24:26,  4.69it/s, train_loss=0.16][A
-Iteration:  12%|█▏        | 948/7824 [03:20<24:26,  4.69it/s, train_loss=0.131][A
-Iteration:  12%|█▏        | 949/7824 [03:20<24:24,  4.69it/s, train_loss=0.131][A
-Iteration:  12%|█▏        | 949/7824 [03:20<24:24,  4.69it/s, train_loss=0.109][A
-Iteration:  12%|█▏        | 950/7824 [03:20<24:29,  4.68it/s, train_loss=0.109][A
-Iteration:  12%|█▏        | 950/7824 [03:20<24:29,  4.68it/s, train_loss=0.0657][A
-Iteration:  12%|█▏        | 951/7824 [03:20<24:34,  4.66it/s, train_loss=0.0657][A
-Iteration:  12%|█▏        | 951/7824 [03:20<24:34,  4.66it/s, train_loss=0.162] [A
-Iteration:  12%|█▏        | 952/7824 [03:20<24:29,  4.68it/s, train_loss=0.162][A
-Iteration:  12%|█▏        | 952/7824 [03:21<24:29,  4.68it/s, train_loss=0.0942][A
-Iteration:  12%|█▏        | 953/7824 [03:21<24:26,  4.68it/s, train_loss=0.0942][A
-Iteration:  12%|█▏        | 953/7824 [03:21<24:26,  4.68it/s, train_loss=0.221] [A
-Iteration:  12%|█▏        | 954/7824 [03:21<24:27,  4.68it/s, train_loss=0.221][A
-Iteration:  12%|█▏        | 954/7824 [03:21<24:27,  4.68it/s, train_loss=0.135][A
-Iteration:  12%|█▏        | 955/7824 [03:21<24:29,  4.68it/s, train_loss=0.135][A
-Iteration:  12%|█▏        | 955/7824 [03:21<24:29,  4.68it/s, train_loss=0.198][A
-Iteration:  12%|█▏        | 956/7824 [03:21<24:31,  4.67it/s, train_loss=0.198][A
-Iteration:  12%|█▏        | 956/7824 [03:21<24:31,  4.67it/s, train_loss=0.0672][A
-Iteration:  12%|█▏        | 957/7824 [03:21<24:31,  4.67it/s, train_loss=0.0672][A
-Iteration:  12%|█▏        | 957/7824 [03:22<24:31,  4.67it/s, train_loss=0.148] [A
-Iteration:  12%|█▏        | 958/7824 [03:22<24:33,  4.66it/s, train_loss=0.148][A
-Iteration:  12%|█▏        | 958/7824 [03:22<24:33,  4.66it/s, train_loss=0.1]  [A
-Iteration:  12%|█▏        | 959/7824 [03:22<24:34,  4.66it/s, train_loss=0.1][A
-Iteration:  12%|█▏        | 959/7824 [03:22<24:34,  4.66it/s, train_loss=0.146][A
-Iteration:  12%|█▏        | 960/7824 [03:22<24:29,  4.67it/s, train_loss=0.146][A
-Iteration:  12%|█▏        | 960/7824 [03:22<24:29,  4.67it/s, train_loss=0.181][A
-Iteration:  12%|█▏        | 961/7824 [03:22<24:54,  4.59it/s, train_loss=0.181][A
